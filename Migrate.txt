@@ -1,0 +1,94 @@
+﻿CREATE TABLE [dbo].[Module] (
+    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Description] VARCHAR (250) NULL,
+    [DateIn]      DATETIME      NULL,
+    [UserIn]      VARCHAR (50)  NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserUp]      VARCHAR (50)  NULL,
+    [IsDeleted]   BIT           NULL,
+    CONSTRAINT [PK__Module__3214EC2755FECD97] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
+GO
+
+CREATE TABLE [dbo].[Passwords] (
+    [ID]          BIGINT       IDENTITY (1, 1) NOT NULL,
+    [UserID]      BIGINT       NOT NULL,
+    [UniqueCode]  VARCHAR (36) NOT NULL,
+    [ExpiredDate] DATETIME     NULL,
+    [DateIn]      DATETIME     NOT NULL,
+    [DateUp]      DATETIME     NULL,
+    [UserIn]      VARCHAR (11) NOT NULL,
+    [UserUp]      VARCHAR (11) NULL,
+    [IsDeleted]   BIT          NULL,
+    CONSTRAINT [PK_Password] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
+GO
+
+CREATE TABLE [dbo].[Role] (
+    [ID]        BIGINT       IDENTITY (1, 1) NOT NULL,
+    [Name]      VARCHAR (50) NOT NULL,
+    [DateIn]    DATETIME     NULL,
+    [UserIn]    VARCHAR (50) NULL,
+    [DateUp]    DATETIME     NULL,
+    [UserUp]    VARCHAR (50) NULL,
+    [IsDeleted] BIT          NULL,
+    CONSTRAINT [PK__Role__3214EC2788E7351B] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
+GO
+
+CREATE TABLE [dbo].[RoleDetail] (
+    [ID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [RoleID]    BIGINT        NOT NULL,
+    [ModuleID]  BIGINT        NOT NULL,
+    [IsCreate]  BIT           NULL,
+    [IsRead]    BIT           NULL,
+    [IsUpdate]  BIT           NULL,
+    [IsDelete]  BIT           NULL,
+    [DateIn]    DATETIME      NULL,
+    [DateUp]    DATETIME      NULL,
+    [UserIn]    VARCHAR (250) NULL,
+    [UserUp]    VARCHAR (250) NULL,
+    [IsDeleted] BIT           NULL,
+    CONSTRAINT [PK__RoleDeta__3214EC27AF399EAC] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
+GO
+
+CREATE TABLE [dbo].[User] (
+    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Email]       VARCHAR (50)  NOT NULL,
+    [Password]    VARCHAR (256) NOT NULL,
+    [Name]        VARCHAR (50)  NULL,
+    [RoleID]      BIGINT        NULL,
+    [DateIn]      DATETIME      NULL,
+    [UserIn]      VARCHAR (50)  NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserUp]      VARCHAR (50)  NULL,
+    [IsDeleted]   BIT           NULL,
+    [WarehouseID] BIGINT        NULL,
+    CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+
+GO
+
+CREATE TABLE [dbo].[Vendor] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Code]       VARCHAR (250) NULL,
+    [Name]       VARCHAR (50)  NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    [ExternalID] VARCHAR (16)  NULL,
+    CONSTRAINT [PK__Vendor__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
