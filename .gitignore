@@ -406,4 +406,3 @@ ASALocalRun/
 .vscode/launch.json
 .vscode/tasks.json
 .github/workflows/build.yaml
-appsettings.json
