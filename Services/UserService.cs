@@ -80,7 +80,6 @@ namespace API.Services
 
                 obj.Name = data.Name;
                 obj.Email = data.Email;
-                obj.WarehouseID = data.WarehouseID;
 
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);

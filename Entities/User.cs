@@ -10,7 +10,6 @@ namespace API.Entities
         public Int64 RoleID { get; set; }
         public String Name { get; set; }
         public String Email { get; set; }
-        public Int64 WarehouseID { get; set; }
         public String Password { get; set; }
         public Role Role { get; set; }
     }
