@@ -110,7 +110,6 @@ namespace API.Controllers
                 Trace.WriteLine(message, "AttendanceController");
                 return BadRequest(new { message });
             }
-
         }
 
         [Authorize]
@@ -232,6 +231,43 @@ namespace API.Controllers
 
                 var result = _service.ClockOut(user);
                 var response = new Response<Attendance>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "AttendanceController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("SetWorkingHour")]
+        public IActionResult SetWorkingHour([FromBody] WorkingHour obj)
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                obj.UserIn = user.ID.ToString();
+                obj.DateIn = DateTime.Now.AddMinutes(-2);
+                obj.IsDeleted = false;
+
+                var result = _service.SetWorkingHour(obj);
+                var response = new Response<WorkingHour>(result);
                 return Ok(response);
             }
             catch (Exception ex)

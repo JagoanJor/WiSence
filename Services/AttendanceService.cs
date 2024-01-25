@@ -14,6 +14,7 @@ namespace API.Services
     {
         T ClockIn(User user);
         T ClockOut(User user);
+        WorkingHour SetWorkingHour(WorkingHour data);
     }
     public class AttendanceService : IAttendanceService<Attendance>
     {
@@ -251,6 +252,7 @@ namespace API.Services
                 
                 var data = new Attendance();
 
+                data.UserID = user.ID;
                 data.ClockIn = DateTime.Now;
                 data.UserIn = user.ID.ToString();
                 data.DateIn = DateTime.Now;
@@ -281,7 +283,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var data = context.Attendances.FirstOrDefault(x => x.UserID == user.ID && x.Date.Date == DateTime.Now.Date && x.IsDeleted != true);
+                var data = context.Attendances
+                    .Where(x => x.UserID == user.ID && x.Date.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .FirstOrDefault();
+
                 if (data == null)
                     throw new Exception("Please ensure that you have clocked in.");
 
@@ -308,7 +313,7 @@ namespace API.Services
             }
         }
 
-        public WorkingHour SetCompanyTime(WorkingHour data)
+        public WorkingHour SetWorkingHour(WorkingHour data)
         {
             var context = new EFContext();
             try
