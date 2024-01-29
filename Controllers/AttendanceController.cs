@@ -248,6 +248,31 @@ namespace API.Controllers
         }
 
         [Authorize]
+        [HttpGet("WorkingHour")]
+        public IActionResult WorkingHour()
+        {
+            try
+            {
+                var total = 0;
+                var result = _service.WorkingHour();
+                var response = new Response<WorkingHour>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "AttendanceController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
         [HttpPost("SetWorkingHour")]
         public IActionResult SetWorkingHour([FromBody] WorkingHour obj)
         {

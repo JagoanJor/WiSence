@@ -14,6 +14,7 @@ namespace API.Services
     {
         T ClockIn(User user);
         T ClockOut(User user);
+        WorkingHour WorkingHour();
         WorkingHour SetWorkingHour(WorkingHour data);
     }
     public class AttendanceService : IAttendanceService<Attendance>
@@ -313,6 +314,26 @@ namespace API.Services
             }
         }
 
+        public WorkingHour WorkingHour()
+        {
+            var context = new EFContext();
+            try
+            {
+                return context.WorkingHours.FirstOrDefault(x => x.IsDeleted != true);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
         public WorkingHour SetWorkingHour(WorkingHour data)
         {
             var context = new EFContext();
