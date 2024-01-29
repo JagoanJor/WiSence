@@ -27,6 +27,6 @@ namespace API.Helpers
         public DbSet<Module> Modules { get; set; }
         public DbSet<Vendor> Vendors { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
-        public DbSet<WorkingHour> WorkingHours { get; set; }
+        public DbSet<Company> Companies { get; set; }
     }
 }

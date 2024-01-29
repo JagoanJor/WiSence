@@ -78,7 +78,6 @@ namespace API
                 });
 
             });
-            
 
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IService<User>, UserService>();
@@ -86,6 +85,7 @@ namespace API
             services.AddScoped<IService<Vendor>, VendorService>();
             services.AddScoped<IService<Module>, ModuleService>();
             services.AddScoped<IAttendanceService<Attendance>, AttendanceService>();
+            services.AddScoped<ICompanyService<Company>, CompanyService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

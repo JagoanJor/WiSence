@@ -14,11 +14,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AttendanceController : ControllerBase
+    public class CompanyController : ControllerBase
     {
-        private IAttendanceService<Attendance> _service;
+        private ICompanyService<Company> _service;
 
-        public AttendanceController(IAttendanceService<Attendance> service)
+        public CompanyController(ICompanyService<Company> service)
         {
             _service = service;
         }
@@ -31,7 +31,7 @@ namespace API.Controllers
             {
                 var total = 0;
                 var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
-                var response = new ListResponse<Attendance>(result, total, page);
+                var response = new ListResponse<Company>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "CompanyController");
                 return BadRequest(new { message });
             }
         }
@@ -58,7 +58,7 @@ namespace API.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new Response<Attendance>(result);
+                var response = new Response<Company>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -70,14 +70,14 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "CompanyController");
                 return BadRequest(new { message });
             }
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Attendance obj)
+        public IActionResult Create([FromBody] Company obj)
         {
             try
             {
@@ -95,7 +95,7 @@ namespace API.Controllers
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
-                var response = new Response<Attendance>(result);
+                var response = new Response<Company>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -107,14 +107,15 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "CompanyController");
                 return BadRequest(new { message });
             }
+
         }
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Attendance obj)
+        public IActionResult Edit([FromBody] Company obj)
         {
             try
             {
@@ -130,7 +131,7 @@ namespace API.Controllers
                 obj.UserUp = user.ID.ToString();
 
                 var result = _service.Edit(obj);
-                var response = new Response<Attendance>(result);
+                var response = new Response<Company>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -142,7 +143,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "CompanyController");
                 return BadRequest(new { message });
             }
         }
@@ -176,28 +177,20 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "CompanyController");
                 return BadRequest(new { message });
             }
         }
 
         [Authorize]
-        [HttpPost("ClockIn")]
-        public IActionResult ClockIn()
+        [HttpGet("WorkingHour")]
+        public IActionResult WorkingHour()
         {
             try
             {
-                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                var user = (User)null;
-                if (token != null)
-                    user = Utils.UserFromToken(token);
-
-                if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });
-
-                var result = _service.ClockIn(user);
-                var response = new Response<Attendance>(result);
+                var total = 0;
+                var result = _service.WorkingHour();
+                var response = new Response<Company>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -215,8 +208,8 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPut("ClockOut")]
-        public IActionResult ClockOut()
+        [HttpPut("SetWorkingHour")]
+        public IActionResult SetWorkingHour([FromBody] Company obj)
         {
             try
             {
@@ -229,8 +222,12 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.ClockOut(user);
-                var response = new Response<Attendance>(result);
+                obj.UserUp = user.ID.ToString();
+                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.IsDeleted = false;
+
+                var result = _service.SetWorkingHour(obj);
+                var response = new Response<Company>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -248,3 +245,4 @@ namespace API.Controllers
         }
     }
 }
+

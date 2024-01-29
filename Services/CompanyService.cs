@@ -10,19 +10,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public interface IAttendanceService<T> : IService<T>
+    public interface ICompanyService<T> : IService<T>
     {
-        T ClockIn(User user);
-        T ClockOut(User user);
+        T WorkingHour();
+        T SetWorkingHour(Company data);
     }
-    public class AttendanceService : IAttendanceService<Attendance>
+    public class CompanyService : ICompanyService<Company>
     {
-        public Attendance Create(Attendance data)
+        public Company Create(Company data)
         {
             var context = new EFContext();
             try
             {
-                context.Attendances.Add(data);
+                context.Companies.Add(data);
                 context.SaveChanges();
 
                 return data;
@@ -46,7 +46,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -71,19 +71,19 @@ namespace API.Services
             }
         }
 
-        public Attendance Edit(Attendance data)
+        public Company Edit(Company data)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
                 if (obj == null) return null;
 
-                obj.UserID = data.UserID;
-                obj.Status = data.Status;
-                obj.Description = data.Description;
-                obj.ClockIn = data.ClockIn;
-                obj.ClockOut = data.ClockOut;
+                obj.Name = data.Name;
+                obj.Logo = data.Logo;
+                obj.Start = data.Start;
+                obj.End = data.End;
+
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
@@ -105,22 +105,16 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<Company> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
         {
             var context = new EFContext();
             try
             {
-                var query = from a in context.Attendances where a.IsDeleted != true select a;
-                query = query.Include("User");
+                var query = from a in context.Companies where a.IsDeleted != true select a;
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.Description.Contains(search)
-                        || x.Status.Contains(search)
-                        || x.User.Name.Contains(search)
-                        || x.ClockIn.ToString().Contains(search)
-                        || x.ClockOut.ToString().Contains(search)
-                        || x.Date.ToString().Contains(search));
+                    query = query.Where(x => x.Name.Contains(search));
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -135,17 +129,7 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
-                                case "status": query = query.Where(x => x.Status.Contains(value)); break;
-                                case "description": query = query.Where(x => x.Description.Contains(value)); break;
-                                case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
-                                case "clockin":
-                                    DateTime.TryParse(value, out DateTime searchClockIn);
-                                    query = query.Where(x => x.ClockIn == searchClockIn || x.ClockIn.Value.Hour == searchClockIn.Hour || x.ClockIn.Value.Minute == searchClockIn.Minute);
-                                    break;
-                                case "clockout":
-                                    DateTime.TryParse(value, out DateTime searchClockOut);
-                                    query = query.Where(x => x.ClockOut == searchClockOut || x.ClockOut.Value.Hour == searchClockOut.Hour || x.ClockOut.Value.Minute == searchClockOut.Minute);
-                                    break;
+                                case "name": query = query.Where(x => x.Name.Contains(value)); break;
                             }
                         }
                     }
@@ -163,18 +147,14 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderByDescending(x => x.User.Name); break;
-                            case "status": query = query.OrderByDescending(x => x.Status); break;
-                            case "description": query = query.OrderByDescending(x => x.Description); break;
+                            case "name": query = query.OrderByDescending(x => x.Name); break;
                         }
                     }
                     else
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderBy(x => x.User.Name); break;
-                            case "status": query = query.OrderBy(x => x.Status); break;
-                            case "description": query = query.OrderBy(x => x.Description); break;
+                            case "name": query = query.OrderBy(x => x.Name); break;
                         }
                     }
                 }
@@ -214,12 +194,12 @@ namespace API.Services
             }
         }
 
-        public Attendance GetById(Int64 id)
+        public Company GetById(Int64 id)
         {
             var context = new EFContext();
             try
             {
-                return context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                return context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -235,33 +215,12 @@ namespace API.Services
             }
         }
 
-        public Attendance ClockIn(User user)
+        public Company WorkingHour()
         {
             var context = new EFContext();
             try
             {
-                var WorkHour = context.Companies.FirstOrDefault();
-                if (WorkHour == null)
-                    throw new Exception("Please ask your admin to add the Working Hour data!");
-                
-                DateTime desiredTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, WorkHour.Start.Hour, WorkHour.Start.Minute, 0).AddMinutes(-30);
-                
-                if (DateTime.Now < desiredTime)
-                    throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start}.");
-                
-                var data = new Attendance();
-
-                data.UserID = user.ID;
-                data.ClockIn = DateTime.Now;
-                data.UserIn = user.ID.ToString();
-                data.DateIn = DateTime.Now;
-                data.Date = DateTime.Now;
-                data.IsDeleted = false;
-
-                context.Attendances.Add(data);
-                context.SaveChanges();
-
-                return data;
+                return context.Companies.FirstOrDefault(x => x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -276,24 +235,19 @@ namespace API.Services
                 context.Dispose();
             }
         }
-
-        public Attendance ClockOut(User user)
+        public Company SetWorkingHour(Company data)
         {
             var context = new EFContext();
             try
             {
-                var data = context.Attendances
-                    .Where(x => x.UserID == user.ID && x.Date.Date == DateTime.Now.Date && x.IsDeleted != true)
-                    .FirstOrDefault();
+                var company = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
 
-                if (data == null)
-                    throw new Exception("Please ensure that you have clocked in.");
+                company.Start = data.Start;
+                company.End = data.End;
+                company.UserUp = data.UserUp;
+                company.DateUp = data.DateUp;
 
-                data.ClockOut = DateTime.Now;
-                data.UserUp = user.ID.ToString();
-                data.DateUp = DateTime.Now;
-
-                context.Attendances.Update(data);
+                context.Companies.Update(company);
                 context.SaveChanges();
 
                 return data;

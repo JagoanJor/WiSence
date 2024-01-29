@@ -211,15 +211,18 @@ CREATE TABLE [dbo].[Attendance] (
     CONSTRAINT [PK__Attendance__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
-CREATE TABLE [dbo].[WorkingHour] (
-    [ID]        BIGINT       IDENTITY (1, 1) NOT NULL,
-    [Start]     DATETIME     NULL,
-    [End]       DATETIME     NULL,
-    [DateIn]    DATETIME     NULL,
-    [UserIn]    VARCHAR (50) NULL,
-    [DateUp]    DATETIME     NULL,
-    [UserUp]    VARCHAR (50) NULL,
-    [IsDeleted] BIT          NULL,
+
+CREATE TABLE [dbo].[Company] (
+    [ID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]      VARCHAR (250) NULL,
+    [Logo]      VARCHAR (250) NULL,
+    [Start]     DATETIME      NULL,
+    [End]       DATETIME      NULL,
+    [DateIn]    DATETIME      NULL,
+    [UserIn]    VARCHAR (50)  NULL,
+    [DateUp]    DATETIME      NULL,
+    [UserUp]    VARCHAR (50)  NULL,
+    [IsDeleted] BIT           NULL,
     CONSTRAINT [PK__WorkingHour__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
