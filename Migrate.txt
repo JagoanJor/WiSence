@@ -124,7 +124,6 @@ CREATE TABLE [dbo].[User](
 	[DateUp] [datetime] NULL,
 	[UserUp] [varchar](50) NULL,
 	[IsDeleted] [bit] NULL,
-	[WarehouseID] [bigint] NULL,
  CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC
