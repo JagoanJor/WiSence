@@ -186,3 +186,41 @@ CREATE TABLE [dbo].[UserLogs](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+
+
+
+
+
+
+================================================================
+VISUAL STUDIO SQL SERVER
+================================================================
+
+CREATE TABLE [dbo].[Attendance] (
+    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [UserID]      BIGINT        NULL,
+    [Status]      VARCHAR (50)  NULL,
+    [Description] VARCHAR (256) NULL,
+    [Date]        DATETIME      NULL,
+    [ClockIn]     DATETIME      NULL,
+    [ClockOut]    DATETIME      NULL,
+    [DateIn]      DATETIME      NULL,
+    [UserIn]      VARCHAR (50)  NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserUp]      VARCHAR (50)  NULL,
+    [IsDeleted]   BIT           NULL,
+    CONSTRAINT [PK__Attendance__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[WorkingHour] (
+    [ID]        BIGINT       IDENTITY (1, 1) NOT NULL,
+    [Start]     DATETIME     NULL,
+    [End]       DATETIME     NULL,
+    [DateIn]    DATETIME     NULL,
+    [UserIn]    VARCHAR (50) NULL,
+    [DateUp]    DATETIME     NULL,
+    [UserUp]    VARCHAR (50) NULL,
+    [IsDeleted] BIT          NULL,
+    CONSTRAINT [PK__WorkingHour__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
