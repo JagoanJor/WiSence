@@ -269,7 +269,7 @@ namespace API.Services
                 if (WorkHour == null)
                     throw new Exception("Please ask your admin to add the Working Hour data!");
                 
-                DateTime desiredTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, WorkHour.Start.Hour, WorkHour.Start.Minute, 0).AddMinutes(-30);
+                DateTime desiredTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, WorkHour.Start.Value.Hour, WorkHour.Start.Value.Minute, 0).AddMinutes(-30);
                 
                 if (DateTime.Now < desiredTime)
                     throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start}.");
@@ -308,7 +308,7 @@ namespace API.Services
             try
             {
                 var data = context.Attendances
-                    .Where(x => x.UserID == user.ID && x.Date.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .Where(x => x.UserID == user.ID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
                     .FirstOrDefault();
 
                 if (data == null)
