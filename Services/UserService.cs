@@ -292,7 +292,7 @@ namespace API.Services
                     throw new Exception("No Position Found!");
 
                 var division = context.Divisions.FirstOrDefault(x => x.ID == position.DivisionID && x.IsDeleted != true);
-                if (division != null)
+                if (division == null)
                     throw new Exception("Division of the position not found!");
                 
                 var count = 0;
