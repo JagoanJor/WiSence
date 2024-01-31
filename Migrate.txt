@@ -226,3 +226,64 @@ CREATE TABLE [dbo].[Company] (
     CONSTRAINT [PK__WorkingHour__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
+CREATE TABLE [dbo].[Division] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]       VARCHAR (250) NULL,
+    [NumberOfEmployee]       INT  NULL,
+    [CompanyID]       BIGINT  NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    [ExternalID] VARCHAR (16)  NULL,
+    CONSTRAINT [PK__Division__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[Wifi] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]       VARCHAR (250) NULL,
+    [IPAddress]       VARCHAR (50)  NULL,
+    [CompanyID]       BIGINT  NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    [ExternalID] VARCHAR (16)  NULL,
+    CONSTRAINT [PK__Wifi__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[Position] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]       VARCHAR (250) NULL,
+    [DivisionID]       BIGINT  NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    [ExternalID] VARCHAR (16)  NULL,
+    CONSTRAINT [PK__Position__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[User] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Email]      VARCHAR (50)  NOT NULL,
+    [Password]   VARCHAR (256) NOT NULL,
+    [Name]       VARCHAR (50)  NULL,
+    [NIK]        VARCHAR (250) NULL,
+    [Gender]     VARCHAR (50)  NULL,
+    [DOB]        DATETIME      NULL,
+    [Address]    VARCHAR (50)  NULL,
+    [Phone]      VARCHAR (50)  NULL,
+    [PositionID] BIGINT        NULL,
+    [RoleID]     BIGINT        NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+

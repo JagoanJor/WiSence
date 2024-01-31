@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Net.NetworkInformation;
 using API.Entities;
 using API.Helpers;
 
@@ -240,6 +240,31 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
+                    Console.WriteLine($"Interface Name: {networkInterface.Name}");
+                    Console.WriteLine($"Interface Description: {networkInterface.Description}");
+
+                    // Get the IP properties for the current network interface
+                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+
+                    // Get the default gateway address
+                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                    if (gatewayInfo != null)
+                    {
+                        string gatewayAddress = gatewayInfo.Address.ToString();
+                        Console.WriteLine($"Default Gateway: {gatewayAddress}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Default Gateway not available.");
+                    }
+
+                    Console.WriteLine();
+                }
                 var WorkHour = context.Companies.FirstOrDefault();
                 if (WorkHour == null)
                     throw new Exception("Please ask your admin to add the Working Hour data!");

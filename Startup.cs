@@ -84,6 +84,10 @@ namespace API
             services.AddScoped<IService<Role>, RoleService>();
             services.AddScoped<IService<Vendor>, VendorService>();
             services.AddScoped<IService<Module>, ModuleService>();
+            services.AddScoped<IService<Division>, DivisionService>();
+            services.AddScoped<IService<Position>, PositionService>();
+            services.AddScoped<IService<Wifi>, WifiService>();
+
             services.AddScoped<IAttendanceService<Attendance>, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();
         }

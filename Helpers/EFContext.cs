@@ -28,5 +28,8 @@ namespace API.Helpers
         public DbSet<Vendor> Vendors { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Division> Divisions { get; set; }
+        public DbSet<Position> Positions { get; set; }
+        public DbSet<Wifi> Wifis { get; set; }
     }
 }
