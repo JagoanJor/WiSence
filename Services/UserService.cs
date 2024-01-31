@@ -22,6 +22,8 @@ namespace API.Services
                 context.Users.Add(data);
                 context.SaveChanges();
 
+                Division(data.PositionID);
+
                 return data;
             }
             catch (Exception ex)
@@ -51,6 +53,8 @@ namespace API.Services
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
                 context.SaveChanges();
+
+                Division(obj.PositionID);
 
                 return true;
             }
@@ -96,6 +100,8 @@ namespace API.Services
                     obj.Password = Utils.HashPassword(data.Password);
 
                 context.SaveChanges();
+
+                Division(data.PositionID);
 
                 return obj;
             }
@@ -276,10 +282,47 @@ namespace API.Services
             }
         }
 
-        /*public Division Division()
+        public Division Division(long? PositionID)
         {
             var context = new EFContext();
-        }*/
+            try
+            {
+                var position = context.Positions.FirstOrDefault(x => x.ID == PositionID && x.IsDeleted != true);
+                if (position == null)
+                    throw new Exception("No Position Found!");
+
+                var division = context.Divisions.FirstOrDefault(x => x.ID == position.DivisionID && x.IsDeleted != true);
+                if (division != null)
+                    throw new Exception("Division of the position not found!");
+                
+                var count = 0;
+
+                var allPosition = context.Positions.Where(x => x.DivisionID == division.ID && x.IsDeleted != true);
+                foreach (var all in allPosition)
+                {
+                    count += context.Users.Where(x => x.PositionID == all.ID && x.IsDeleted != true).Count();
+                }
+
+                division.NumberOfEmployee = count;
+
+                context.Divisions.Update(division);
+                context.SaveChanges();
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
     }
 }
 
