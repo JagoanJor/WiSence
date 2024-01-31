@@ -10,8 +10,8 @@ namespace API.Entities
     public class Division : Entity
     {
         public String Name { get; set; }
-        public int NumberOfEmployee { get; set; }
-        public Int64 CompanyID { get; set; }
+        public int? NumberOfEmployee { get; set; }
+        public Int64? CompanyID { get; set; }
         public Company Company { get; set; }
         public ICollection<Position> Positions { get; set; }
     }

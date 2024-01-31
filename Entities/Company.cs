@@ -11,8 +11,8 @@ namespace API.Entities
     {
         public String Name { get; set; }
         public String Logo { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
         public ICollection<Division> Divisions { get; set; }
         public ICollection<Wifi> Wifis { get; set; }
     }
