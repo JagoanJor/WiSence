@@ -9,7 +9,7 @@ namespace API.Entities
     {
         public String Name { get; set; }
         public String IPAddress { get; set; }
-        public Int64 CompanyID { get; set; }
+        public Int64? CompanyID { get; set; }
         public Company Company { get; set; }
     }
 }

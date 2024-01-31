@@ -8,7 +8,7 @@ namespace API.Entities
     public class Position : Entity
     {
         public String Name { get; set; }
-        public Int64 DivisionID { get; set; }
+        public Int64? DivisionID { get; set; }
         public Division Division { get; set; }
     }
 }
