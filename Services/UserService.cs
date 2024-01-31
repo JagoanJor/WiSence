@@ -83,6 +83,7 @@ namespace API.Services
                 obj.Password = data.Password;
                 obj.NIK = data.NIK;
                 obj.Gender = data.Gender;
+                obj.POB = data.POB;
                 obj.DOB = data.DOB;
                 obj.Address = data.Address;
                 obj.Phone = data.Phone;
@@ -135,6 +136,7 @@ namespace API.Services
                         || x.Address.Contains(search)
                         || x.Phone.Contains(search)
                         || x.Position.Name.Contains(search)
+                        || x.POB.Contains(search)
                         || x.DOB.ToString().Contains(search)
                         || x.Role.Name.Contains(search));
                 }
@@ -156,6 +158,7 @@ namespace API.Services
                                 case "email": query = query.Where(x => x.Email.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.NIK.Contains(value)); break;
                                 case "gender": query = query.Where(x => x.Gender.Contains(value)); break;
+                                case "pob": query = query.Where(x => x.POB.Contains(value)); break;
                                 case "dob": query = query.Where(x => x.DOB.ToString().Contains(value)); break;
                                 case "address": query = query.Where(x => x.Address.Contains(value)); break;
                                 case "phone": query = query.Where(x => x.Phone.Contains(value)); break;
@@ -184,6 +187,7 @@ namespace API.Services
                             case "gender": query = query.OrderByDescending(x => x.Gender); break;
                             case "address": query = query.OrderByDescending(x => x.Address); break;
                             case "phone": query = query.OrderByDescending(x => x.Phone); break;
+                            case "pob": query = query.OrderByDescending(x => x.POB); break;
                             case "dob": query = query.OrderByDescending(x => x.DOB); break;
                             case "position": query = query.OrderByDescending(x => x.Position.Name); break;
                             case "role": query = query.OrderByDescending(x => x.Role.Name); break;
@@ -199,6 +203,7 @@ namespace API.Services
                             case "gender": query = query.OrderBy(x => x.Gender); break;
                             case "address": query = query.OrderBy(x => x.Address); break;
                             case "phone": query = query.OrderBy(x => x.Phone); break;
+                            case "pob": query = query.OrderBy(x => x.POB); break;
                             case "dob": query = query.OrderBy(x => x.DOB); break;
                             case "position": query = query.OrderBy(x => x.Position.Name); break;
                             case "role": query = query.OrderBy(x => x.Role.Name); break;
@@ -270,6 +275,11 @@ namespace API.Services
                 context.Dispose();
             }
         }
+
+        /*public Division Division()
+        {
+            var context = new EFContext();
+        }*/
     }
 }
 

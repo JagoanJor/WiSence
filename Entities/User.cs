@@ -13,6 +13,7 @@ namespace API.Entities
         public String Password { get; set; }
         public String NIK { get; set; }
         public String Gender { get; set; }
+        public String POB { get; set; }
         public DateTime? DOB { get; set; }
         public String Address { get; set; }
         public String Phone { get; set; }

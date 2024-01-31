@@ -274,6 +274,7 @@ CREATE TABLE [dbo].[User] (
     [Name]       VARCHAR (50)  NULL,
     [NIK]        VARCHAR (250) NULL,
     [Gender]     VARCHAR (50)  NULL,
+    [POB]        VARCHAR (50)  NULL,
     [DOB]        DATETIME      NULL,
     [Address]    VARCHAR (50)  NULL,
     [Phone]      VARCHAR (50)  NULL,
