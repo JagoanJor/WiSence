@@ -16,7 +16,7 @@ namespace API.Entities
         public DateTime DOB { get; set; }
         public String Address { get; set; }
         public String Phone { get; set; }
-        public String PositionID { get; set; }
+        public Int64 PositionID { get; set; }
         public Role Role { get; set; }
         public Position Position { get; set; }
     }
