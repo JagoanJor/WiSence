@@ -7,6 +7,7 @@ using API.Entities;
 using API.Helpers;
 
 using Microsoft.EntityFrameworkCore;
+using NativeWifi;
 
 namespace API.Services
 {
@@ -240,31 +241,48 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                var wifiSSID = "";
+                var ipAddress = "";
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
                 foreach (NetworkInterface networkInterface in networkInterfaces)
                 {
-                    Console.WriteLine($"Interface Name: {networkInterface.Name}");
-                    Console.WriteLine($"Interface Description: {networkInterface.Description}");
-
-                    // Get the IP properties for the current network interface
                     IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-
-                    // Get the default gateway address
                     GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
 
-                    if (gatewayInfo != null)
-                    {
-                        string gatewayAddress = gatewayInfo.Address.ToString();
-                        Console.WriteLine($"Default Gateway: {gatewayAddress}");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Default Gateway not available.");
-                    }
+                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        if (gatewayInfo != null)
+                        {
+                            WlanClient client = new WlanClient();
+                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
+                            {
+                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                {
+                                    wifiSSID = wlanInterface.CurrentConnection.profileName;
+                                }
+                            }
 
-                    Console.WriteLine();
+                            ipAddress = gatewayInfo.Address.ToString();
+                            break;
+                        }
                 }
+
+                var query = String.Format($@"
+                                SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
+                                FROM Wifi
+                                WHERE (IsDeleted = 0 OR IsDeleted IS NULL) AND (IPAddress = '{ipAddress}' OR Name = '{wifiSSID}')");
+                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
+
+                if (wifi != null)
+                {
+                    if (wifi.Name != wifiSSID || wifi.IPAddress != ipAddress)
+                        throw new Exception("Please Connect to Company Wifi!");
+                }
+                else
+                {
+                    throw new Exception("Please Connect to Company Wifi!");
+                }
+
                 var WorkHour = context.Companies.FirstOrDefault();
                 if (WorkHour == null)
                     throw new Exception("Please ask your admin to add the Working Hour data!");
@@ -307,6 +325,48 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                var wifiSSID = "";
+                var ipAddress = "";
+                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
+                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        if (gatewayInfo != null)
+                        {
+                            WlanClient client = new WlanClient();
+                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
+                            {
+                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                {
+                                    wifiSSID = wlanInterface.CurrentConnection.profileName;
+                                }
+                            }
+
+                            ipAddress = gatewayInfo.Address.ToString();
+                            break;
+                        }
+                }
+
+                var query = String.Format($@"
+                                SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
+                                FROM Wifi
+                                WHERE (IsDeleted = 0 OR IsDeleted IS NULL) AND (IPAddress = '{ipAddress}' OR Name = '{wifiSSID}')");
+                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
+
+                if (wifi != null)
+                {
+                    if (wifi.Name != wifiSSID || wifi.IPAddress != ipAddress)
+                        throw new Exception("Please Connect to Company Wifi!");
+                }
+                else
+                {
+                    throw new Exception("Please Connect to Company Wifi!");
+                }
+
                 var data = context.Attendances
                     .Where(x => x.UserID == user.ID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
                     .FirstOrDefault();

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Net.NetworkInformation;
 using API.Entities;
 using API.Helpers;
 
 using Microsoft.EntityFrameworkCore;
+using NativeWifi;
 
 namespace API.Services
 {
@@ -17,6 +18,35 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                int flag = 0;
+                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
+                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        if (gatewayInfo != null)
+                        {
+                            WlanClient client = new WlanClient();
+                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
+                            {
+                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                {
+                                    data.Name = wlanInterface.CurrentConnection.profileName;
+                                }
+                            }
+
+                            data.IPAddress = gatewayInfo.Address.ToString();
+                            flag = 1;
+                            break;
+                        }
+                }
+
+                if (flag == 0)
+                    throw new Exception("Please Connect to Wi-fi!");
+
                 context.Wifis.Add(data);
                 context.SaveChanges();
 

@@ -236,7 +236,6 @@ CREATE TABLE [dbo].[Division] (
     [DateUp]     DATETIME      NULL,
     [UserUp]     VARCHAR (50)  NULL,
     [IsDeleted]  BIT           NULL,
-    [ExternalID] VARCHAR (16)  NULL,
     CONSTRAINT [PK__Division__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
@@ -250,7 +249,6 @@ CREATE TABLE [dbo].[Wifi] (
     [DateUp]     DATETIME      NULL,
     [UserUp]     VARCHAR (50)  NULL,
     [IsDeleted]  BIT           NULL,
-    [ExternalID] VARCHAR (16)  NULL,
     CONSTRAINT [PK__Wifi__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
@@ -263,7 +261,6 @@ CREATE TABLE [dbo].[Position] (
     [DateUp]     DATETIME      NULL,
     [UserUp]     VARCHAR (50)  NULL,
     [IsDeleted]  BIT           NULL,
-    [ExternalID] VARCHAR (16)  NULL,
     CONSTRAINT [PK__Position__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
@@ -298,6 +295,5 @@ CREATE TABLE [dbo].[DailyTask] (
     [DateUp]     DATETIME     NULL,
     [UserUp]     VARCHAR (50) NULL,
     [IsDeleted]  BIT          NULL,
-    [ExternalID] VARCHAR (16) NULL,
     CONSTRAINT [PK__DailyTask__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
