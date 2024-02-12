@@ -288,3 +288,16 @@ CREATE TABLE [dbo].[User] (
     CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
+CREATE TABLE [dbo].[DailyTask] (
+    [ID]         BIGINT       IDENTITY (1, 1) NOT NULL,
+    [UserID]     BIGINT       NULL,
+    [Task]       VARCHAR (50) NULL,
+    [Date]       DATETIME     NULL,
+    [DateIn]     DATETIME     NULL,
+    [UserIn]     VARCHAR (50) NULL,
+    [DateUp]     DATETIME     NULL,
+    [UserUp]     VARCHAR (50) NULL,
+    [IsDeleted]  BIT          NULL,
+    [ExternalID] VARCHAR (16) NULL,
+    CONSTRAINT [PK__DailyTask__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);

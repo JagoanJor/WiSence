@@ -87,6 +87,7 @@ namespace API
             services.AddScoped<IService<Division>, DivisionService>();
             services.AddScoped<IService<Position>, PositionService>();
             services.AddScoped<IService<Wifi>, WifiService>();
+            services.AddScoped<IService<DailyTask>, DailyTaskService>();
 
             services.AddScoped<IAttendanceService<Attendance>, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();

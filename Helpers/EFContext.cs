@@ -31,5 +31,6 @@ namespace API.Helpers
         public DbSet<Division> Divisions { get; set; }
         public DbSet<Position> Positions { get; set; }
         public DbSet<Wifi> Wifis { get; set; }
+        public DbSet<DailyTask> DailyTasks { get; set; }
     }
 }
