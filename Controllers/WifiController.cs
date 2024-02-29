@@ -23,7 +23,7 @@ namespace API.Controllers
             _service = service;
         }
 
-        
+        [Authorize]
         [HttpGet]
         public IActionResult Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
         {
