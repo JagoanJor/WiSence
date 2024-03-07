@@ -291,11 +291,7 @@ namespace API.Services
                 
                 if (DateTime.Now < desiredTime)
                     throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start}.");
-
-                var CheckAttendance = context.Attendances.FirstOrDefault(x => x.UserID == user.ID && DateTime.Now.Date == x.ClockIn.Value.Date);
-                if (CheckAttendance != null)
-                    throw new Exception("You already Clock In today. Press 'Re-Clock In' button first.");
-                
+                                
                 var data = new Attendance();
 
                 data.UserID = user.ID;
