@@ -291,6 +291,10 @@ namespace API.Services
                 
                 if (DateTime.Now < desiredTime)
                     throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start}.");
+
+                var CheckAttendance = context.Attendances.FirstOrDefault(x => x.UserID == user.ID && DateTime.Now.Date == x.ClockIn.Value.Date);
+                if (CheckAttendance != null)
+                    throw new Exception("You already Clock In today. Press 'Re-Clock In' button first.");
                 
                 var data = new Attendance();
 
@@ -300,6 +304,13 @@ namespace API.Services
                 data.DateIn = DateTime.Now;
                 data.Date = DateTime.Now;
                 data.IsDeleted = false;
+
+                if (DateTime.Now.TimeOfDay <= desiredTime.TimeOfDay)
+                    data.Status = "Ontime";
+                else if (DateTime.Now.TimeOfDay > desiredTime.TimeOfDay && DateTime.Now.TimeOfDay < desiredTime.AddHours(1).TimeOfDay)
+                    data.Status = "Terlambat";
+                else
+                    data.Status = "Absen";
 
                 context.Attendances.Add(data);
                 context.SaveChanges();
