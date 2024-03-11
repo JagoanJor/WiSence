@@ -283,7 +283,7 @@ namespace API.Services
                     throw new Exception("Please Connect to Company Wifi!");
                 }
 
-                var WorkHour = context.Companies.FirstOrDefault();
+                var WorkHour = context.Companies.FirstOrDefault(x => x.ID == wifi.CompanyID && x.IsDeleted != true);
                 if (WorkHour == null)
                     throw new Exception("Please ask your admin to add the Working Hour data!");
                 
