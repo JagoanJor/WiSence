@@ -285,13 +285,16 @@ namespace API.Services
 
                 var WorkHour = context.Companies.FirstOrDefault(x => x.ID == wifi.CompanyID && x.IsDeleted != true);
                 if (WorkHour == null)
+                    throw new Exception("Please ask your admin to set company's wifi!");
+
+                if (WorkHour.Start == null)
                     throw new Exception("Please ask your admin to add the Working Hour data!");
                 
                 DateTime desiredTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, WorkHour.Start.Value.Hour, WorkHour.Start.Value.Minute, 0).AddMinutes(-30);
                 
                 if (DateTime.Now < desiredTime)
-                    throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start}.");
-                                
+                    throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start?.ToString("HH:mm")}.");
+
                 var data = new Attendance();
 
                 data.UserID = user.ID;

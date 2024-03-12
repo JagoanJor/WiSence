@@ -16,9 +16,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class WifiController : ControllerBase
     {
-        private IService<Wifi> _service;
+        private IWifiService<Wifi> _service;
 
-        public WifiController(IService<Wifi> service)
+        public WifiController(IWifiService<Wifi> service)
         {
             _service = service;
         }
@@ -94,7 +94,7 @@ namespace API.Controllers
                 obj.DateIn = DateTime.Now.AddMinutes(-2);
                 obj.IsDeleted = false;
 
-                var result = _service.Create(obj);
+                var result = _service.Create(obj, user);
                 var response = new Response<Wifi>(result);
                 return Ok(response);
             }

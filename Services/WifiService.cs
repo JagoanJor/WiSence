@@ -11,9 +11,66 @@ using NativeWifi;
 
 namespace API.Services
 {
-    public class WifiService : IService<Wifi>
+    public interface IWifiService<T> : IService<T>
+    {
+        T Create(T data, User user);
+    }
+    public class WifiService : IWifiService<Wifi>
     {
         public Wifi Create(Wifi data)
+        {
+            var context = new EFContext();
+            try
+            {
+                /*int flag = 0;
+                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
+                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        if (gatewayInfo != null)
+                        {
+                            WlanClient client = new WlanClient();
+                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
+                            {
+                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                {
+                                    data.Name = wlanInterface.CurrentConnection.profileName;
+                                }
+                            }
+
+                            data.IPAddress = gatewayInfo.Address.ToString();
+                            flag = 1;
+                            break;
+                        }
+                }
+
+                if (flag == 0)
+                    throw new Exception("Please Connect to Wi-fi!");
+
+                context.Wifis.Add(data);
+                context.SaveChanges();*/
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public Wifi Create(Wifi data, User user)
         {
             var context = new EFContext();
             try
@@ -46,6 +103,20 @@ namespace API.Services
 
                 if (flag == 0)
                     throw new Exception("Please Connect to Wi-fi!");
+
+                var pos = context.Positions.FirstOrDefault(x => x.ID == user.PositionID && x.IsDeleted != true);
+                if (pos == null)
+                    throw new Exception("Please set user's position!");
+
+                var div = context.Divisions.FirstOrDefault(x => x.ID == pos.DivisionID && x.IsDeleted != true);
+                if (div == null)
+                    throw new Exception("Please set position's division!");
+
+                var com = context.Companies.FirstOrDefault(x => x.ID == div.CompanyID && x.IsDeleted != true);
+                if (com == null)
+                    throw new Exception("Please set division's company!");
+
+                data.CompanyID = com.ID;
 
                 context.Wifis.Add(data);
                 context.SaveChanges();
