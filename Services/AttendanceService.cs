@@ -301,11 +301,11 @@ namespace API.Services
                 data.Date = DateTime.Now;
                 data.IsDeleted = false;
 
-                DateTime lateTime = desiredTime.AddHours(1);
+                DateTime lateTime = desiredTime.AddHours(1).AddMinutes(30);
 
-                if (DateTime.Now.TimeOfDay <= desiredTime.TimeOfDay)
+                if (DateTime.Now.TimeOfDay <= WorkHour.Start?.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay >= desiredTime.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.TimeOfDay >= WorkHour.Start?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
