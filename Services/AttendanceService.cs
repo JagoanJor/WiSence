@@ -271,7 +271,7 @@ namespace API.Services
                                 SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
                                 FROM Wifi
                                 WHERE (IsDeleted = 0 OR IsDeleted IS NULL) AND (IPAddress = '{ipAddress}' OR Name = '{wifiSSID}')");
-                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
+                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault(x => x.IsDeleted != true);
 
                 if (wifi != null)
                 {
