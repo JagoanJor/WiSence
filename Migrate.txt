@@ -297,3 +297,15 @@ CREATE TABLE [dbo].[DailyTask] (
     [IsDeleted]  BIT          NULL,
     CONSTRAINT [PK__DailyTask__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+CREATE TABLE [dbo].[Calendar] (
+    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Description] VARCHAR(250)  NULL,
+    [Holiday]     DATETIME      NULL,
+    [DateIn]      DATETIME      NULL,
+    [UserIn]      VARCHAR (50)  NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserUp]      VARCHAR (50)  NULL,
+    [IsDeleted]   BIT           NULL,
+    CONSTRAINT [PK__Calendar__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
