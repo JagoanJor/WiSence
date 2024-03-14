@@ -110,7 +110,6 @@ namespace API.Services
                 if (obj == null) return null;
 
                 obj.Description = data.Description;
-                obj.Status = data.Status;
                 obj.Start = data.Start;
                 obj.End = data.End;
                 obj.UserUp = data.UserUp;
