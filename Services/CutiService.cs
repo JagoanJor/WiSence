@@ -10,7 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public class CutiService : IService<Cuti>
+    public interface ICutiService<T> : IService<T>
+    {
+        Company SetCuti(Int64 companyID, int jatah, User user);
+    }
+    public class CutiService : ICutiService<Cuti>
     {
         public Cuti Create(Cuti data)
         {
@@ -256,7 +260,39 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                return context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                return context.Cutis
+                    .Include(x => x.User)
+                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public Company SetCuti(Int64 companyID, int jatah, User user)
+        {
+            var context = new EFContext();
+            try
+            {
+                var obj = context.Companies.FirstOrDefault(x => x.ID == companyID && x.IsDeleted != true);
+                
+                obj.Cuti = jatah;
+                obj.UserUp = user.ID.ToString();
+                obj.DateUp = DateTime.Now.AddMinutes(-2);
+
+                context.Companies.Update(obj);
+                context.SaveChanges();
+
+                return obj;
             }
             catch (Exception ex)
             {

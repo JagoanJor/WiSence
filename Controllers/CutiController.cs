@@ -16,9 +16,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class CutiController : ControllerBase
     {
-        private IService<Cuti> _service;
+        private ICutiService<Cuti> _service;
 
-        public CutiController(IService<Cuti> service)
+        public CutiController(ICutiService<Cuti> service)
         {
             _service = service;
         }
@@ -110,7 +110,6 @@ namespace API.Controllers
                 Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
-
         }
 
         [Authorize]
@@ -182,6 +181,38 @@ namespace API.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPut("Cuti")]
+        public IActionResult SetCuti([FromBody] Int64 companyID, int id)
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                var result = _service.SetCuti(companyID, id, user);
+                var response = new Response<Company>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "CutiController");
+                return BadRequest(new { message });
+            }
+        }
     }
 }
 
