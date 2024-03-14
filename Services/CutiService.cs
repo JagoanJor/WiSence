@@ -10,19 +10,43 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public interface ICompanyService<T> : IService<T>
+    public class CutiService : IService<Cuti>
     {
-        T WorkingHour();
-        T SetWorkingHour(Company data);
-    }
-    public class CompanyService : ICompanyService<Company>
-    {
-        public Company Create(Company data)
+        public Cuti Create(Cuti data)
         {
             var context = new EFContext();
             try
             {
-                context.Companies.Add(data);
+                context.Cutis.Add(data);
+
+                var currentDate = data.Start.Value.Date;
+
+                //Validate to make sure there are no holiday or saturday or sunday set as Cuti
+                for (int i = 1; i <= data.Durasi; i++)
+                {
+                    int flag = 0;
+
+                    do
+                    {
+                        var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
+                        if (holiday == null || currentDate.DayOfWeek.ToString() != "Saturday" || currentDate.DayOfWeek.ToString() != "Sunday")
+                        {
+                            flag = 1;
+                            break;
+                        }
+
+                        currentDate = currentDate.AddDays(1);
+                    } while (flag == 0);
+
+                    var attendance = new Attendance();
+                    attendance.Date = currentDate;
+                    attendance.ClockIn = currentDate;
+                    attendance.ClockOut = currentDate;
+                    attendance.Status = "Cuti";
+
+                    context.Attendances.Add(attendance);
+                }
+
                 context.SaveChanges();
 
                 return data;
@@ -46,7 +70,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -71,20 +95,18 @@ namespace API.Services
             }
         }
 
-        public Company Edit(Company data)
+        public Cuti Edit(Cuti data)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Cutis.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
                 if (obj == null) return null;
 
-                obj.Name = data.Name;
-                obj.Logo = data.Logo;
+                obj.Description = data.Description;
+                obj.Status = data.Status;
                 obj.Start = data.Start;
                 obj.End = data.End;
-                obj.Cuti = data.Cuti;
-
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
@@ -106,16 +128,44 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<Company> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<Cuti> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
         {
             var context = new EFContext();
             try
             {
-                var query = from a in context.Companies where a.IsDeleted != true select a;
+                var query = from a in context.Cutis where a.IsDeleted != true select a;
+                query = query.Include("User");
+
+                //Date
+                if (!string.IsNullOrEmpty(date))
+                {
+                    var dateList = date.Split("|", StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var d in dateList)
+                    {
+                        var dates = d.Split(":", StringSplitOptions.RemoveEmptyEntries);
+                        if (dates.Length == 2)
+                        {
+                            var fieldName = dates[0].Trim().ToLower();
+                            if (fieldName == "startdate")
+                            {
+                                DateTime.TryParse(dates[1].Trim(), out DateTime startDate);
+                                query = query.Where(x => x.End >= startDate);
+                            }
+                            else if (fieldName == "enddate")
+                            {
+                                DateTime.TryParse(dates[1].Trim(), out DateTime endDate);
+                                endDate = endDate.AddHours(23).AddMinutes(59).AddSeconds(59);
+                                query = query.Where(x => x.Start <= endDate);
+                            }
+                        }
+                    }
+                }
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.Name.Contains(search));
+                    query = query.Where(x => x.User.Name.Contains(search)
+                        || x.Durasi.ToString().Contains(search)
+                        || x.Description.Contains(search));
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -130,7 +180,9 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
-                                case "name": query = query.Where(x => x.Name.Contains(value)); break;
+                                case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
+                                case "durasi": query = query.Where(x => x.Durasi.ToString().Contains(value)); break;
+                                case "description": query = query.Where(x => x.Description.Contains(value)); break;
                             }
                         }
                     }
@@ -148,14 +200,18 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderByDescending(x => x.Name); break;
+                            case "name": query = query.OrderByDescending(x => x.User.Name); break;
+                            case "durasi": query = query.OrderByDescending(x => x.Durasi); break;
+                            case "description": query = query.OrderByDescending(x => x.Description); break;
                         }
                     }
                     else
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderBy(x => x.Name); break;
+                            case "name": query = query.OrderBy(x => x.User.Name); break;
+                            case "durasi": query = query.OrderBy(x => x.Durasi); break;
+                            case "description": query = query.OrderBy(x => x.Description); break;
                         }
                     }
                 }
@@ -195,63 +251,12 @@ namespace API.Services
             }
         }
 
-        public Company GetById(Int64 id)
+        public Cuti GetById(Int64 id)
         {
             var context = new EFContext();
             try
             {
-                return context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-
-        public Company WorkingHour()
-        {
-            var context = new EFContext();
-            try
-            {
-                return context.Companies.FirstOrDefault(x => x.IsDeleted != true);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-        public Company SetWorkingHour(Company data)
-        {
-            var context = new EFContext();
-            try
-            {
-                var company = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
-
-                company.Start = data.Start;
-                company.End = data.End;
-                company.UserUp = data.UserUp;
-                company.DateUp = data.DateUp;
-
-                context.Companies.Update(company);
-                context.SaveChanges();
-
-                return data;
+                return context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {

@@ -13,6 +13,7 @@ namespace API.Entities
         public String Logo { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
+        public int? Cuti { get; set; }
         public ICollection<Division> Divisions { get; set; }
         public ICollection<Wifi> Wifis { get; set; }
     }

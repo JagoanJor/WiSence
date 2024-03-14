@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Diagnostics;
-using System.Security.Claims;
 using System.Linq;
+using System.Security.Claims;
 
 using API.Entities;
 using API.Helpers;
@@ -16,15 +14,14 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class CutiController : ControllerBase
     {
-        private IService<User> _service;
+        private IService<Cuti> _service;
 
-        public UserController(IService<User> service)
+        public CutiController(IService<Cuti> service)
         {
             _service = service;
         }
-        
 
         [Authorize]
         [HttpGet]
@@ -34,7 +31,7 @@ namespace API.Controllers
             {
                 var total = 0;
                 var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
-                var response = new ListResponse<User>(result, total, page);
+                var response = new ListResponse<Cuti>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -46,7 +43,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "UserController");
+                Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
         }
@@ -61,7 +58,7 @@ namespace API.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new Response<User>(result);
+                var response = new Response<Cuti>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -73,32 +70,32 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "UserController");
+                Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
         }
 
-        /*[Authorize]*/
+        [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] User obj)
+        public IActionResult Create([FromBody] Cuti obj)
         {
             try
             {
-                /*var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
                 var user = (User)null;
                 if (token != null)
                     user = Utils.UserFromToken(token);
 
                 if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });*/
+                    return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserIn = "0";
+                obj.UserIn = user.ID.ToString();
                 obj.DateIn = DateTime.Now.AddMinutes(-2);
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
-                var response = new Response<User>(result);
+                var response = new Response<Cuti>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -110,7 +107,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "UserController");
+                Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
 
@@ -118,7 +115,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] User obj)
+        public IActionResult Edit([FromBody] Cuti obj)
         {
             try
             {
@@ -134,7 +131,7 @@ namespace API.Controllers
                 obj.UserUp = user.ID.ToString();
 
                 var result = _service.Edit(obj);
-                var response = new Response<User>(result);
+                var response = new Response<Cuti>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -146,7 +143,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "UserController");
+                Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
         }
@@ -180,9 +177,11 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "UserController");
+                Trace.WriteLine(message, "CutiController");
                 return BadRequest(new { message });
             }
         }
+
     }
 }
+

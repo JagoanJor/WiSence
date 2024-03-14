@@ -30,7 +30,7 @@ CREATE TABLE [dbo].[Company] (
     [DateUp]    DATETIME      NULL,
     [UserUp]    VARCHAR (50)  NULL,
     [IsDeleted] BIT           NULL,
-    CONSTRAINT [PK__WorkingHour__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Company__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
 CREATE TABLE [dbo].[Division] (
@@ -153,5 +153,22 @@ CREATE TABLE [dbo].[RoleDetail] (
     [UserUp]    VARCHAR (250) NULL,
     [IsDeleted] BIT           NULL,
     CONSTRAINT [PK__RoleDeta__3214EC27AF399EAC] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[Cuti] (
+    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [UserID]      BIGINT        NOT NULL,
+    [Description] VARCHAR (250) NULL,
+    [Status]      VARCHAR (50)  NULL,
+    [Durasi]      INT           NULL,
+    [Start]       DATETIME      NULL,
+    [End]         DATETIME      NULL,
+    [DateIn]      DATETIME      NULL,
+    [UserIn]      VARCHAR (50)  NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserUp]      VARCHAR (50)  NULL,
+    [IsDeleted]   BIT           NULL,
+    [ExternalID]  VARCHAR (16)  NULL,
+    CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 

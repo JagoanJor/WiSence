@@ -33,5 +33,6 @@ namespace API.Helpers
         public DbSet<Wifi> Wifis { get; set; }
         public DbSet<DailyTask> DailyTasks { get; set; }
         public DbSet<Calendar> Calendars { get; set; }
+        public DbSet<Cuti> Cutis { get; set; }
     }
 }
