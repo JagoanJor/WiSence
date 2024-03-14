@@ -12,7 +12,7 @@ namespace API.Services
 {
     public interface ICutiService<T> : IService<T>
     {
-        Company SetCuti(Int64 companyID, int jatah, User user);
+        Company SetCuti(Company data, User user);
     }
     public class CutiService : ICutiService<Cuti>
     {
@@ -278,14 +278,14 @@ namespace API.Services
             }
         }
 
-        public Company SetCuti(Int64 companyID, int jatah, User user)
+        public Company SetCuti(Company data, User user)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == companyID && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
                 
-                obj.Cuti = jatah;
+                obj.Cuti = data.Cuti;
                 obj.UserUp = user.ID.ToString();
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 

@@ -183,7 +183,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut("SetCuti")]
-        public IActionResult SetCuti([FromBody] Int64 companyID, int id)
+        public IActionResult SetCuti([FromBody] Company data)
         {
             try
             {
@@ -196,7 +196,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.SetCuti(companyID, id, user);
+                var result = _service.SetCuti(data, user);
                 var response = new Response<Company>(result);
                 return Ok(response);
             }
