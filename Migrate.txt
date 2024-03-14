@@ -159,7 +159,6 @@ CREATE TABLE [dbo].[Cuti] (
     [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
     [UserID]      BIGINT        NOT NULL,
     [Description] VARCHAR (250) NULL,
-    [Status]      VARCHAR (50)  NULL,
     [Durasi]      INT           NULL,
     [Start]       DATETIME      NULL,
     [End]         DATETIME      NULL,

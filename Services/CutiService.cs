@@ -44,6 +44,7 @@ namespace API.Services
                     } while (flag == 0);
 
                     var attendance = new Attendance();
+                    attendance.UserID = data.UserID;
                     attendance.Date = currentDate;
                     attendance.ClockIn = currentDate;
                     attendance.ClockOut = currentDate;
