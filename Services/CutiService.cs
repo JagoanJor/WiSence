@@ -5,14 +5,15 @@ using System.Linq;
 
 using API.Entities;
 using API.Helpers;
-
+using API.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
     public interface ICutiService<T> : IService<T>
     {
-        Company SetCuti(Company data, User user);
+        Company SetCuti(int id, int jatah, User user);
+        SisaCutiResponse SisaCuti(Int64 userID, Int64 companyID);
     }
     public class CutiService : ICutiService<Cuti>
     {
@@ -278,14 +279,14 @@ namespace API.Services
             }
         }
 
-        public Company SetCuti(Company data, User user)
+        public Company SetCuti(int id, int jatah, User user)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 
-                obj.Cuti = data.Cuti;
+                obj.Cuti = jatah;
                 obj.UserUp = user.ID.ToString();
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
@@ -307,6 +308,39 @@ namespace API.Services
                 context.Dispose();
             }
         }
+
+        public SisaCutiResponse SisaCuti(Int64 userID, Int64 companyID)
+        {
+            var context = new EFContext();
+            try
+            {
+                var obj = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Date.Value.Year == DateTime.Now.Year && x.Status == "Cuti");
+                if (obj == null)
+                    throw new Exception("User dont have any Cuti data!");
+
+                var com = context.Companies.FirstOrDefault(x => x.ID == companyID && x.IsDeleted != true);
+                if (com == null)
+                    throw new Exception("Company not found!");
+
+                int count = 0;
+                foreach (var o in obj)
+                    count++;
+
+                count = (int)(com.Cuti - count);
+                return new SisaCutiResponse(count);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
     }
 }
-

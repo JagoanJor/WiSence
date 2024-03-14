@@ -183,7 +183,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut("SetCuti")]
-        public IActionResult SetCuti([FromBody] Company data)
+        public IActionResult SetCuti(int companyID, int jatah)
         {
             try
             {
@@ -196,8 +196,35 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.SetCuti(data, user);
+                var result = _service.SetCuti(companyID, jatah, user);
                 var response = new Response<Company>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "CutiController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("SisaCuti")]
+        public IActionResult SisaCuti(int userID, int companyID)
+        {
+            try
+            {
+                var result = _service.SisaCuti(userID, companyID);
+                if (result == null)
+                    return BadRequest(new { message = "Invalid ID" });
+
+                var response = new SisaCutiResponse(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -215,4 +242,3 @@ namespace API.Controllers
         }
     }
 }
-
