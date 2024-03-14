@@ -182,7 +182,7 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpPut("Cuti")]
+        [HttpPut("SetCuti")]
         public IActionResult SetCuti([FromBody] Int64 companyID, int id)
         {
             try
