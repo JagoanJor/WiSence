@@ -47,6 +47,9 @@ namespace API.Services
                     attendance.ClockOut = currentDate;
                     attendance.Description = data.Description;
                     attendance.Status = "Cuti";
+                    attendance.DateIn = DateTime.Now;
+                    attendance.UserIn = data.UserIn;
+                    attendance.IsDeleted = false;
 
                     currentDate = currentDate.AddDays(1);
 
