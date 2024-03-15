@@ -29,26 +29,24 @@ namespace API.Services
                 //Validate to make sure there are no holiday or saturday or sunday set as Cuti
                 for (int i = 1; i <= data.Durasi; i++)
                 {
-                    int flag = 0;
-
-                    do
+                    while(true)
                     {
                         var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
-                        if (holiday == null || currentDate.DayOfWeek.ToString() != "Saturday" || currentDate.DayOfWeek.ToString() != "Sunday")
-                        {
-                            flag = 1;
+                        if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                             break;
-                        }
 
                         currentDate = currentDate.AddDays(1);
-                    } while (flag == 0);
+                    };
 
                     var attendance = new Attendance();
                     attendance.UserID = data.UserID;
                     attendance.Date = currentDate;
                     attendance.ClockIn = currentDate;
                     attendance.ClockOut = currentDate;
+                    attendance.Description = data.Description;
                     attendance.Status = "Cuti";
+
+                    currentDate = currentDate.AddDays(1);
 
                     context.Attendances.Add(attendance);
                 }
