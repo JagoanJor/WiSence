@@ -22,8 +22,6 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                context.Cutis.Add(data);
-
                 var currentDate = data.Start.Value.Date;
 
                 //Validate to make sure there are no holiday or saturday or sunday set as Cuti
@@ -33,7 +31,11 @@ namespace API.Services
                     {
                         var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
                         if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                        {
+                            if (i == data.Durasi)
+                                data.End = currentDate;
                             break;
+                        }
 
                         currentDate = currentDate.AddDays(1);
                     };
@@ -51,6 +53,7 @@ namespace API.Services
                     context.Attendances.Add(attendance);
                 }
 
+                context.Cutis.Add(data);
                 context.SaveChanges();
 
                 return data;
