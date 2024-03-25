@@ -7,9 +7,5 @@
         {
             sisa = Sisa;
         }
-
-        public SisaCutiResponse(SisaCutiResponse result)
-        {
-        }
     }
 }

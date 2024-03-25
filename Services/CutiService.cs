@@ -13,7 +13,7 @@ namespace API.Services
     public interface ICutiService<T> : IService<T>
     {
         Company SetCuti(int id, int jatah, User user);
-        SisaCutiResponse SisaCuti(Int64 userID, Int64 companyID);
+        int SisaCuti(Int64 userID, Int64 companyID);
     }
     public class CutiService : ICutiService<Cuti>
     {
@@ -313,25 +313,26 @@ namespace API.Services
             }
         }
 
-        public SisaCutiResponse SisaCuti(Int64 userID, Int64 companyID)
+        public int SisaCuti(Int64 userID, Int64 companyID)
         {
             var context = new EFContext();
             try
             {
                 var obj = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Date.Value.Year == DateTime.Now.Year && x.Status == "Cuti");
-                if (obj == null)
-                    throw new Exception("User dont have any Cuti data!");
+                int count = 0;
+                if (obj != null)
+                {
+                    foreach (var o in obj)
+                        count++;
+                }
 
                 var com = context.Companies.FirstOrDefault(x => x.ID == companyID && x.IsDeleted != true);
                 if (com == null)
                     throw new Exception("Company not found!");
 
-                int count = 0;
-                foreach (var o in obj)
-                    count++;
 
                 count = (int)(com.Cuti - count);
-                return new SisaCutiResponse(count);
+                return (count);
             }
             catch (Exception ex)
             {
