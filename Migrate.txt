@@ -95,6 +95,10 @@ CREATE TABLE [dbo].[User] (
 
 CREATE TABLE [dbo].[Module] (
     [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+	[IsCreate]    BIT           NULL,
+	[IsUpdate]    BIT           NULL,
+	[IsDelete]    BIT           NULL,
+	[IsRead]      BIT           NULL,
     [Description] VARCHAR (250) NULL,
     [DateIn]      DATETIME      NULL,
     [UserIn]      VARCHAR (50)  NULL,
@@ -103,6 +107,8 @@ CREATE TABLE [dbo].[Module] (
     [IsDeleted]   BIT           NULL,
     CONSTRAINT [PK__Module__3214EC2755FECD97] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
+
+
 
 CREATE TABLE [dbo].[DailyTask] (
     [ID]         BIGINT       IDENTITY (1, 1) NOT NULL,

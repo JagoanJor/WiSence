@@ -73,6 +73,10 @@ namespace API.Services
                 if (obj == null) return null;
 
                 obj.Description = data.Description;
+                obj.IsDelete = data.IsDelete;
+                obj.IsUpdate = data.IsUpdate;
+                obj.IsRead = data.IsRead;
+                obj.IsCreate = data.IsCreate;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
