@@ -18,7 +18,9 @@ namespace API.Entities
         public String Address { get; set; }
         public String Phone { get; set; }
         public Int64? PositionID { get; set; }
+        public Int64? CompanyID { get; set; }
         public Role Role { get; set; }
         public Position Position { get; set; }
+        public Company Company { get; set; }
     }
 }

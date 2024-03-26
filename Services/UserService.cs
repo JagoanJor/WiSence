@@ -18,11 +18,12 @@ namespace API.Services
             {
                 if (string.IsNullOrEmpty(data.Password)) data.Password = "password";
                 data.Password = Utils.HashPassword(data.Password);
+                data.CompanyID = getCompanyID(data.PositionID);
 
                 context.Users.Add(data);
                 context.SaveChanges();
 
-                //Division(data.PositionID);
+                Division(data.PositionID);
 
                 return data;
             }
@@ -92,6 +93,7 @@ namespace API.Services
                 obj.Address = data.Address;
                 obj.Phone = data.Phone;
                 obj.PositionID = data.PositionID;
+                obj.CompanyID = getCompanyID(data.PositionID);
 
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
@@ -128,6 +130,7 @@ namespace API.Services
                 var query = from a in context.Users where a.IsDeleted != true select a;
                 query = query.Include("Role");
                 query = query.Include("Position");
+                query = query.Include("Company");
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
@@ -264,6 +267,7 @@ namespace API.Services
                 var obj = context.Users
                     .Include(x => x.Position)
                     .Include(x => x.Role)
+                    .Include(x => x.Company)
                     .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 if (obj != null) obj.Password = "";
                 return obj;
@@ -314,6 +318,35 @@ namespace API.Services
             {
                 Trace.WriteLine(ex.Message);
                 if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public long? getCompanyID(long? PositionID)
+        {
+            var context = new EFContext();
+            try
+            {
+                var position = context.Positions.FirstOrDefault(x => x.ID == PositionID && x.IsDeleted != true);
+                if (position == null)
+                    throw new Exception("No Position Found!");
+
+                var division = context.Divisions.FirstOrDefault(x => x.ID == position.DivisionID && x.IsDeleted != true);
+                if (division == null)
+                    throw new Exception("Division of the position not found!");
+
+                return division.CompanyID;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if(ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
                 throw ex;
