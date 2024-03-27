@@ -8,9 +8,9 @@ namespace API.Entities
     public class Module : Entity
     {
         public String Description { get; set; }
-        public bool? IsCreate { get; set; }
-        public bool? IsDelete { get; set; }
-        public bool? IsUpdate { get; set; }
-        public bool? IsRead { get; set; }
+        public Boolean? IsCreate { get; set; }
+        public Boolean? IsDelete { get; set; }
+        public Boolean? IsUpdate { get; set; }
+        public Boolean? IsRead { get; set; }
     }
 }
