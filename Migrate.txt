@@ -84,6 +84,7 @@ CREATE TABLE [dbo].[User] (
     [Phone]      VARCHAR (50)  NULL,
     [PositionID] BIGINT        NULL,
     [CompanyID]  BIGINT        NULL,
+    [IsAdmin]    BIT           NULL,
     [RoleID]     BIGINT        NULL,
     [DateIn]     DATETIME      NULL,
     [UserIn]     VARCHAR (50)  NULL,

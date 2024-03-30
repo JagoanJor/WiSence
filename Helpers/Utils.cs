@@ -232,13 +232,19 @@ namespace API.Helpers
             }
         }
 
-        public static string SaveFile(string base64imageString)
+        public static string SaveFile(string base64imageString, string path)
         {
             base64imageString = base64imageString.Replace("data:image/png;base64,", "");
 
             // string filePath = string.Format("{0}/{1}.png", Utils.Storage, Guid.NewGuid());
             var filename = string.Format("{0}.png", Guid.NewGuid());
-            string filePath = string.Format("{0}/{1}", Utils.Storage, filename);
+
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+
+            string filePath = Path.Combine(path, filename);
             // string filePath = string.Format("{0}", filename);
 
             File.WriteAllBytes(filePath, Convert.FromBase64String(base64imageString));
@@ -260,9 +266,9 @@ namespace API.Helpers
             }
         }
 
-        public static FileStreamResult GetFile(string fileName)
+        public static FileStreamResult GetFile(string fileName, string path)
         {
-            var pathFile = Path.Combine(Utils.Storage, fileName);
+            var pathFile = Path.Combine(path, fileName);
             //  var pathFile = Path.Combine("", fileName);
 
             if (!System.IO.File.Exists(pathFile))
@@ -278,6 +284,16 @@ namespace API.Helpers
             {
                 FileDownloadName = fileName
             };
+        }
+
+        public static void DeleteImage(string fileName, string path)
+        {
+            var pathFile = Path.Combine(path, fileName);
+
+            if (System.IO.File.Exists(pathFile))
+            {
+                System.IO.File.Delete(pathFile);
+            }
         }
     }
 }

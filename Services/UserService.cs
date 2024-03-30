@@ -94,6 +94,7 @@ namespace API.Services
                 obj.Phone = data.Phone;
                 obj.PositionID = data.PositionID;
                 obj.CompanyID = getCompanyID(data.PositionID);
+                obj.IsAdmin = data.IsAdmin;
 
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);

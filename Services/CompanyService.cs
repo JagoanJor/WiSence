@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 using API.Entities;
 using API.Helpers;
-
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
@@ -22,13 +23,20 @@ namespace API.Services
     }
     public class CompanyService : ICompanyService<Company>
     {
+        private IWebHostEnvironment _environment;
+        public CompanyService(IWebHostEnvironment environment)
+        {
+            this._environment = environment;
+        }
         public Company Create(Company data)
         {
             var context = new EFContext();
             try
             {
+                var contentPath = this._environment.ContentRootPath;
+                var path = Path.Combine(contentPath, "Uploads");
                 if (Utils.IsBase64String(data.Logo))
-                    data.Logo = Utils.SaveFile(data.Logo);
+                    data.Logo = Utils.SaveFile(data.Logo, path);
 
                 context.Companies.Add(data);
                 context.SaveChanges();
@@ -56,6 +64,11 @@ namespace API.Services
             {
                 var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 if (obj == null) return false;
+
+                var contentPath = this._environment.ContentRootPath;
+                var path = Path.Combine(contentPath, "Uploads");
+                if (obj.Logo != null && obj.Logo != "")
+                    Utils.DeleteImage(obj.Logo, path);
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
@@ -96,7 +109,11 @@ namespace API.Services
                 }
 
                 if (Utils.IsBase64String(data.Logo))
-                    obj.Logo = Utils.SaveFile(data.Logo);
+                {
+                    var contentPath = this._environment.ContentRootPath;
+                    var path = Path.Combine(contentPath, "Uploads");
+                    obj.Logo = Utils.SaveFile(data.Logo, path);
+                }
                 else
                     obj.Logo = data.Logo;
 
