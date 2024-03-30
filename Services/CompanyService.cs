@@ -10,8 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public interface ICompanyService<T> : IService<T>
+    public interface ICompanyService<T>
     {
+        IEnumerable<T> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date);
+        T GetById(Int64 id, String baseUrl);
+        T Create(T data);
+        T Edit(T data, String baseUrl);
+        bool Delete(Int64 id, String userID);
         T WorkingHour();
         T SetWorkingHour(Company data);
     }
@@ -22,6 +27,9 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                if (Utils.IsBase64String(data.Logo))
+                    data.Logo = Utils.SaveFile(data.Logo);
+
                 context.Companies.Add(data);
                 context.SaveChanges();
 
@@ -71,7 +79,7 @@ namespace API.Services
             }
         }
 
-        public Company Edit(Company data)
+        public Company Edit(Company data, String baseUrl)
         {
             var context = new EFContext();
             try
@@ -80,7 +88,18 @@ namespace API.Services
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
-                obj.Logo = data.Logo;
+
+                if (data.Logo != "" && data.Logo != null)
+                {
+                    if (data.Logo.Contains(baseUrl))
+                        data.Logo = data.Logo.Replace(baseUrl, "");
+                }
+
+                if (Utils.IsBase64String(data.Logo))
+                    obj.Logo = Utils.SaveFile(data.Logo);
+                else
+                    obj.Logo = data.Logo;
+
                 obj.Start = data.Start;
                 obj.End = data.End;
                 obj.Cuti = data.Cuti;
@@ -195,12 +214,19 @@ namespace API.Services
             }
         }
 
-        public Company GetById(Int64 id)
+        public Company GetById(Int64 id, String baseUrl)
         {
             var context = new EFContext();
             try
             {
-                return context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var query = from a in context.Companies where a.IsDeleted != true && a.ID == id select a;
+
+                var data = query.FirstOrDefault();
+
+                if (data.Logo != null)
+                    data.Logo = string.Format("{0}/Image/{1}", baseUrl, data.Logo);
+
+                return data;
             }
             catch (Exception ex)
             {

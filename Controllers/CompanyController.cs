@@ -54,7 +54,9 @@ namespace API.Controllers
         {
             try
             {
-                var result = _service.GetById(id);
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+                var result = _service.GetById(id, baseUrl);
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
@@ -119,6 +121,8 @@ namespace API.Controllers
         {
             try
             {
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
                 var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
                 var user = (User)null;
@@ -130,7 +134,7 @@ namespace API.Controllers
 
                 obj.UserUp = user.ID.ToString();
 
-                var result = _service.Edit(obj);
+                var result = _service.Edit(obj, baseUrl);
                 var response = new Response<Company>(result);
                 return Ok(response);
             }

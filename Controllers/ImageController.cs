@@ -3,7 +3,7 @@ using API.Helpers;
 
 namespace API.Controllers
 {
-    public class FileController : ControllerBase
+    public class ImageController : ControllerBase
     {
         [HttpGet("Image/{fileName}")]
         public FileStreamResult GetFile(string fileName)
