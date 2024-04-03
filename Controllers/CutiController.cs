@@ -224,7 +224,7 @@ namespace API.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new SisaCutiResponse(result);
+                var response = new TotalResponse(result);
                 return Ok(response);
             }
             catch (Exception ex)

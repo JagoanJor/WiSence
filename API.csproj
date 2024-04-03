@@ -30,7 +30,7 @@
 	<PackageReference Include="System.IO" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\Uploads\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 
