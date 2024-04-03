@@ -29,11 +29,7 @@ namespace API.Services
                 var roleIDs = role.Select(x => x.ID).ToList();
 
                 int obj = 0;
-
-                foreach (var r in role)
-                {
-                    obj += user.Count(x => roleIDs.Contains(x.RoleID));
-                }
+                obj += user.Count(x => roleIDs.Contains(x.RoleID));
 
                 return obj;
             }
