@@ -179,3 +179,55 @@ CREATE TABLE [dbo].[Cuti] (
     CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
+
+========
+||VIEW||
+========
+
+CREATE VIEW [dbo].[vReportAbsensi]
+AS
+SELECT DISTINCT
+    U.Name AS Nama,
+    U.ID AS UserID,
+    P.Name AS Posisi,
+    DATENAME(MONTH, A.Date) AS Bulan,
+    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS Kerja,
+    ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
+	'' AS TotalKerja
+FROM
+    [User] AS U
+    INNER JOIN Position AS P ON U.PositionID = P.ID
+    INNER JOIN Attendance AS A ON U.ID = A.UserID
+LEFT JOIN (
+    SELECT DATENAME(MONTH, Holiday) AS Bulan, COUNT(*) AS CountHolidays
+    FROM Calendar
+    GROUP BY DATENAME(MONTH, Holiday)
+) AS TotalLibur ON DATENAME(MONTH, A.Date) = TotalLibur.Bulan
+GROUP BY
+    U.Name, U.ID, P.Name, DATENAME(MONTH, A.Date), TotalLibur.CountHolidays;
+
+
+CREATE VIEW [dbo].[vReportAbsensiList]
+AS 
+SELECT
+    U.ID AS UserID,
+	DATENAME(MONTH, A.Date) AS Bulan,
+    CASE DATENAME(dw, A.Date)
+        WHEN 'Sunday' THEN 'Minggu'
+        WHEN 'Monday' THEN 'Senin'
+        WHEN 'Tuesday' THEN 'Selasa'
+        WHEN 'Wednesday' THEN 'Rabu'
+        WHEN 'Thursday' THEN 'Kamis'
+        WHEN 'Friday' THEN 'Jumat'
+        WHEN 'Saturday' THEN 'Sabtu'
+        ELSE DATENAME(dw, A.Date)
+    END + ', ' + CONVERT(varchar, A.Date, 106) AS HariTanggal,
+    FORMAT(A.ClockIn, 'HH:mm:ss') AS [In],
+    FORMAT(A.ClockOut, 'HH:mm:ss') AS [Out],
+    A.Status AS Status,
+    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS TotalHadir
+FROM
+    [User] AS U
+    INNER JOIN Attendance AS A ON U.ID = A.UserID
+GROUP BY
+    U.ID, A.Date, A.ClockIn, A.ClockOut, A.Status;

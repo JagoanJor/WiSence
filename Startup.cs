@@ -94,6 +94,7 @@ namespace API
             services.AddScoped<ICompanyService<Company>, CompanyService>();
             services.AddScoped<ICutiService<Cuti>, CutiService>();
             services.AddScoped<IDashboardService, DashboardService>();
+            services.AddScoped<IReportService, ReportService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
