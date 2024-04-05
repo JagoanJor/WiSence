@@ -28,7 +28,7 @@ namespace API.Services
                     WHERE
                         UserID = {userID} AND Bulan = '{namaBulan}'");
 
-                var header = context.VReportAbsensis.FromSqlRaw(query).FirstOrDefault();
+                var header = context.vReportAbsensis.FromSqlRaw(query).FirstOrDefault();
 
                 var queryList = String.Format($@"
                     SELECT *
@@ -37,7 +37,7 @@ namespace API.Services
                     WHERE
                         UserID = {userID} AND Bulan = '{namaBulan}'");
 
-                var detail = context.VReportAbsensiLists.FromSqlRaw(queryList);
+                var detail = context.vReportAbsensiLists.FromSqlRaw(queryList);
                 var detailList = detail.ToList();
 
                 int daysInMonth = DateTime.DaysInMonth(tahun, bulan);

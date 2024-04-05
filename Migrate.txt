@@ -227,8 +227,7 @@ SELECT
     END + ', ' + CONVERT(varchar, A.Date, 106) AS HariTanggal,
     FORMAT(A.ClockIn, 'HH:mm:ss') AS [In],
     FORMAT(A.ClockOut, 'HH:mm:ss') AS [Out],
-    A.Status AS Status,
-    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS TotalHadir
+    A.Status AS Status
 FROM
     [User] AS U
     INNER JOIN Attendance AS A ON U.ID = A.UserID
