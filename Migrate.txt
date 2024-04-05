@@ -201,8 +201,11 @@ FROM
 LEFT JOIN (
     SELECT DATENAME(MONTH, Holiday) AS Bulan, COUNT(*) AS CountHolidays
     FROM Calendar
+    WHERE Calendar.IsDeleted != 1
     GROUP BY DATENAME(MONTH, Holiday)
 ) AS TotalLibur ON DATENAME(MONTH, A.Date) = TotalLibur.Bulan
+WHERE
+    P.IsDeleted != 1 AND A.IsDeleted != 1
 GROUP BY
     U.Name, U.ID, P.Name, DATENAME(MONTH, A.Date), TotalLibur.CountHolidays;
 
@@ -229,5 +232,7 @@ SELECT
 FROM
     [User] AS U
     INNER JOIN Attendance AS A ON U.ID = A.UserID
+WHERE
+    A.IsDeleted != 1
 GROUP BY
     U.ID, A.Date, A.ClockIn, A.ClockOut, A.Status;
