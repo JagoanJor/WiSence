@@ -198,12 +198,12 @@ FROM
     [User] AS U
     INNER JOIN Position AS P ON U.PositionID = P.ID
     INNER JOIN Attendance AS A ON U.ID = A.UserID
-LEFT JOIN (
-    SELECT DATENAME(MONTH, Holiday) AS Bulan, COUNT(*) AS CountHolidays
-    FROM Calendar
-    WHERE Calendar.IsDeleted != 1
-    GROUP BY DATENAME(MONTH, Holiday)
-) AS TotalLibur ON DATENAME(MONTH, A.Date) = TotalLibur.Bulan
+    LEFT JOIN (
+        SELECT DATENAME(MONTH, Holiday) AS Bulan, COUNT(*) AS CountHolidays
+        FROM Calendar
+        WHERE Calendar.IsDeleted != 1 AND DATEPART(WEEKDAY, Holiday) NOT IN (1, 7)
+        GROUP BY DATENAME(MONTH, Holiday)
+    ) AS TotalLibur ON DATENAME(MONTH, A.Date) = TotalLibur.Bulan
 WHERE
     P.IsDeleted != 1 AND A.IsDeleted != 1
 GROUP BY
