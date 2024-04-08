@@ -237,6 +237,7 @@ namespace API.Services
             try
             {
                 var query = from a in context.Companies where a.IsDeleted != true && a.ID == id select a;
+                query = query.Include("Wifis");
 
                 var data = query.FirstOrDefault();
 
