@@ -3,6 +3,7 @@ using API.Helpers;
 using System.Diagnostics;
 using System.Linq;
 using System;
+using API.Responses;
 
 namespace API.Services
 {
@@ -12,6 +13,8 @@ namespace API.Services
         int TotalHadir();
         int TotalPosition();
         int TotalDivision();
+        (int ontime, int terlambat, int cuti, int absen) GetJumlahKehadiranHariIni(User user);
+
     }
     public class DashboardService : IDashboardService
     {
@@ -104,6 +107,45 @@ namespace API.Services
                 if (obj == null) return 0;
 
                 return obj;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public (int ontime, int terlambat, int cuti, int absen) GetJumlahKehadiranHariIni(User user)
+        {
+            var context = new EFContext();
+            try
+            {
+                var userInCompany = context.Users.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true && x.IsAdmin != true);
+                if (userInCompany == null)
+                    throw new Exception("Please set user's company!");
+
+                var totalUser = userInCompany.Count();
+                if (totalUser == 0) return (0, 0, 0, 0);
+
+                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                if (ontime == null) ontime = 0;
+
+                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                if (terlambat == null) terlambat = 0;
+
+                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                if (cuti == null) cuti = 0;
+
+                var absen = (((totalUser - ontime) - terlambat) - cuti);
+
+                return (ontime, terlambat, cuti, absen);
             }
             catch (Exception ex)
             {

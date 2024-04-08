@@ -7,6 +7,8 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System;
+using API.Helpers;
+using System.Linq;
 
 namespace API.Controllers
 {
@@ -101,6 +103,39 @@ namespace API.Controllers
             {
                 var result = _service.TotalDivision();
                 var response = new TotalResponse(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "DashboardController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("JumlahKehadiranHariIni")]
+        public IActionResult GetJumlahKehadiranHariIni()
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                var (ontime, terlambat, cuti, absen) = _service.GetJumlahKehadiranHariIni(user);
+                var response = new JumlahKehadiranHariIni(ontime, terlambat, cuti, absen);
                 return Ok(response);
             }
             catch (Exception ex)
