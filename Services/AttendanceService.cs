@@ -270,10 +270,10 @@ namespace API.Services
                 var query = String.Format($@"
                                 SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
                                 FROM Wifi
-                                WHERE IsDeleted != 1 AND IPAddress = '{ipAddress}' AND Name = '{wifiSSID}' AND CompanyID = '{user.CompanyID}'");
+                                WHERE IsDeleted != 1 AND IPAddress = '{ipAddress}' AND Name = '{wifiSSID}' AND CompanyID = {user.CompanyID}");
                 var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
 
-                if (wifi != null)
+                if (wifi == null)
                     throw new Exception("Please Connect to Company Wifi!");
 
                 var WorkHour = context.Companies.FirstOrDefault(x => x.ID == wifi.CompanyID && x.IsDeleted != true);
