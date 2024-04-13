@@ -9,6 +9,7 @@ using API.Entities;
 using API.Helpers;
 using API.Responses;
 using API.Services;
+using API.Requests;
 
 namespace API.Controllers
 {
@@ -237,6 +238,41 @@ namespace API.Controllers
                     inner = inner.InnerException;
                 }
                 Trace.WriteLine(message, "CutiController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("Status")]
+        public IActionResult Status(int id, String status)
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                //obj.UserIn = user.ID.ToString();
+
+                var result = _service.Status(id, status, user.ID);
+                var response = new Response<Cuti>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "WorkOrderController");
                 return BadRequest(new { message });
             }
         }

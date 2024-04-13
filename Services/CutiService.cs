@@ -7,13 +7,16 @@ using API.Entities;
 using API.Helpers;
 using API.Responses;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using String = System.String;
 
 namespace API.Services
 {
     public interface ICutiService<T> : IService<T>
     {
-        Company SetCuti(int id, int jatah, User user);
+        Company SetCuti(Int64 id, int jatah, User user);
         int SisaCuti(Int64 userID, Int64 companyID);
+        Cuti Status(Int64 id, String status, Int64 userID);
     }
     public class CutiService : ICutiService<Cuti>
     {
@@ -34,27 +37,16 @@ namespace API.Services
                         {
                             if (i == data.Durasi)
                                 data.End = currentDate;
+                            
+                            currentDate = currentDate.AddDays(1);
                             break;
                         }
 
                         currentDate = currentDate.AddDays(1);
                     };
-
-                    var attendance = new Attendance();
-                    attendance.UserID = data.UserID;
-                    attendance.Date = currentDate;
-                    attendance.ClockIn = currentDate;
-                    attendance.ClockOut = currentDate;
-                    attendance.Description = data.Description;
-                    attendance.Status = "Cuti";
-                    attendance.DateIn = DateTime.Now;
-                    attendance.UserIn = data.UserIn;
-                    attendance.IsDeleted = false;
-
-                    currentDate = currentDate.AddDays(1);
-
-                    context.Attendances.Add(attendance);
                 }
+
+                data.Status = "Menunggu";
 
                 context.Cutis.Add(data);
                 context.SaveChanges();
@@ -174,7 +166,8 @@ namespace API.Services
                 if (!string.IsNullOrEmpty(search))
                     query = query.Where(x => x.User.Name.Contains(search)
                         || x.Durasi.ToString().Contains(search)
-                        || x.Description.Contains(search));
+                        || x.Description.Contains(search)
+                        || x.Status.Contains(search));
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -192,6 +185,7 @@ namespace API.Services
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "durasi": query = query.Where(x => x.Durasi.ToString().Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
+                                case "status": query = query.Where(x => x.Status.Contains(value)); break;
                             }
                         }
                     }
@@ -212,6 +206,7 @@ namespace API.Services
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
                             case "durasi": query = query.OrderByDescending(x => x.Durasi); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
+                            case "status": query = query.OrderByDescending(x => x.Status); break;
                         }
                     }
                     else
@@ -221,6 +216,7 @@ namespace API.Services
                             case "name": query = query.OrderBy(x => x.User.Name); break;
                             case "durasi": query = query.OrderBy(x => x.Durasi); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
+                            case "status": query = query.OrderBy(x => x.Status); break;
                         }
                     }
                 }
@@ -283,7 +279,7 @@ namespace API.Services
             }
         }
 
-        public Company SetCuti(int id, int jatah, User user)
+        public Company SetCuti(Int64 id, int jatah, User user)
         {
             var context = new EFContext();
             try
@@ -333,6 +329,69 @@ namespace API.Services
 
                 count = (int)(com.Cuti - count);
                 return (count);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public Cuti Status(Int64 id, String status, Int64 userID)
+        {
+            var context = new EFContext();
+            try
+            {
+                var obj = context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                if (String.IsNullOrEmpty(status))
+                    throw new Exception("Status harus diisi!");
+
+                obj.Status = status;
+                obj.UserUp = userID.ToString();
+                obj.DateUp = DateTime.Now;
+
+                if (status == "Disetujui")
+                {
+                    var currentDate = obj.Start.Value.Date;
+                    for (int i = 1; i <= obj.Durasi; i++)
+                    {
+                        while (true)
+                        {
+                            var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
+                            if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                                break;
+
+                            currentDate = currentDate.AddDays(1);
+                        };
+
+                        var attendance = new Attendance();
+                        attendance.UserID = obj.UserID;
+                        attendance.Date = currentDate;
+                        attendance.ClockIn = currentDate;
+                        attendance.ClockOut = currentDate;
+                        attendance.Description = obj.Description;
+                        attendance.Status = "Cuti";
+                        attendance.DateIn = DateTime.Now;
+                        attendance.UserIn = obj.UserIn;
+                        attendance.IsDeleted = false;
+
+                        currentDate = currentDate.AddDays(1);
+
+                        context.Attendances.Add(attendance);
+                    }
+                }
+
+                context.Cutis.Update(obj);
+                context.SaveChanges();
+
+                return obj;
             }
             catch (Exception ex)
             {
