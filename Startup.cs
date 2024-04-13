@@ -92,7 +92,7 @@ namespace API
 
             services.AddScoped<IAttendanceService<Attendance>, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();
-            services.AddScoped<ICutiService<Cuti>, CutiService>();
+            services.AddScoped<ICutiService, CutiService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IReportService, ReportService>();
         }

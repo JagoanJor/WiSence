@@ -17,9 +17,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class CutiController : ControllerBase
     {
-        private ICutiService<Cuti> _service;
+        private ICutiService _service;
 
-        public CutiController(ICutiService<Cuti> service)
+        public CutiController(ICutiService service)
         {
             _service = service;
         }
@@ -32,7 +32,7 @@ namespace API.Controllers
             {
                 var total = 0;
                 var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
-                var response = new ListResponse<Cuti>(result, total, page);
+                var response = new ListResponse<CutiResponse>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)

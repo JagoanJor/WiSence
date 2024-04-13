@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 
@@ -12,13 +13,18 @@ using String = System.String;
 
 namespace API.Services
 {
-    public interface ICutiService<T> : IService<T>
+    public interface ICutiService
     {
+        IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date);
+        Cuti GetById(Int64 id);
+        Cuti Create(Cuti data);
+        Cuti Edit(Cuti data);
+        bool Delete(Int64 id, String userID);
         Company SetCuti(Int64 id, int jatah, User user);
         int SisaCuti(Int64 userID, Int64 companyID);
         Cuti Status(Int64 id, String status, Int64 userID);
     }
-    public class CutiService : ICutiService<Cuti>
+    public class CutiService : ICutiService
     {
         public Cuti Create(Cuti data)
         {
@@ -129,7 +135,7 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<Cuti> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
         {
             var context = new EFContext();
             try
@@ -240,7 +246,32 @@ namespace API.Services
                     return GetAll(limit, ref page, ref total, search, sort, filter, date);
                 }
 
-                return data;
+                var cutiResponses = new List<CutiResponse>();
+                foreach (var cuti in data)
+                {
+                    var user = context.Users.FirstOrDefault(x => x.ID == cuti.UserID && x.IsDeleted != true);
+                    if (user != null)
+                        throw new Exception($"User ID {cuti.UserID} not found");
+
+                    var company = context.Companies.FirstOrDefault(x => x.ID == user.CompanyID && x.IsDeleted != true);
+                    if (company != null)
+                        throw new Exception($"Company ID {user.CompanyID} not found");
+
+                    var sisaCuti = SisaCuti(user.ID, company.ID); 
+                    var cutiResponse = new CutiResponse(
+                        cuti.UserID,
+                        cuti.Description,
+                        cuti.Durasi,
+                        cuti.Start,
+                        cuti.End,
+                        cuti.Status,
+                        sisaCuti
+                    );
+
+                    cutiResponses.Add(cutiResponse);
+                }
+
+                return cutiResponses;
             }
             catch (Exception ex)
             {
