@@ -251,14 +251,20 @@ namespace API.Services
                 {
                     var user = context.Users.FirstOrDefault(x => x.ID == cuti.UserID && x.IsDeleted != true);
                     if (user != null)
-                        throw new Exception($"User ID {cuti.UserID} not found");
+                        throw new Exception($"User with ID {cuti.User.ID} not found");
 
                     var company = context.Companies.FirstOrDefault(x => x.ID == user.CompanyID && x.IsDeleted != true);
                     if (company != null)
-                        throw new Exception($"Company ID {user.CompanyID} not found");
+                        throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
                     var sisaCuti = SisaCuti(user.ID, company.ID); 
                     var cutiResponse = new CutiResponse(
+                        cuti.ID,
+                        cuti.DateIn,
+                        cuti.DateUp,
+                        cuti.UserIn,
+                        cuti.UserUp,
+                        cuti.IsDeleted,
                         cuti.UserID,
                         cuti.Description,
                         cuti.Durasi,
