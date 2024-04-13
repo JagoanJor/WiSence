@@ -151,5 +151,39 @@ namespace API.Controllers
                 return BadRequest(new { message });
             }
         }
+
+        [Authorize]
+        [HttpGet("CheckCuti")]
+        public IActionResult CheckCuti()
+        {
+            try
+            {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                var result = _service.CheckCuti();
+
+                var response = new Response<object>(result);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "VendorController");
+                return BadRequest(new { message });
+            }
+        }
     }
 }

@@ -14,7 +14,7 @@ namespace API.Services
         int TotalPosition();
         int TotalDivision();
         (int ontime, int terlambat, int cuti, int absen) GetJumlahKehadiranHariIni(User user);
-
+        bool CheckCuti();
     }
     public class DashboardService : IDashboardService
     {
@@ -146,6 +146,31 @@ namespace API.Services
                 var absen = (((totalUser - ontime) - terlambat) - cuti);
 
                 return (ontime, terlambat, cuti, absen);
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+
+        public bool CheckCuti()
+        {
+            var context = new EFContext();
+            try
+            {
+                var obj = context.Cutis.Count(x => x.Status == "Menunggu" && x.IsDeleted != true);
+                if (obj == 0)
+                    return false;
+
+                return true;
             }
             catch (Exception ex)
             {
