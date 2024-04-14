@@ -54,13 +54,19 @@ namespace API.Services
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
                 // Delete User's cuti data
-                context.Cutis.RemoveRange(context.Cutis);
+                var cuti = context.Cutis.Where(x => x.UserID == id);
+                if (cuti != null)
+                    context.Cutis.RemoveRange(cuti);
 
                 // Delete User's attendance data
-                context.Attendances.RemoveRange(context.Attendances);
+                var attendance = context.Attendances.Where(x => x.UserID == id);
+                if (attendance != null)
+                    context.Attendances.RemoveRange(attendance);
 
                 // Delete User's daily task data
-                context.DailyTasks.RemoveRange(context.DailyTasks);
+                var dailytask = context.DailyTasks.Where(x => x.UserID == id);
+                if (dailytask != null)
+                    context.DailyTasks.RemoveRange(dailytask);
 
                 context.SaveChanges();
 
