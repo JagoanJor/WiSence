@@ -250,11 +250,11 @@ namespace API.Services
                 foreach (var cuti in data)
                 {
                     var user = context.Users.FirstOrDefault(x => x.ID == cuti.UserID && x.IsDeleted != true);
-                    if (user != null)
+                    if (user == null)
                         throw new Exception($"User with ID {cuti.User.ID} not found");
 
                     var company = context.Companies.FirstOrDefault(x => x.ID == user.CompanyID && x.IsDeleted != true);
-                    if (company != null)
+                    if (company == null)
                         throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
                     var sisaCuti = SisaCuti(user.ID, company.ID); 
