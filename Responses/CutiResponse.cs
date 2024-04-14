@@ -18,7 +18,8 @@ namespace API.Responses
         public DateTime? End { get; set; }
         public String Status { get; set; }
         public int? SisaCuti { get; set; }
-        public CutiResponse(Int64 id, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? durasi, DateTime? start, DateTime? end, String status, int? sisaCuti)
+        public User User { get; set; }
+        public CutiResponse(Int64 id, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? durasi, DateTime? start, DateTime? end, String status, int? sisaCuti, User user)
         {
             ID = id;
             DateIn = dateIn;
@@ -33,6 +34,7 @@ namespace API.Responses
             End = end;
             Status = status;
             SisaCuti = sisaCuti;
+            User = user;
         }
     }
 }

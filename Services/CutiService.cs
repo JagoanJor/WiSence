@@ -273,7 +273,8 @@ namespace API.Services
                         cuti.Start,
                         cuti.End,
                         cuti.Status,
-                        sisaCuti
+                        sisaCuti,
+                        cuti.User
                     );
 
                     cutiResponses.Add(cutiResponse);
