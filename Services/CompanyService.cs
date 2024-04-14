@@ -74,6 +74,32 @@ namespace API.Services
                 obj.UserUp = userID;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
+                // Delete user data (Except admin)
+                var user = context.Users.Where(x => x.IsAdmin != true && x.IsDeleted != true);
+                if (user != null)
+                    context.Users.RemoveRange(user);
+
+                /*// Delete attendance data
+                context.Attendances.RemoveRange(context.Attendances);
+
+                // Delete cuti data
+                context.Cutis.RemoveRange(context.Cutis);
+
+                // Delete daily task data
+                context.DailyTasks.RemoveRange(context.DailyTasks);
+
+                // Delete division data
+                context.Divisions.RemoveRange(context.Divisions);
+
+                // Delete position data
+                context.Positions.RemoveRange(context.Positions);
+
+                // Delete userlog data
+                context.UserLogs.RemoveRange(context.UserLogs);
+
+                // Delete wifi data
+                context.Wifis.RemoveRange(context.Wifis);*/
+
                 context.SaveChanges();
 
                 return true;

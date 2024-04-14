@@ -41,6 +41,8 @@ namespace API.Services
                         var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
                         if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                         {
+                            if (i == 1)
+                                data.Start = currentDate;
                             if (i == data.Durasi)
                                 data.End = currentDate;
                             

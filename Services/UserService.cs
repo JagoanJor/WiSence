@@ -53,6 +53,21 @@ namespace API.Services
                 obj.UserUp = userID.ToString();
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
+                // Delete User's cuti data
+                var cuti = context.Cutis.Where(x => x.UserID == id && x.IsDeleted != true);
+                if (cuti != null)
+                    context.Cutis.RemoveRange(cuti);
+
+                // Delete User's attendance data
+                var attendance = context.Attendances.Where(x => x.UserID == id && x.IsDeleted != true);
+                if (attendance != null)
+                    context.Attendances.RemoveRange(attendance);
+
+                // Delete User's daily task data
+                var dailytask = context.DailyTasks.Where(x => x.UserID == id && x.IsDeleted != true);
+                if (dailytask != null)
+                    context.DailyTasks.RemoveRange(dailytask);
+
                 context.SaveChanges();
 
                 Division(obj.PositionID);
@@ -305,7 +320,7 @@ namespace API.Services
                 var allPosition = context.Positions.Where(x => x.DivisionID == division.ID && x.IsDeleted != true);
                 foreach (var all in allPosition)
                 {
-                    count += context.Users.Where(x => x.PositionID == all.ID && x.IsDeleted != true).Count();
+                    count += context.Users.Where(x => x.PositionID == all.ID && x.IsAdmin != true && x.IsDeleted != true).Count();
                 }
 
                 division.NumberOfEmployee = count;
