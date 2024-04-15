@@ -7,7 +7,7 @@ using System;
 namespace API.Controllers
 {
     [ApiController]
-    [Route("Controller")]
+    [Route("[controller]")]
     public class ReportController : ControllerBase
     {
         private IReportService _service;
