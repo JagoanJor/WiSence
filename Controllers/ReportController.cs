@@ -17,11 +17,20 @@ namespace API.Controllers
         }
 
         [Authorize]
-        [HttpGet("ReportAbsen")]
-        public IActionResult getReportAbsen(Int64 userID, int bulan, int tahun)
+        [HttpGet("ReportAbsensi")]
+        public IActionResult getReportAbsensi(Int64 userID, int bulan, int tahun)
         {
             var result = _service.getReportAbsensi(userID, bulan, tahun);
             var response = new Response<vReportAbsensi>(result);
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpGet("ReportAbsensiPerTahun")]
+        public IActionResult getReportAbsensiPerTahun(int tahun)
+        {
+            var result = _service.getReportAbsensiPerTahun(tahun);
+            var response = new Response<vReportAbsensiPerTahun>(result);
             return Ok(response);
         }
     }

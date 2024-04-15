@@ -190,31 +190,31 @@ SELECT DISTINCT
     U.Name AS Nama,
     U.ID AS UserID,
     P.Name AS Posisi,
-    DATENAME(MONTH, A.Date) AS Bulan,
+    CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
     COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS Kerja,
     ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
-	'' AS TotalKerja
+    '' AS TotalKerja
 FROM
     [User] AS U
     INNER JOIN Position AS P ON U.PositionID = P.ID
     INNER JOIN Attendance AS A ON U.ID = A.UserID
     LEFT JOIN (
-        SELECT DATENAME(MONTH, Holiday) AS Bulan, COUNT(*) AS CountHolidays
+        SELECT CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday)) AS Periode, COUNT(*) AS CountHolidays
         FROM Calendar
         WHERE Calendar.IsDeleted != 1 AND DATEPART(WEEKDAY, Holiday) NOT IN (1, 7)
-        GROUP BY DATENAME(MONTH, Holiday)
-    ) AS TotalLibur ON DATENAME(MONTH, A.Date) = TotalLibur.Bulan
+        GROUP BY CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday))
+    ) AS TotalLibur ON CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) = TotalLibur.Periode
 WHERE
     P.IsDeleted != 1 AND A.IsDeleted != 1
 GROUP BY
-    U.Name, U.ID, P.Name, DATENAME(MONTH, A.Date), TotalLibur.CountHolidays;
+    U.Name, U.ID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays;
 
 
 CREATE VIEW [dbo].[vReportAbsensiList]
 AS 
 SELECT
     U.ID AS UserID,
-	DATENAME(MONTH, A.Date) AS Bulan,
+	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
     CASE DATENAME(dw, A.Date)
         WHEN 'Sunday' THEN 'Minggu'
         WHEN 'Monday' THEN 'Senin'
@@ -235,3 +235,42 @@ WHERE
     A.IsDeleted != 1
 GROUP BY
     U.ID, A.Date, A.ClockIn, A.ClockOut, A.Status;
+
+
+CREATE VIEW [dbo].[vReportAbsensiPerTahun]
+AS
+SELECT DISTINCT
+	CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
+	ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
+	'' AS TotalKerja
+FROM
+	Attendance AS A
+	LEFT JOIN (
+        SELECT CAST(YEAR(Holiday) AS VARCHAR(4)) AS Periode, COUNT(*) AS CountHolidays
+        FROM Calendar
+        WHERE Calendar.IsDeleted != 1 AND DATEPART(WEEKDAY, Holiday) NOT IN (1, 7)
+        GROUP BY YEAR(Holiday)
+    ) AS TotalLibur ON YEAR(A.Date) = TotalLibur.Periode
+WHERE
+	A.IsDeleted != 1
+
+
+CREATE VIEW [dbo].[vReportAbsensiListPerTahun]
+AS
+SELECT
+    CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
+    U.ID AS UserID,
+    U.Name AS Nama,
+	P.Name AS Posisi,
+    COUNT(CASE WHEN A.Status = 'Ontime' THEN 1 END) AS Ontime,
+    COUNT(CASE WHEN A.Status = 'Terlambat' THEN 1 END) AS Terlambat,
+    COUNT(CASE WHEN A.Status = 'Absen' THEN 1 END) AS Absen,
+    COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti
+FROM
+    [User] AS U
+    INNER JOIN Position AS P ON P.ID = U.PositionID
+    INNER JOIN Attendance AS A ON A.UserID = U.ID
+WHERE
+	P.IsDeleted != 1 AND A.IsDeleted != 1
+GROUP BY
+    CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name;

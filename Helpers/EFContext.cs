@@ -36,5 +36,7 @@ namespace API.Helpers
         public DbSet<Cuti> Cutis { get; set; }
         public DbSet<vReportAbsensi> vReportAbsensis { get; set; }
         public DbSet<vReportAbsensiList> vReportAbsensiLists { get; set; }
+        public DbSet<vReportAbsensiPerTahun> vReportAbsensiPerTahuns { get; set; }
+        public DbSet<vReportAbsensiListPerTahun> vReportAbsensiListPerTahuns { get; set; }
     }
 }
