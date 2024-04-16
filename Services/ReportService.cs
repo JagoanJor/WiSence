@@ -31,6 +31,8 @@ namespace API.Services
                         UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
 
                 var header = context.vReportAbsensis.FromSqlRaw(query).FirstOrDefault();
+                if (header == null)
+                    throw new Exception("Tidak ada data absensi");
 
                 var queryList = String.Format($@"
                     SELECT *
@@ -40,6 +42,9 @@ namespace API.Services
                         UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
 
                 var detail = context.vReportAbsensiLists.FromSqlRaw(queryList);
+                if (detail == null)
+                    throw new Exception("Tidak ada data absensi");
+
                 var detailList = detail.ToList();
 
                 int daysInMonth = DateTime.DaysInMonth(tahun, bulan);
@@ -94,6 +99,8 @@ namespace API.Services
                         Periode = '{tahun}'");
 
                 var header = context.vReportAbsensiPerTahuns.FromSqlRaw(query).FirstOrDefault();
+                if (header == null)
+                    throw new Exception("Tidak ada data absensi");
 
                 var queryList = String.Format($@"
                     SELECT *
@@ -103,6 +110,9 @@ namespace API.Services
                         Periode = '{tahun}'");
 
                 var detail = context.vReportAbsensiListPerTahuns.FromSqlRaw(queryList);
+                if (detail == null)
+                    throw new Exception("Tidak ada data absensi");
+
                 var detailList = detail.ToList();
 
                 int hariKerja = 0;
