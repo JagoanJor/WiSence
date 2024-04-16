@@ -184,6 +184,8 @@ CREATE TABLE [dbo].[Cuti] (
 ||VIEW||
 ========
 
+    ~~~~~~~~VIEW REPORT ABSENSI~~~~~~~~
+
 CREATE VIEW [dbo].[vReportAbsensi]
 AS
 SELECT DISTINCT
@@ -209,6 +211,8 @@ WHERE
 GROUP BY
     U.Name, U.ID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays;
 
+
+    ~~~~~~~~VIEW REPORT ABSENSI LIST~~~~~~~~
 
 CREATE VIEW [dbo].[vReportAbsensiList]
 AS 
@@ -237,6 +241,8 @@ GROUP BY
     U.ID, A.Date, A.ClockIn, A.ClockOut, A.Status;
 
 
+    ~~~~~~~~VIEW REPORT ABSENSI PER TAHUN~~~~~~~~
+
 CREATE VIEW [dbo].[vReportAbsensiPerTahun]
 AS
 SELECT DISTINCT
@@ -255,6 +261,8 @@ WHERE
 	A.IsDeleted != 1
 
 
+    ~~~~~~~~VIEW REPORT ABSENSI LIST PER TAHUN~~~~~~~~
+
 CREATE VIEW [dbo].[vReportAbsensiListPerTahun]
 AS
 SELECT
@@ -271,6 +279,72 @@ FROM
     INNER JOIN Position AS P ON P.ID = U.PositionID
     INNER JOIN Attendance AS A ON A.UserID = U.ID
 WHERE
-	P.IsDeleted != 1 AND A.IsDeleted != 1
+	P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsDeleted != 1
 GROUP BY
     CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name;
+
+
+    ~~~~~~~~VIEW REPORT CUTI~~~~~~~~
+
+CREATE VIEW [dbo].[vReportCuti]
+AS
+SELECT DISTINCT
+	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
+	U.ID AS UserID,
+	U.Name AS Nama,
+	P.Name AS Posisi
+FROM
+	[User] AS U
+	INNER JOIN Position AS P ON P.ID = U.PositionID
+	INNER JOIN Attendance AS A ON U.ID = A.UserID
+WHERE
+	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND A.Status = 'Cuti'
+
+
+    ~~~~~~~~VIEW REPORT CUTI LIST~~~~~~~~
+
+CREATE VIEW [dbo].[vReportCutiList]
+AS
+SELECT
+	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
+	U.ID AS UserID,
+	CASE DATENAME(dw, A.Date)
+        WHEN 'Sunday' THEN 'Minggu'
+        WHEN 'Monday' THEN 'Senin'
+        WHEN 'Tuesday' THEN 'Selasa'
+        WHEN 'Wednesday' THEN 'Rabu'
+        WHEN 'Thursday' THEN 'Kamis'
+        WHEN 'Friday' THEN 'Jumat'
+        WHEN 'Saturday' THEN 'Sabtu'
+        ELSE DATENAME(dw, A.Date)
+    END + ', ' + CONVERT(varchar, A.Date, 106) AS HariTanggal,
+	A.Description AS [Description]
+FROM
+	[User] AS U
+	INNER JOIN Position AS P ON P.ID = U.PositionID
+	INNER JOIN Attendance AS A ON U.ID = A.UserID
+WHERE
+	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND A.Status = 'Cuti'
+
+
+    ~~~~~~~~VIEW REPORT CUTI PER TAHUN~~~~~~~~
+
+CREATE VIEW [dbo].[vReportCutiPerTahun]
+AS
+SELECT 
+	CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
+	U.ID AS UserID,
+	U.Name AS Nama,
+	P.Name AS Posisi,
+	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
+	C.Cuti AS JatahCuti,
+	(C.Cuti - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
+FROM 
+	[User] AS U
+	INNER JOIN Position AS P ON P.ID = U.PositionID
+	INNER JOIN Attendance AS A ON A.UserID = U.ID
+	INNER JOIN Company AS C ON C.ID = U.CompanyID
+WHERE
+	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1
+GROUP BY
+	CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, C.Cuti

@@ -33,5 +33,23 @@ namespace API.Controllers
             var response = new Response<vReportAbsensiPerTahun>(result);
             return Ok(response);
         }
+
+        [Authorize]
+        [HttpGet("ReportCuti")]
+        public IActionResult getReportCuti(Int64 userID, int bulan, int tahun)
+        {
+            var result = _service.getReportCuti(userID, bulan, tahun);
+            var response = new Response<vReportCuti>(result);
+            return Ok(response);
+        }
+
+        [Authorize]
+        [HttpGet("ReportCutiPerTahun")]
+        public IActionResult getReportCutiPerTahun(int tahun)
+        {
+            var result = _service.getReportCutiPerTahun(tahun);
+            var response = new Response<CutiReportResponse>(result);
+            return Ok(response);
+        }
     }
 }

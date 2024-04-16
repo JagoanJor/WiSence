@@ -54,4 +54,38 @@ namespace API.Entities
         public int Absen { get; set; }
         public int Cuti { get; set; }
     }
+
+    [Keyless]
+    [Table(name: "vReportCuti")]
+    public class vReportCuti
+    {
+        public String Periode { get; set; }
+        public Int64 UserID { get; set; }
+        public String Nama { get; set; }
+        public String Posisi { get; set; }
+        public ICollection<vReportCutiList> vReportCutiLists { get; set; }
+    }
+
+    [Keyless]
+    [Table(name: "vReportCutiList")]
+    public class vReportCutiList
+    {
+        public String Periode { get; set; }
+        public Int64 UserID { get; set; }
+        public String HariTanggal { get; set; }
+        public String Description { get; set; }
+    }
+    
+    [Keyless]
+    [Table(name: "vReportCutiPerTahun")]
+    public class vReportCutiPerTahun
+    {
+        public String Periode { get; set; }
+        public Int64 UserID { get; set; }
+        public String Nama { get; set; }
+        public String Posisi { get; set; }
+        public int Cuti { get; set; }
+        public int JatahCuti { get; set; }
+        public int SisaCuti { get; set; }
+    }
 }
