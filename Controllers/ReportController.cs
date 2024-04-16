@@ -39,7 +39,7 @@ namespace API.Controllers
         public IActionResult getReportCuti(Int64 userID, int bulan, int tahun)
         {
             var result = _service.getReportCuti(userID, bulan, tahun);
-            var response = new Response<vReportCuti>(result);
+            var response = new Response<ReportCutiResponse>(result);
             return Ok(response);
         }
 
@@ -48,7 +48,7 @@ namespace API.Controllers
         public IActionResult getReportCutiPerTahun(int tahun)
         {
             var result = _service.getReportCutiPerTahun(tahun);
-            var response = new Response<CutiReportResponse>(result);
+            var response = new Response<ReportCutiPerTahunResponse>(result);
             return Ok(response);
         }
     }

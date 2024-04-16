@@ -14,8 +14,8 @@ namespace API.Services
     {
         vReportAbsensi getReportAbsensi(Int64 userID, int bulan, int tahun);
         vReportAbsensiPerTahun getReportAbsensiPerTahun(int tahun);
-        vReportCuti getReportCuti(Int64 userID, int bulan, int tahun);
-        CutiReportResponse getReportCutiPerTahun(int tahun);
+        ReportCutiResponse getReportCuti(Int64 userID, int bulan, int tahun);
+        ReportCutiPerTahunResponse getReportCutiPerTahun(int tahun);
     }
     public class ReportService : IReportService
     {
@@ -148,12 +148,11 @@ namespace API.Services
             }
         }
 
-        public vReportCuti getReportCuti(Int64 userID, int bulan, int tahun)
+        public ReportCutiResponse getReportCuti(Int64 userID, int bulan, int tahun)
         {
             var context = new EFContext();
             try
             {
-                var result = new vReportCuti();
                 string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
                 var query = String.Format($@"
                     SELECT *
@@ -175,13 +174,16 @@ namespace API.Services
 
                 var detail = context.vReportCutiLists.FromSqlRaw(queryList);
 
-                result.Nama = header.Nama;
-                result.UserID = userID;
-                result.Posisi = header.Posisi;
-                result.Periode = header.Periode;
-                result.vReportCutiLists = detail != null ? detail.ToList() : null;
+                var querySisaCuti = String.Format($@"
+                    SELECT *
+                    FROM
+                        vReportCutiPerTahun
+                    WHERE
+                        Periode = '{tahun}'");
 
-                return result;
+                var sisaCuti = context.vReportCutiPerTahuns.FromSqlRaw(querySisaCuti).FirstOrDefault();
+
+                return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail != null ? detail.ToList() : null);
             }
             catch (Exception ex)
             {
@@ -197,7 +199,7 @@ namespace API.Services
             }
         }
 
-        public CutiReportResponse getReportCutiPerTahun(int tahun)
+        public ReportCutiPerTahunResponse getReportCutiPerTahun(int tahun)
         {
             var context = new EFContext();
             try
@@ -215,7 +217,7 @@ namespace API.Services
 
                 var detail = context.vReportCutiPerTahuns.FromSqlRaw(query);
 
-                return new CutiReportResponse(header.Periode, detail != null ? detail.ToList() : null);
+                return new ReportCutiPerTahunResponse(header.Periode, detail != null ? detail.ToList() : null);
             }
             catch (Exception ex)
             {

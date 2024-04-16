@@ -192,6 +192,7 @@ SELECT DISTINCT
     U.Name AS Nama,
     U.ID AS UserID,
     P.Name AS Posisi,
+    U.NIK AS NIK
     CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
     COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS Kerja,
     ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
@@ -209,7 +210,7 @@ FROM
 WHERE
     P.IsDeleted != 1 AND A.IsDeleted != 1
 GROUP BY
-    U.Name, U.ID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays;
+    U.Name, U.ID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays, U.NIK;
 
 
     ~~~~~~~~VIEW REPORT ABSENSI LIST~~~~~~~~
@@ -270,6 +271,7 @@ SELECT
     U.ID AS UserID,
     U.Name AS Nama,
 	P.Name AS Posisi,
+    U.NIK AS NIK,
     COUNT(CASE WHEN A.Status = 'Ontime' THEN 1 END) AS Ontime,
     COUNT(CASE WHEN A.Status = 'Terlambat' THEN 1 END) AS Terlambat,
     COUNT(CASE WHEN A.Status = 'Absen' THEN 1 END) AS Absen,
@@ -281,7 +283,7 @@ FROM
 WHERE
 	P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsDeleted != 1
 GROUP BY
-    CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name;
+    CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, U.NIK;
 
 
     ~~~~~~~~VIEW REPORT CUTI~~~~~~~~
@@ -292,13 +294,19 @@ SELECT DISTINCT
 	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
 	U.ID AS UserID,
 	U.Name AS Nama,
-	P.Name AS Posisi
+	P.Name AS Posisi,
+    U.NIK AS NIK,
+	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
+	C.Cuti AS JatahCuti
 FROM
 	[User] AS U
 	INNER JOIN Position AS P ON P.ID = U.PositionID
 	INNER JOIN Attendance AS A ON U.ID = A.UserID
+	INNER JOIN Company AS C ON C.ID = U.CompanyID
 WHERE
-	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND A.Status = 'Cuti'
+	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND C.IsDeleted != 1
+GROUP BY
+	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.ID, U.Name, P.Name, U.NIK, C.Cuti
 
 
     ~~~~~~~~VIEW REPORT CUTI LIST~~~~~~~~
@@ -336,6 +344,7 @@ SELECT
 	U.ID AS UserID,
 	U.Name AS Nama,
 	P.Name AS Posisi,
+    U.NIK AS NIK,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
 	C.Cuti AS JatahCuti,
 	(C.Cuti - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
@@ -347,4 +356,4 @@ FROM
 WHERE
 	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1
 GROUP BY
-	CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, C.Cuti
+	CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, C.Cuti, U.NIK
