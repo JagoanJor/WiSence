@@ -24,6 +24,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                // Check user's attendance
+                CheckAttendance(userID);
+
+                // Get report function
                 var result = new vReportAbsensi();
                 string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
                 var query = String.Format($@"
@@ -90,6 +94,19 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                // Check Attendance per User
+                var queryUser = String.Format($@"
+                    SELECT *
+                    FROM
+                        User
+                    WHERE
+                        IsDeleted != 1 AND IsAdmin != 1");
+                
+                var users = context.Users.FromSqlRaw(queryUser);
+                foreach (var user in users)
+                    CheckAttendance(user.ID);
+
+                // Get report function
                 var result = new vReportAbsensiPerTahun();
                 var query = String.Format($@"
                     SELECT *
@@ -232,6 +249,57 @@ namespace API.Services
             {
                 context.Dispose();
             }
+        }
+
+        public void CheckAttendance(Int64 userID)
+        {
+            var context = new EFContext();
+            var user = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true);
+            if (user == null)
+                return;
+
+            var currentDate = user.DateIn.Value.Date;
+            while (currentDate < DateTime.Now.Date)
+            {
+                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+
+                if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                {
+                    var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
+                    if (holiday == null)
+                    {
+                        if (haveAttend == null)
+                        {
+                            var attendance = new Attendance();
+                            attendance.UserID = userID;
+                            attendance.Date = currentDate;
+                            attendance.ClockIn = currentDate;
+                            attendance.ClockOut = currentDate;
+                            attendance.Description = "";
+                            attendance.Status = "Absen";
+                            attendance.DateIn = DateTime.Now;
+                            attendance.UserIn = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true).ID.ToString();
+                            attendance.IsDeleted = false;
+
+                            context.Attendances.Add(attendance);
+                        }
+                        else
+                        {
+                            if (haveAttend.ClockOut == null)
+                            {
+                                haveAttend.Status = "Absen";
+                                haveAttend.ClockOut = currentDate;
+
+                                context.Attendances.Update(haveAttend);
+                            }
+                        }
+                    }
+                }
+
+                currentDate = currentDate.AddDays(1);
+            }
+
+            context.SaveChanges();
         }
     }
 }

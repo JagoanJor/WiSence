@@ -109,6 +109,7 @@ namespace API.Services
                 obj.Phone = data.Phone;
                 obj.PositionID = data.PositionID;
                 obj.CompanyID = getCompanyID(data.PositionID);
+                obj.ShiftID = data.ShiftID;
                 obj.IsAdmin = data.IsAdmin;
 
                 obj.UserUp = data.UserUp;
@@ -147,6 +148,7 @@ namespace API.Services
                 query = query.Include("Role");
                 query = query.Include("Position");
                 query = query.Include("Company");
+                query = query.Include("Shift");
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
@@ -163,7 +165,9 @@ namespace API.Services
                         || x.Position.Name.Contains(search)
                         || x.POB.Contains(search)
                         || x.DOB.ToString().Contains(search)
-                        || x.Role.Name.Contains(search));
+                        || x.Role.Name.Contains(search)
+                        || x.Shift.In.ToString().Contains(search)
+                        || x.Shift.Out.ToString().Contains(search));
                 }
 
                 // Filtering
@@ -189,6 +193,8 @@ namespace API.Services
                                 case "phone": query = query.Where(x => x.Phone.Contains(value)); break;
                                 case "position": query = query.Where(x => x.Position.Name.Contains(value)); break;
                                 case "role": query = query.Where(x => x.Role.Name.Contains(value)); break;
+                                case "in": query = query.Where(x => x.Shift.In.ToString().Contains(value)); break;
+                                case "out": query = query.Where(x => x.Shift.Out.ToString().Contains(value)); break;
                             }
                         }
                     }
@@ -216,6 +222,8 @@ namespace API.Services
                             case "dob": query = query.OrderByDescending(x => x.DOB); break;
                             case "position": query = query.OrderByDescending(x => x.Position.Name); break;
                             case "role": query = query.OrderByDescending(x => x.Role.Name); break;
+                            case "in": query = query.OrderByDescending(x => x.Shift.In); break;
+                            case "out": query = query.OrderByDescending(x => x.Shift.Out); break;
                         }
                     }
                     else
@@ -232,6 +240,8 @@ namespace API.Services
                             case "dob": query = query.OrderBy(x => x.DOB); break;
                             case "position": query = query.OrderBy(x => x.Position.Name); break;
                             case "role": query = query.OrderBy(x => x.Role.Name); break;
+                            case "in": query = query.OrderBy(x => x.Shift.In); break;
+                            case "out": query = query.OrderBy(x => x.Shift.Out); break;
                         }
                     }
                 }
@@ -284,6 +294,7 @@ namespace API.Services
                     .Include(x => x.Position)
                     .Include(x => x.Role)
                     .Include(x => x.Company)
+                    .Include(x => x.Shift)
                     .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
                 if (obj != null) obj.Password = "";
                 return obj;

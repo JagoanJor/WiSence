@@ -55,7 +55,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.Date).Count();
+                var obj = context.Attendances.Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.Date && x.Status != "Cuti").Count();
                 if (obj == null) return 0;
 
                 return obj;

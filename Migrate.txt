@@ -23,8 +23,6 @@ CREATE TABLE [dbo].[Company] (
     [ID]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]      VARCHAR (250) NULL,
     [Logo]      VARCHAR (250) NULL,
-    [Start]     DATETIME      NULL,
-    [End]       DATETIME      NULL,
     [DateIn]    DATETIME      NULL,
     [UserIn]    VARCHAR (50)  NULL,
     [DateUp]    DATETIME      NULL,
@@ -84,6 +82,7 @@ CREATE TABLE [dbo].[User] (
     [Phone]      VARCHAR (50)  NULL,
     [PositionID] BIGINT        NULL,
     [CompanyID]  BIGINT        NULL,
+    [ShiftID]    BIGINT        NULL,
     [IsAdmin]    BIT           NULL,
     [RoleID]     BIGINT        NULL,
     [DateIn]     DATETIME      NULL,
@@ -177,6 +176,19 @@ CREATE TABLE [dbo].[Cuti] (
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
     CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
+CREATE TABLE [dbo].[Shift] (
+    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [In]         DATETIME      NULL,
+    [Out]        DATETIME      NULL,
+    [Description]VARCHAR (50)  NULL,
+    [DateIn]     DATETIME      NULL,
+    [UserIn]     VARCHAR (50)  NULL,
+    [DateUp]     DATETIME      NULL,
+    [UserUp]     VARCHAR (50)  NULL,
+    [IsDeleted]  BIT           NULL,
+    CONSTRAINT [PK__Shift__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
 );
 
 

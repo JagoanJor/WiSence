@@ -19,9 +19,11 @@ namespace API.Entities
         public String Phone { get; set; }
         public Int64? PositionID { get; set; }
         public Int64? CompanyID { get; set; }
+        public Int64? ShiftID { get; set; }
         public Boolean? IsAdmin { get; set; }
         public Role Role { get; set; }
         public Position Position { get; set; }
         public Company Company { get; set; }
+        public Shift Shift { get; set; }
     }
 }

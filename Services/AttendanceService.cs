@@ -114,6 +114,10 @@ namespace API.Services
                 var query = from a in context.Attendances where a.IsDeleted != true select a;
                 query = query.Include("User");
 
+                // Check user's attendance
+                foreach (var user in query)
+                    CheckAttendance(user.ID);
+
                 // Searching
                 if (!string.IsNullOrEmpty(search))
                     query = query.Where(x => x.Description.Contains(search)
@@ -220,6 +224,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                // Check user's attendance
+                CheckAttendance(id);
+
+                // Return user by ID
                 return context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
@@ -269,24 +277,20 @@ namespace API.Services
 
                 var query = String.Format($@"
                                 SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
-                                FROM Wifi
-                                WHERE IsDeleted != 1 AND IPAddress = '{ipAddress}' AND Name = '{wifiSSID}' AND CompanyID = {user.CompanyID}");
+                                FROM Wifi AS W
+                                INNER JOIN Company AS C ON C.ID = W.CompanyID
+                                WHERE C.IsDeleted != 1 AND W.IsDeleted != 1 AND W.IPAddress = '{ipAddress}' AND W.Name = '{wifiSSID}' AND W.CompanyID = {user.CompanyID}");
                 var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
 
                 if (wifi == null)
-                    throw new Exception("Please Connect to Company Wifi!");
-
-                var WorkHour = context.Companies.FirstOrDefault(x => x.ID == wifi.CompanyID && x.IsDeleted != true);
-                if (WorkHour == null)
-                    throw new Exception("Please ask your admin to set company's wifi!");
-
-                if (WorkHour.Start == null)
-                    throw new Exception("Please ask your admin to add the Working Hour data!");
+                    throw new Exception("Perangkat belum terhubung ke Wifi!");
                 
-                DateTime desiredTime = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, WorkHour.Start.Value.Hour, WorkHour.Start.Value.Minute, 0).AddMinutes(-30);
-                
-                if (DateTime.Now < desiredTime)
-                    throw new Exception($"Clock In can only be done 30 minutes before the start of working hours {WorkHour.Start?.ToString("HH:mm")}.");
+                var shift = context.Shifts.FirstOrDefault(x => x.ID == user.ShiftID && x.IsDeleted != true);
+                if (shift == null)
+                    throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
+
+                if (DateTime.Now.TimeOfDay < shift.In.AddMinutes(-30).TimeOfDay)
+                    throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.In.ToString("HH:mm")}.");
 
                 var data = new Attendance();
 
@@ -297,17 +301,20 @@ namespace API.Services
                 data.Date = DateTime.Now;
                 data.IsDeleted = false;
 
-                DateTime lateTime = desiredTime.AddHours(1).AddMinutes(30);
+                DateTime lateTime = shift.In.AddHours(1).AddMinutes(30);
 
-                if (DateTime.Now.TimeOfDay <= WorkHour.Start?.TimeOfDay)
+                if (DateTime.Now.TimeOfDay <= shift.In.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay >= WorkHour.Start?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.TimeOfDay >= shift.In.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
 
                 context.Attendances.Add(data);
                 context.SaveChanges();
+
+                // Check user's attendance
+                CheckAttendance(user.ID);
 
                 return data;
             }
@@ -365,11 +372,11 @@ namespace API.Services
                 if (wifi != null)
                 {
                     if (wifi.Name != wifiSSID || wifi.IPAddress != ipAddress)
-                        throw new Exception("Please Connect to Company Wifi!");
+                        throw new Exception("Perangkat belum terhubung ke Wifi!");
                 }
                 else
                 {
-                    throw new Exception("Please Connect to Company Wifi!");
+                    throw new Exception("Perangkat belum terhubung ke Wifi!");
                 }
 
                 var data = context.Attendances
@@ -377,7 +384,14 @@ namespace API.Services
                     .FirstOrDefault();
 
                 if (data == null)
-                    throw new Exception("Please ensure that you have clocked in.");
+                    throw new Exception("Pastikan kamu sudah melakukan Clock In!");
+
+                var shift = context.Shifts.FirstOrDefault(x => x.ID == user.ShiftID && x.IsDeleted != true);
+                if (shift == null)
+                    throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
+
+                if (DateTime.Now.TimeOfDay < shift.In.TimeOfDay)
+                    throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.In.ToString("HH:mm")}.");
 
                 data.ClockOut = DateTime.Now;
                 data.UserUp = user.ID.ToString();
@@ -385,6 +399,9 @@ namespace API.Services
 
                 context.Attendances.Update(data);
                 context.SaveChanges();
+
+                // Check user's attendance
+                CheckAttendance(user.ID);
 
                 return data;
             }
@@ -401,6 +418,57 @@ namespace API.Services
                 context.Dispose();
             }
         }
+
+        // Function to make sure there is no empty attendance
+        public void CheckAttendance(Int64 userID)
+        {
+            var context = new EFContext();
+            var user = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true);
+            if (user == null)
+                return;
+
+            var currentDate = user.DateIn.Value.Date;
+            while (currentDate < DateTime.Now.Date)
+            {
+                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+
+                if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                {
+                    var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
+                    if (holiday == null)
+                    {
+                        if (haveAttend == null)
+                        {
+                            var attendance = new Attendance();
+                            attendance.UserID = userID;
+                            attendance.Date = currentDate;
+                            attendance.ClockIn = currentDate;
+                            attendance.ClockOut = currentDate;
+                            attendance.Description = "";
+                            attendance.Status = "Absen";
+                            attendance.DateIn = DateTime.Now;
+                            attendance.UserIn = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true).ID.ToString();
+                            attendance.IsDeleted = false;
+
+                            context.Attendances.Add(attendance);
+                        }
+                        else
+                        {
+                            if (haveAttend.ClockOut == null)
+                            {
+                                haveAttend.Status = "Absen";
+                                haveAttend.ClockOut = currentDate;
+
+                                context.Attendances.Update(haveAttend);
+                            }
+                        }
+                    }
+                }
+
+                currentDate = currentDate.AddDays(1);
+            }
+
+            context.SaveChanges();
+        }
     }
 }
-

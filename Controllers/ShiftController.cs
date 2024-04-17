@@ -14,11 +14,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CompanyController : ControllerBase
+    public class ShiftController : ControllerBase
     {
-        private ICompanyService<Company> _service;
+        private IService<Shift> _service;
 
-        public CompanyController(ICompanyService<Company> service)
+        public ShiftController(IService<Shift> service)
         {
             _service = service;
         }
@@ -31,7 +31,7 @@ namespace API.Controllers
             {
                 var total = 0;
                 var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
-                var response = new ListResponse<Company>(result, total, page);
+                var response = new ListResponse<Shift>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "CompanyController");
+                Trace.WriteLine(message, "ShiftController");
                 return BadRequest(new { message });
             }
         }
@@ -54,13 +54,11 @@ namespace API.Controllers
         {
             try
             {
-                var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
-                var result = _service.GetById(id, baseUrl);
+                var result = _service.GetById(id);
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new Response<Company>(result);
+                var response = new Response<Shift>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -72,14 +70,14 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "CompanyController");
+                Trace.WriteLine(message, "ShiftController");
                 return BadRequest(new { message });
             }
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Company obj)
+        public IActionResult Create([FromBody] Shift obj)
         {
             try
             {
@@ -97,7 +95,7 @@ namespace API.Controllers
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
-                var response = new Response<Company>(result);
+                var response = new Response<Shift>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -109,7 +107,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "CompanyController");
+                Trace.WriteLine(message, "ShiftController");
                 return BadRequest(new { message });
             }
 
@@ -117,12 +115,10 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Company obj)
+        public IActionResult Edit([FromBody] Shift obj)
         {
             try
             {
-                var baseUrl = $"{Request.Scheme}://{Request.Host}";
-
                 var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
                 var user = (User)null;
@@ -134,8 +130,8 @@ namespace API.Controllers
 
                 obj.UserUp = user.ID.ToString();
 
-                var result = _service.Edit(obj, baseUrl);
-                var response = new Response<Company>(result);
+                var result = _service.Edit(obj);
+                var response = new Response<Shift>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -147,7 +143,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "CompanyController");
+                Trace.WriteLine(message, "ShiftController");
                 return BadRequest(new { message });
             }
         }
@@ -181,10 +177,11 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "CompanyController");
+                Trace.WriteLine(message, "ShiftController");
                 return BadRequest(new { message });
             }
         }
+
     }
 }
 

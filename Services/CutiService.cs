@@ -390,6 +390,9 @@ namespace API.Services
             try
             {
                 var obj = context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                if (obj == null)
+                    throw new Exception("Data cuti tidak ditemukan!");
+
                 if (String.IsNullOrEmpty(status))
                     throw new Exception("Status harus diisi!");
 
@@ -404,7 +407,7 @@ namespace API.Services
                     {
                         while (true)
                         {
-                            var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
+                            var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
                             if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                                 break;
 
