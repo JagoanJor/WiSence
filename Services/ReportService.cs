@@ -62,6 +62,7 @@ namespace API.Services
                 result.Nama = header.Nama;
                 result.UserID = userID;
                 result.Posisi = header.Posisi;
+                result.NIK = header.NIK;
                 result.Periode = header.Periode;
                 result.Kerja = header.Kerja;
                 result.Libur = header.Libur;
