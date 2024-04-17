@@ -180,8 +180,8 @@ CREATE TABLE [dbo].[Cuti] (
 
 CREATE TABLE [dbo].[Shift] (
     [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
-    [In]         DATETIME      NULL,
-    [Out]        DATETIME      NULL,
+    [ClockIn]    DATETIME      NULL,
+    [ClockOut]   DATETIME      NULL,
     [Description]VARCHAR (50)  NULL,
     [DateIn]     DATETIME      NULL,
     [UserIn]     VARCHAR (50)  NULL,

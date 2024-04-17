@@ -8,8 +8,8 @@ namespace API.Entities
     [Table(name: "Shift")]
     public class Shift : Entity
     {
-        public DateTime In { get; set; }
-        public DateTime Out { get; set; }
+        public DateTime ClockIn { get; set; }
+        public DateTime ClockOut { get; set; }
         public String Description { get; set; }
     }
 }

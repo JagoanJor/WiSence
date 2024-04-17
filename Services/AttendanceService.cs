@@ -289,8 +289,8 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.In.AddMinutes(-30).TimeOfDay)
-                    throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.In.ToString("HH:mm")}.");
+                if (DateTime.Now.TimeOfDay < shift.ClockIn.AddMinutes(-30).TimeOfDay)
+                    throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn.ToString("HH:mm")}.");
 
                 var data = new Attendance();
 
@@ -301,11 +301,11 @@ namespace API.Services
                 data.Date = DateTime.Now;
                 data.IsDeleted = false;
 
-                DateTime lateTime = shift.In.AddHours(1).AddMinutes(30);
+                DateTime lateTime = shift.ClockIn.AddHours(1).AddMinutes(30);
 
-                if (DateTime.Now.TimeOfDay <= shift.In.TimeOfDay)
+                if (DateTime.Now.TimeOfDay <= shift.ClockIn.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay >= shift.In.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.TimeOfDay >= shift.ClockIn.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
@@ -390,8 +390,8 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.In.TimeOfDay)
-                    throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.In.ToString("HH:mm")}.");
+                if (DateTime.Now.TimeOfDay < shift.ClockIn.TimeOfDay)
+                    throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn.ToString("HH:mm")}.");
 
                 data.ClockOut = DateTime.Now;
                 data.UserUp = user.ID.ToString();

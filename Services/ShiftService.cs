@@ -74,8 +74,8 @@ namespace API.Services
                 var obj = context.Shifts.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
                 if (obj == null) return null;
 
-                obj.In = data.In;
-                obj.Out = data.Out;
+                obj.ClockIn = data.ClockIn;
+                obj.ClockOut = data.ClockOut;
                 obj.Description = data.Description;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
@@ -107,8 +107,8 @@ namespace API.Services
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.In.ToString().Contains(search)
-                        || x.Out.ToString().Contains(search)
+                    query = query.Where(x => x.ClockIn.ToString().Contains(search)
+                        || x.ClockOut.ToString().Contains(search)
                         || x.Description.Contains(search));
 
                 // Filtering
@@ -124,8 +124,8 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
-                                case "in": query = query.Where(x => x.In.ToString().Contains(value)); break;
-                                case "out": query = query.Where(x => x.Out.ToString().Contains(value)); break;
+                                case "clockin": query = query.Where(x => x.ClockIn.ToString().Contains(value)); break;
+                                case "clockout": query = query.Where(x => x.ClockOut.ToString().Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
                             }
                         }
@@ -144,8 +144,8 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "in": query = query.OrderByDescending(x => x.In); break;
-                            case "out": query = query.OrderByDescending(x => x.Out); break;
+                            case "clockin": query = query.OrderByDescending(x => x.ClockIn); break;
+                            case "clockout": query = query.OrderByDescending(x => x.ClockOut); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
                         }
                     }
@@ -153,8 +153,8 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "in": query = query.OrderBy(x => x.In); break;
-                            case "out": query = query.OrderBy(x => x.Out); break;
+                            case "clockin": query = query.OrderBy(x => x.ClockIn); break;
+                            case "clockout": query = query.OrderBy(x => x.ClockOut); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
                         }
                     }

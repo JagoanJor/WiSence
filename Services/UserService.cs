@@ -166,8 +166,8 @@ namespace API.Services
                         || x.POB.Contains(search)
                         || x.DOB.ToString().Contains(search)
                         || x.Role.Name.Contains(search)
-                        || x.Shift.In.ToString().Contains(search)
-                        || x.Shift.Out.ToString().Contains(search));
+                        || x.Shift.ClockIn.ToString().Contains(search)
+                        || x.Shift.ClockOut.ToString().Contains(search));
                 }
 
                 // Filtering
@@ -193,8 +193,8 @@ namespace API.Services
                                 case "phone": query = query.Where(x => x.Phone.Contains(value)); break;
                                 case "position": query = query.Where(x => x.Position.Name.Contains(value)); break;
                                 case "role": query = query.Where(x => x.Role.Name.Contains(value)); break;
-                                case "in": query = query.Where(x => x.Shift.In.ToString().Contains(value)); break;
-                                case "out": query = query.Where(x => x.Shift.Out.ToString().Contains(value)); break;
+                                case "clockin": query = query.Where(x => x.Shift.ClockIn.ToString().Contains(value)); break;
+                                case "clockout": query = query.Where(x => x.Shift.ClockOut.ToString().Contains(value)); break;
                             }
                         }
                     }
@@ -222,8 +222,8 @@ namespace API.Services
                             case "dob": query = query.OrderByDescending(x => x.DOB); break;
                             case "position": query = query.OrderByDescending(x => x.Position.Name); break;
                             case "role": query = query.OrderByDescending(x => x.Role.Name); break;
-                            case "in": query = query.OrderByDescending(x => x.Shift.In); break;
-                            case "out": query = query.OrderByDescending(x => x.Shift.Out); break;
+                            case "clockin": query = query.OrderByDescending(x => x.Shift.ClockIn); break;
+                            case "clockout": query = query.OrderByDescending(x => x.Shift.ClockOut); break;
                         }
                     }
                     else
@@ -240,8 +240,8 @@ namespace API.Services
                             case "dob": query = query.OrderBy(x => x.DOB); break;
                             case "position": query = query.OrderBy(x => x.Position.Name); break;
                             case "role": query = query.OrderBy(x => x.Role.Name); break;
-                            case "in": query = query.OrderBy(x => x.Shift.In); break;
-                            case "out": query = query.OrderBy(x => x.Shift.Out); break;
+                            case "clockin": query = query.OrderBy(x => x.Shift.ClockIn); break;
+                            case "clockout": query = query.OrderBy(x => x.Shift.ClockOut); break;
                         }
                     }
                 }
