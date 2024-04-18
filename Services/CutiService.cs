@@ -431,8 +431,6 @@ namespace API.Services
                             attendance.UserIn = obj.UserIn;
                             attendance.IsDeleted = false;
 
-                            currentDate = currentDate.AddDays(1);
-
                             context.Attendances.Add(attendance);
                         }
                         else
@@ -441,6 +439,7 @@ namespace API.Services
 
                             context.Attendances.Update(checkData);
                         }
+                        currentDate = currentDate.AddDays(1);
                     }
                 }
 

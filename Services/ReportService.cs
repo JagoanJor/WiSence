@@ -98,7 +98,7 @@ namespace API.Services
                 var queryUser = String.Format($@"
                     SELECT *
                     FROM
-                        User
+                        [User]
                     WHERE
                         IsDeleted != 1 AND IsAdmin != 1");
                 
