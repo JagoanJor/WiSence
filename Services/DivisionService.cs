@@ -77,7 +77,6 @@ namespace API.Services
                 obj.Name = data.Name;
                 obj.NumberOfEmployee = data.NumberOfEmployee;
                 obj.CompanyID = data.CompanyID;
-
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 

@@ -83,6 +83,7 @@ namespace API.Services
                 obj.UserID = data.UserID;
                 obj.Status = data.Status;
                 obj.Description = data.Description;
+                obj.Date = data.Date;
                 obj.ClockIn = data.ClockIn;
                 obj.ClockOut = data.ClockOut;
                 obj.UserUp = data.UserUp;
@@ -151,6 +152,10 @@ namespace API.Services
                                     DateTime.TryParse(value, out DateTime searchClockOut);
                                     query = query.Where(x => x.ClockOut == searchClockOut || x.ClockOut.Value.Hour == searchClockOut.Hour || x.ClockOut.Value.Minute == searchClockOut.Minute);
                                     break;
+                                case "date":
+                                    DateTime.TryParse(value, out DateTime searchDate);
+                                    query = query.Where(x => x.Date == searchDate || x.Date.Value.Hour == searchDate.Hour || x.Date.Value.Minute == searchDate.Minute);
+                                    break;
                             }
                         }
                     }
@@ -185,7 +190,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.Date);
                 }
 
                 // Get Total Before Limit and Page
@@ -225,10 +230,10 @@ namespace API.Services
             try
             {
                 // Check user's attendance
-                CheckAttendance(id);
+                var attendance = context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                CheckAttendance((Int64)(attendance.UserID));
 
-                // Return user by ID
-                return context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                return attendance;
             }
             catch (Exception ex)
             {

@@ -113,9 +113,19 @@ namespace API.Services
                 var obj = context.Cutis.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
                 if (obj == null) return null;
 
+                if (data.Status != "Disetujui" && obj.Status == "Disetujui")
+                {
+                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true);
+                    if (attendance != null)
+                        context.Attendances.RemoveRange(attendance);
+                }
+
+                obj.UserID = data.UserID;
                 obj.Description = data.Description;
                 obj.Start = data.Start;
                 obj.End = data.End;
+                obj.Durasi = data.Durasi;
+                obj.Status = data.Status;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 

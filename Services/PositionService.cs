@@ -76,7 +76,6 @@ namespace API.Services
 
                 obj.Name = data.Name;
                 obj.DivisionID = data.DivisionID;
-
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 

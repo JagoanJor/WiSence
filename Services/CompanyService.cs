@@ -142,7 +142,6 @@ namespace API.Services
                     obj.Logo = data.Logo;
 
                 obj.Cuti = data.Cuti;
-
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
