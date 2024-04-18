@@ -305,7 +305,7 @@ namespace API.Services
 
                 if (DateTime.Now.TimeOfDay <= shift.ClockIn?.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay > shift.ClockIn?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
