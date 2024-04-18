@@ -276,7 +276,7 @@ namespace API.Services
                 }
 
                 var query = String.Format($@"
-                                SELECT TOP 1 ID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
+                                SELECT TOP 1 W.ID, W.Name, W.IPAddress, W.CompanyID, W.DateIn, W.UserIn, W.DateUp, W.UserUp, W.IsDeleted
                                 FROM Wifi AS W
                                 INNER JOIN Company AS C ON C.ID = W.CompanyID
                                 WHERE C.IsDeleted != 1 AND W.IsDeleted != 1 AND W.IPAddress = '{ipAddress}' AND W.Name = '{wifiSSID}' AND W.CompanyID = {user.CompanyID}");
@@ -287,7 +287,7 @@ namespace API.Services
                 
                 var shift = context.Shifts.FirstOrDefault(x => x.ID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
-                    throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
+                    throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
 
                 if (DateTime.Now.TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
                     throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn?.ToString("HH:mm")}.");
