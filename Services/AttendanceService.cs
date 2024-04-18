@@ -310,11 +310,11 @@ namespace API.Services
                 else
                     data.Status = "Absen";
 
-                context.Attendances.Add(data);
-                context.SaveChanges();
-
                 // Check user's attendance
                 CheckAttendance(user.ID);
+                
+                context.Attendances.Add(data);
+                context.SaveChanges();
 
                 return data;
             }
@@ -399,9 +399,6 @@ namespace API.Services
 
                 context.Attendances.Update(data);
                 context.SaveChanges();
-
-                // Check user's attendance
-                CheckAttendance(user.ID);
 
                 return data;
             }
