@@ -428,7 +428,7 @@ namespace API.Services
                 return;
 
             var currentDate = user.DateIn.Value.Date;
-            while (currentDate < DateTime.Now.Date)
+            while (currentDate.Date < DateTime.Now.Date)
             {
                 var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
 
