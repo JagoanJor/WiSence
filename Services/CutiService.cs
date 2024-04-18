@@ -414,20 +414,33 @@ namespace API.Services
                             currentDate = currentDate.AddDays(1);
                         };
 
-                        var attendance = new Attendance();
-                        attendance.UserID = obj.UserID;
-                        attendance.Date = currentDate;
-                        attendance.ClockIn = currentDate;
-                        attendance.ClockOut = currentDate;
-                        attendance.Description = obj.Description;
-                        attendance.Status = "Cuti";
-                        attendance.DateIn = DateTime.Now;
-                        attendance.UserIn = obj.UserIn;
-                        attendance.IsDeleted = false;
+                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
 
-                        currentDate = currentDate.AddDays(1);
+                        // Check jika data sudah pernah kebuat sebagai absen, maka akan diubah menjadi
+                        // status cuti
+                        if (checkData == null)
+                        {
+                            var attendance = new Attendance();
+                            attendance.UserID = obj.UserID;
+                            attendance.Date = currentDate;
+                            attendance.ClockIn = currentDate;
+                            attendance.ClockOut = currentDate;
+                            attendance.Description = obj.Description;
+                            attendance.Status = "Cuti";
+                            attendance.DateIn = DateTime.Now;
+                            attendance.UserIn = obj.UserIn;
+                            attendance.IsDeleted = false;
 
-                        context.Attendances.Add(attendance);
+                            currentDate = currentDate.AddDays(1);
+
+                            context.Attendances.Add(attendance);
+                        }
+                        else
+                        {
+                            checkData.Status = "Cuti";
+
+                            context.Attendances.Update(checkData);
+                        }
                     }
                 }
 
