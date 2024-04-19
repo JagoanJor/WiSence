@@ -120,6 +120,49 @@ namespace API.Services
                         context.Attendances.RemoveRange(attendance);
                 }
 
+                if (data.Status == "Disetujui")
+                {
+                    var currentDate = obj.Start.Value.Date;
+                    for (int i = 1; i <= obj.Durasi; i++)
+                    {
+                        while (true)
+                        {
+                            var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
+                            if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                                break;
+
+                            currentDate = currentDate.AddDays(1);
+                        };
+
+                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+
+                        // Check jika data sudah pernah kebuat sebagai absen, maka akan diubah menjadi
+                        // status cuti
+                        if (checkData == null)
+                        {
+                            var attendance = new Attendance();
+                            attendance.UserID = obj.UserID;
+                            attendance.Date = currentDate;
+                            attendance.ClockIn = currentDate;
+                            attendance.ClockOut = currentDate;
+                            attendance.Description = obj.Description;
+                            attendance.Status = "Cuti";
+                            attendance.DateIn = DateTime.Now;
+                            attendance.UserIn = obj.UserIn;
+                            attendance.IsDeleted = false;
+
+                            context.Attendances.Add(attendance);
+                        }
+                        else
+                        {
+                            checkData.Status = "Cuti";
+
+                            context.Attendances.Update(checkData);
+                        }
+                        currentDate = currentDate.AddDays(1);
+                    }
+                }
+
                 obj.UserID = data.UserID;
                 obj.Description = data.Description;
                 obj.Start = data.Start;
