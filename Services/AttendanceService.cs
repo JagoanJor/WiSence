@@ -155,7 +155,7 @@ namespace API.Services
                                     break;
                                 case "date":
                                     DateTime.TryParse(value, out DateTime searchDate);
-                                    query = query.Where(x => x.Date.Value.Date == searchDate.Date || x.Date.Value.Hour == searchDate.Hour || x.Date.Value.Minute == searchDate.Minute);
+                                    query = query.Where(x => x.Date.Value.Date == searchDate.Date);
                                     break;
                             }
                         }
