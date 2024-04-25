@@ -147,15 +147,15 @@ namespace API.Services
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "clockin":
                                     DateTime.TryParse(value, out DateTime searchClockIn);
-                                    query = query.Where(x => x.ClockIn == searchClockIn || x.ClockIn.Value.Hour == searchClockIn.Hour || x.ClockIn.Value.Minute == searchClockIn.Minute);
+                                    query = query.Where(x => x.ClockIn.Value.Date == searchClockIn.Date || x.ClockIn.Value.Hour == searchClockIn.Hour || x.ClockIn.Value.Minute == searchClockIn.Minute);
                                     break;
                                 case "clockout":
                                     DateTime.TryParse(value, out DateTime searchClockOut);
-                                    query = query.Where(x => x.ClockOut == searchClockOut || x.ClockOut.Value.Hour == searchClockOut.Hour || x.ClockOut.Value.Minute == searchClockOut.Minute);
+                                    query = query.Where(x => x.ClockOut.Value.Date == searchClockOut.Date || x.ClockOut.Value.Hour == searchClockOut.Hour || x.ClockOut.Value.Minute == searchClockOut.Minute);
                                     break;
                                 case "date":
                                     DateTime.TryParse(value, out DateTime searchDate);
-                                    query = query.Where(x => x.Date == searchDate || x.Date.Value.Hour == searchDate.Hour || x.Date.Value.Minute == searchDate.Minute);
+                                    query = query.Where(x => x.Date.Value.Date == searchDate.Date || x.Date.Value.Hour == searchDate.Hour || x.Date.Value.Minute == searchDate.Minute);
                                     break;
                             }
                         }

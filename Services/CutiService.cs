@@ -257,11 +257,11 @@ namespace API.Services
                                 case "status": query = query.Where(x => x.Status.Contains(value)); break;
                                 case "start":
                                     DateTime.TryParse(value, out DateTime searchStart);
-                                    query = query.Where(x => x.Start == searchStart);
+                                    query = query.Where(x => x.Start.Value.Date == searchStart.Date);
                                     break;
                                 case "end":
                                     DateTime.TryParse(value, out DateTime searchEnd);
-                                    query = query.Where(x => x.End == searchEnd);
+                                    query = query.Where(x => x.End.Value.Date == searchEnd.Date);
                                     break;
                             }
                         }

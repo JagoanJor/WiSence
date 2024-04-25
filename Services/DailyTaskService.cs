@@ -134,7 +134,7 @@ namespace API.Services
                                 case "task": query = query.Where(x => x.Task.Contains(value)); break;
                                 case "date":
                                     DateTime.TryParse(value, out DateTime searchDate);
-                                    query = query.Where(x => x.Date == searchDate);
+                                    query = query.Where(x => x.Date.Date == searchDate.Date);
                                     break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
