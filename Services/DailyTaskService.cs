@@ -136,6 +136,8 @@ namespace API.Services
                                     DateTime.TryParse(value, out DateTime searchDate);
                                     query = query.Where(x => x.Date == searchDate);
                                     break;
+                                case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
+                                case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                             }
                         }
                     }
@@ -155,6 +157,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderByDescending(x => x.UserID.ToString()); break;
                             case "task": query = query.OrderByDescending(x => x.Task); break;
+                            case "date": query = query.OrderByDescending(x => x.Date); break;
                         }
                     }
                     else
@@ -163,6 +166,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderBy(x => x.UserID.ToString()); break;
                             case "task": query = query.OrderBy(x => x.Task); break;
+                            case "date": query = query.OrderBy(x => x.Date); break;
                         }
                     }
                 }

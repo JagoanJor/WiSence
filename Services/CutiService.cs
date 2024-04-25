@@ -251,9 +251,18 @@ namespace API.Services
                             switch (fieldName)
                             {
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
+                                case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "durasi": query = query.Where(x => x.Durasi.ToString().Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
                                 case "status": query = query.Where(x => x.Status.Contains(value)); break;
+                                case "start":
+                                    DateTime.TryParse(value, out DateTime searchStart);
+                                    query = query.Where(x => x.Start == searchStart);
+                                    break;
+                                case "end":
+                                    DateTime.TryParse(value, out DateTime searchEnd);
+                                    query = query.Where(x => x.End == searchEnd);
+                                    break;
                             }
                         }
                     }

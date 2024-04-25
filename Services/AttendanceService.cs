@@ -144,6 +144,7 @@ namespace API.Services
                                 case "status": query = query.Where(x => x.Status.Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
+                                case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "clockin":
                                     DateTime.TryParse(value, out DateTime searchClockIn);
                                     query = query.Where(x => x.ClockIn == searchClockIn || x.ClockIn.Value.Hour == searchClockIn.Hour || x.ClockIn.Value.Minute == searchClockIn.Minute);
