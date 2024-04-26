@@ -23,7 +23,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var user = context.Users.Where(x => x.IsDeleted != true);
+                var user = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
                 if (user == null) return 0;
 
                 var role = context.Roles.Where(x => x.IsDeleted != true && x.Name != "Admin");
