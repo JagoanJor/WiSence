@@ -107,6 +107,13 @@ namespace API.Services
                 obj.DOB = data.DOB;
                 obj.Address = data.Address;
                 obj.Phone = data.Phone;
+                obj.IDCardNumber = data.IDCardNumber;
+                obj.Religion = data.Religion;
+                obj.LastEducation = data.LastEducation;
+                obj.Major = data.Major;
+                obj.EmployeeType = data.EmployeeType;
+                obj.StartWork = data.StartWork;
+                obj.EndWork = data.EndWork;
                 obj.PositionID = data.PositionID;
                 obj.CompanyID = getCompanyID(data.PositionID);
                 obj.ShiftID = data.ShiftID;

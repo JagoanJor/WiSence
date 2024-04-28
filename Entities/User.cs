@@ -17,6 +17,13 @@ namespace API.Entities
         public DateTime? DOB { get; set; }
         public String Address { get; set; }
         public String Phone { get; set; }
+        public String IDCardNumber { get; set; }
+        public String Religion { get; set; }
+        public String LastEducation { get; set; }
+        public String Major { get; set; }
+        public String EmployeeType { get; set; }
+        public DateTime? StartWork { get; set; }
+        public DateTime? EndWork { get; set; }
         public Int64? PositionID { get; set; }
         public Int64? CompanyID { get; set; }
         public Int64? ShiftID { get; set; }
