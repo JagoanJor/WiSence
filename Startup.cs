@@ -93,7 +93,7 @@ namespace API
             services.AddScoped<IDailyTaskService, DailyTaskService>();
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();
-            services.AddScoped<ICutiService, CutiService>();
+            services.AddScoped<ILeaveService, LeaveService>();
             services.AddScoped<IDashboardService, DashboardService>();
             services.AddScoped<IReportService, ReportService>();
         }

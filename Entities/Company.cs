@@ -14,7 +14,7 @@ namespace API.Entities
         public Int64 CompanyID { get; set; }
         public String Name { get; set; }
         public String Logo { get; set; }
-        public int? Cuti { get; set; }
+        public int? Leave { get; set; }
         public ICollection<Division> Divisions { get; set; }
         public ICollection<Wifi> Wifis { get; set; }
     }

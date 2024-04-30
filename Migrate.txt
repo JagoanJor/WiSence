@@ -23,7 +23,7 @@ CREATE TABLE [dbo].[Company] (
     [CompanyID]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]      VARCHAR (250) NULL,
     [Logo]      VARCHAR (250) NULL,
-    [Cuti]      INT           NULL,
+    [Leave]      INT           NULL,
     [DateIn]    DATETIME      NULL,
     [UserIn]    VARCHAR (50)  NULL,
     [DateUp]    DATETIME      NULL,
@@ -164,11 +164,11 @@ CREATE TABLE [dbo].[RoleDetail] (
     CONSTRAINT [PK__RoleDeta__3214EC27AF399EAC] PRIMARY KEY CLUSTERED ([RoleDetailID] ASC)
 );
 
-CREATE TABLE [dbo].[Cuti] (
-    [CutiID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+CREATE TABLE [dbo].[Leave] (
+    [LeaveID]      BIGINT        IDENTITY (1, 1) NOT NULL,
     [UserID]      BIGINT        NOT NULL,
     [Description] VARCHAR (250) NULL,
-    [Durasi]      INT           NULL,
+    [Duration]      INT           NULL,
     [Start]       DATETIME      NULL,
     [End]         DATETIME      NULL,
     [Status]      VARCHAR (50)  NULL,
@@ -177,7 +177,7 @@ CREATE TABLE [dbo].[Cuti] (
     [DateUp]      DATETIME      NULL,
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
-    CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([CutiID] ASC)
+    CONSTRAINT [PK__Leave__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([LeaveID] ASC)
 );
 
 CREATE TABLE [dbo].[Shift] (
@@ -338,7 +338,7 @@ SELECT DISTINCT
 	P.Name AS Posisi,
     U.NIK AS NIK,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
-	C.Cuti AS JatahCuti
+	C.Leave AS JatahCuti
 FROM
 	[User] AS U
 	INNER JOIN Position AS P ON P.PositionID = U.PositionID
@@ -347,7 +347,7 @@ FROM
 WHERE
 	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.UserID, U.Name, P.Name, U.NIK, C.Cuti
+	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.UserID, U.Name, P.Name, U.NIK, C.Leave
 
 
     ~~~~~~~~VIEW REPORT CUTI LIST~~~~~~~~
@@ -387,8 +387,8 @@ SELECT
 	P.Name AS Posisi,
 	U.NIK AS NIK,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
-	C.Cuti AS JatahCuti,
-	(C.Cuti - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
+	C.Leave AS JatahCuti,
+	(C.Leave - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
 FROM 
 	[User] AS U
 	INNER JOIN Position AS P ON P.PositionID = U.PositionID
@@ -397,4 +397,4 @@ FROM
 WHERE
 	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Cuti, U.NIK
+	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Leave, U.NIK

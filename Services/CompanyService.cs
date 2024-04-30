@@ -94,6 +94,9 @@ namespace API.Services
 
                 // Delete userlog data
                 context.UserLogs.RemoveRange(context.UserLogs);
+                
+                // Delete shift data
+                context.Shift.RemoveRange(context.Shift);
 
                 // Delete wifi data
                 context.Wifis.RemoveRange(context.Wifis);*/
@@ -141,7 +144,7 @@ namespace API.Services
                 else
                     obj.Logo = data.Logo;
 
-                obj.Cuti = data.Cuti;
+                obj.Leave = data.Leave;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 

@@ -13,20 +13,20 @@ using String = System.String;
 
 namespace API.Services
 {
-    public interface ICutiService
+    public interface ILeaveService
     {
-        IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
-        Cuti GetById(Int64 id);
-        Cuti Create(Cuti data);
-        Cuti Edit(Cuti data);
+        IEnumerable<LeaveResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
+        Leave GetById(Int64 id);
+        Leave Create(Leave data);
+        Leave Edit(Leave data);
         bool Delete(Int64 id, String userID);
         Company SetCuti(Int64 id, int jatah, User user);
         int SisaCuti(Int64 userID, Int64 companyID);
-        Cuti Status(Int64 id, String status, Int64 userID);
+        Leave Status(Int64 id, String status, Int64 userID);
     }
-    public class CutiService : ICutiService
+    public class LeaveService : ILeaveService
     {
-        public Cuti Create(Cuti data)
+        public Leave Create(Leave data)
         {
             var context = new EFContext();
             try
@@ -34,7 +34,7 @@ namespace API.Services
                 var currentDate = data.Start.Value.Date;
 
                 //Validate to make sure there are no holiday or saturday or sunday set as Cuti
-                for (int i = 1; i <= data.Durasi; i++)
+                for (int i = 1; i <= data.Duration; i++)
                 {
                     while(true)
                     {
@@ -43,7 +43,7 @@ namespace API.Services
                         {
                             if (i == 1)
                                 data.Start = currentDate;
-                            if (i == data.Durasi)
+                            if (i == data.Duration)
                                 data.End = currentDate;
                             
                             currentDate = currentDate.AddDays(1);
@@ -56,7 +56,7 @@ namespace API.Services
 
                 data.Status = "Menunggu";
 
-                context.Cutis.Add(data);
+                context.Leaves.Add(data);
                 context.SaveChanges();
 
                 return data;
@@ -80,7 +80,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
+                var obj = context.Leaves.FirstOrDefault(x => x.LeaveID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 if (obj.Status == "Disetujui")
@@ -112,12 +112,12 @@ namespace API.Services
             }
         }
 
-        public Cuti Edit(Cuti data)
+        public Leave Edit(Leave data)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == data.CutiID && x.IsDeleted != true);
+                var obj = context.Leaves.FirstOrDefault(x => x.LeaveID == data.LeaveID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 if (data.Status != "Disetujui" && obj.Status == "Disetujui")
@@ -130,7 +130,7 @@ namespace API.Services
                 if (data.Status == "Disetujui")
                 {
                     var currentDate = obj.Start.Value.Date;
-                    for (int i = 1; i <= obj.Durasi; i++)
+                    for (int i = 1; i <= obj.Duration; i++)
                     {
                         while (true)
                         {
@@ -174,7 +174,7 @@ namespace API.Services
                 obj.Description = data.Description;
                 obj.Start = data.Start;
                 obj.End = data.End;
-                obj.Durasi = data.Durasi;
+                obj.Duration = data.Duration;
                 obj.Status = data.Status;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
@@ -197,12 +197,12 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
+        public IEnumerable<LeaveResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
         {
             var context = new EFContext();
             try
             {
-                var query = from a in context.Cutis where a.IsDeleted != true select a;
+                var query = from a in context.Leaves where a.IsDeleted != true select a;
                 query = query.Include("User");
 
                 // If not Admin, just return the user data
@@ -237,7 +237,7 @@ namespace API.Services
                 // Searching
                 if (!string.IsNullOrEmpty(search))
                     query = query.Where(x => x.User.Name.Contains(search)
-                        || x.Durasi.ToString().Contains(search)
+                        || x.Duration.ToString().Contains(search)
                         || x.Description.Contains(search)
                         || x.Status.Contains(search));
 
@@ -257,7 +257,7 @@ namespace API.Services
                                 case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
-                                case "durasi": query = query.Where(x => x.Durasi.ToString().Contains(value)); break;
+                                case "Duration": query = query.Where(x => x.Duration.ToString().Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
                                 case "status": query = query.Where(x => x.Status.Contains(value)); break;
                                 case "start":
@@ -287,7 +287,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
-                            case "durasi": query = query.OrderByDescending(x => x.Durasi); break;
+                            case "Duration": query = query.OrderByDescending(x => x.Duration); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
                             case "status": query = query.OrderByDescending(x => x.Status); break;
                         }
@@ -298,7 +298,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderBy(x => x.User.UserID); break;
                             case "name": query = query.OrderBy(x => x.User.Name); break;
-                            case "durasi": query = query.OrderBy(x => x.Durasi); break;
+                            case "Duration": query = query.OrderBy(x => x.Duration); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
                             case "status": query = query.OrderBy(x => x.Status); break;
                         }
@@ -306,7 +306,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.CutiID);
+                    query = query.OrderByDescending(x => x.LeaveID);
                 }
 
                 // Get Total Before Limit and Page
@@ -324,7 +324,7 @@ namespace API.Services
                     return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 }
 
-                var cutiResponses = new List<CutiResponse>();
+                var leaveResponses = new List<LeaveResponse>();
                 foreach (var cuti in data)
                 {
                     var users = context.Users.FirstOrDefault(x => x.UserID == cuti.UserID && x.IsDeleted != true);
@@ -335,9 +335,9 @@ namespace API.Services
                     if (company == null)
                         throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
-                    var sisaCuti = SisaCuti(users.UserID, company.CompanyID); 
-                    var cutiResponse = new CutiResponse(
-                        cuti.CutiID,
+                    var leaveAllowance = SisaCuti(users.UserID, company.CompanyID); 
+                    var leaveResponse = new LeaveResponse(
+                        cuti.LeaveID,
                         cuti.DateIn,
                         cuti.DateUp,
                         cuti.UserIn,
@@ -345,18 +345,18 @@ namespace API.Services
                         cuti.IsDeleted,
                         cuti.UserID,
                         cuti.Description,
-                        cuti.Durasi,
+                        cuti.Duration,
                         cuti.Start,
                         cuti.End,
                         cuti.Status,
-                        sisaCuti,
+                        leaveAllowance,
                         cuti.User
                     );
 
-                    cutiResponses.Add(cutiResponse);
+                    leaveResponses.Add(leaveResponse);
                 }
 
-                return cutiResponses;
+                return leaveResponses;
             }
             catch (Exception ex)
             {
@@ -372,14 +372,14 @@ namespace API.Services
             }
         }
 
-        public Cuti GetById(Int64 id)
+        public Leave GetById(Int64 id)
         {
             var context = new EFContext();
             try
             {
-                return context.Cutis
+                return context.Leaves
                     .Include(x => x.User)
-                    .FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.LeaveID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -402,7 +402,7 @@ namespace API.Services
             {
                 var obj = context.Companies.FirstOrDefault(x => x.CompanyID == id && x.IsDeleted != true);
                 
-                obj.Cuti = jatah;
+                obj.Leave = jatah;
                 obj.UserUp = user.UserID.ToString();
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
@@ -443,7 +443,7 @@ namespace API.Services
                     throw new Exception("Company not found!");
 
 
-                count = (int)(com.Cuti - count);
+                count = (int)(com.Leave - count);
                 return (count);
             }
             catch (Exception ex)
@@ -460,12 +460,12 @@ namespace API.Services
             }
         }
 
-        public Cuti Status(Int64 id, String status, Int64 userID)
+        public Leave Status(Int64 id, String status, Int64 userID)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
+                var obj = context.Leaves.FirstOrDefault(x => x.LeaveID == id && x.IsDeleted != true);
                 if (obj == null)
                     throw new Exception("Data cuti tidak ditemukan!");
 
@@ -479,7 +479,7 @@ namespace API.Services
                 if (status == "Disetujui")
                 {
                     var currentDate = obj.Start.Value.Date;
-                    for (int i = 1; i <= obj.Durasi; i++)
+                    for (int i = 1; i <= obj.Duration; i++)
                     {
                         while (true)
                         {
@@ -519,7 +519,7 @@ namespace API.Services
                     }
                 }
 
-                context.Cutis.Update(obj);
+                context.Leaves.Update(obj);
                 context.SaveChanges();
 
                 return obj;

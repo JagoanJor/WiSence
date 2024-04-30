@@ -166,7 +166,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.Count(x => x.Status == "Menunggu" && x.IsDeleted != true);
+                var obj = context.Leaves.Count(x => x.Status == "Menunggu" && x.IsDeleted != true);
                 if (obj == 0)
                     return false;
 

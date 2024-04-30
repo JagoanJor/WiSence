@@ -15,11 +15,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class CutiController : ControllerBase
+    public class LeaveController : ControllerBase
     {
-        private ICutiService _service;
+        private ILeaveService _service;
 
-        public CutiController(ICutiService service)
+        public LeaveController(ILeaveService service)
         {
             _service = service;
         }
@@ -41,7 +41,7 @@ namespace API.Controllers
 
                 var total = 0;
                 var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
-                var response = new ListResponse<CutiResponse>(result, total, page);
+                var response = new ListResponse<LeaveResponse>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -68,7 +68,7 @@ namespace API.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new Response<Cuti>(result);
+                var response = new Response<Leave>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Cuti obj)
+        public IActionResult Create([FromBody] Leave obj)
         {
             try
             {
@@ -105,7 +105,7 @@ namespace API.Controllers
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
-                var response = new Response<Cuti>(result);
+                var response = new Response<Leave>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -124,7 +124,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Cuti obj)
+        public IActionResult Edit([FromBody] Leave obj)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace API.Controllers
                 obj.UserUp = user.UserID.ToString();
 
                 var result = _service.Edit(obj);
-                var response = new Response<Cuti>(result);
+                var response = new Response<Leave>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -269,7 +269,7 @@ namespace API.Controllers
                 //obj.UserIn = user.UserID.ToString();
 
                 var result = _service.Status(id, status, user.UserID);
-                var response = new Response<Cuti>(result);
+                var response = new Response<Leave>(result);
                 return Ok(response);
             }
             catch (Exception ex)

@@ -3,7 +3,7 @@ using System;
 
 namespace API.Responses
 {
-    public class CutiResponse
+    public class LeaveResponse
     {
         public Int64 ID { get; set; }
         public DateTime? DateIn { get; set; }
@@ -13,13 +13,13 @@ namespace API.Responses
         public Boolean? IsDeleted { get; set; }
         public Int64 UserID { get; set; }
         public String Description { get; set; }
-        public int? Durasi { get; set; }
+        public int? Duration { get; set; }
         public DateTime? Start { get; set; }
         public DateTime? End { get; set; }
         public String Status { get; set; }
-        public int? SisaCuti { get; set; }
+        public int? LeaveAllowance { get; set; }
         public User User { get; set; }
-        public CutiResponse(Int64 id, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? durasi, DateTime? start, DateTime? end, String status, int? sisaCuti, User user)
+        public LeaveResponse(Int64 id, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? duration, DateTime? start, DateTime? end, String status, int? leaveAllowance, User user)
         {
             ID = id;
             DateIn = dateIn;
@@ -29,11 +29,11 @@ namespace API.Responses
             IsDeleted = isDeleted;
             UserID = userID;
             Description = description;
-            Durasi = durasi;
+            Duration = duration;
             Start = start;
             End = end;
             Status = status;
-            SisaCuti = sisaCuti;
+            LeaveAllowance = leaveAllowance;
             User = user;
         }
     }

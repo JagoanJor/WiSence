@@ -54,9 +54,9 @@ namespace API.Services
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
                 // Delete User's cuti data
-                var cuti = context.Cutis.Where(x => x.UserID == id);
+                var cuti = context.Leaves.Where(x => x.UserID == id);
                 if (cuti != null)
-                    context.Cutis.RemoveRange(cuti);
+                    context.Leaves.RemoveRange(cuti);
 
                 // Delete User's attendance data
                 var attendance = context.Attendances.Where(x => x.UserID == id);
