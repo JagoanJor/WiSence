@@ -41,7 +41,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Divisions.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Divisions.FirstOrDefault(x => x.DivisionID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -71,7 +71,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Divisions.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Divisions.FirstOrDefault(x => x.DivisionID == data.DivisionID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
@@ -158,7 +158,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.DivisionID);
                 }
 
                 // Get Total Before Limit and Page
@@ -199,7 +199,7 @@ namespace API.Services
             {
                 return context.Divisions
                     .Include(x => x.Company)
-                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.DivisionID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {

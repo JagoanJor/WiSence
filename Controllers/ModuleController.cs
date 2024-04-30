@@ -89,7 +89,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserIn = user.ID.ToString();
+                obj.UserIn = user.UserID.ToString();
                 obj.DateIn = DateTime.Now.AddMinutes(-2);
                 obj.IsDeleted = false;
 
@@ -127,7 +127,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserUp = user.ID.ToString();
+                obj.UserUp = user.UserID.ToString();
 
                 var result = _service.Edit(obj);
                 var response = new Response<Module>(result);
@@ -162,7 +162,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.Delete(id, user.ID.ToString());
+                var result = _service.Delete(id, user.UserID.ToString());
 
                 var response = new Response<object>(result);
                 return Ok(response);

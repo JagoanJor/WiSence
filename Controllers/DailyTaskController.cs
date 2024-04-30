@@ -16,9 +16,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class DailyTaskController : ControllerBase
     {
-        private IService<DailyTask> _service;
+        private IDailyTaskService _service;
 
-        public DailyTaskController(IService<DailyTask> service)
+        public DailyTaskController(IDailyTaskService service)
         {
             _service = service;
         }
@@ -29,8 +29,17 @@ namespace API.Controllers
         {
             try
             {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
                 var total = 0;
-                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
+                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 var response = new ListResponse<DailyTask>(result, total, page);
                 return Ok(response);
             }
@@ -90,7 +99,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserIn = user.ID.ToString();
+                obj.UserIn = user.UserID.ToString();
                 obj.DateIn = DateTime.Now.AddMinutes(-2);
                 obj.IsDeleted = false;
 
@@ -128,7 +137,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserUp = user.ID.ToString();
+                obj.UserUp = user.UserID.ToString();
 
                 var result = _service.Edit(obj);
                 var response = new Response<DailyTask>(result);
@@ -163,7 +172,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.Delete(id, user.ID.ToString());
+                var result = _service.Delete(id, user.UserID.ToString());
 
                 var response = new Response<object>(result);
                 return Ok(response);

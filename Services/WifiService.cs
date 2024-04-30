@@ -104,19 +104,19 @@ namespace API.Services
                 if (flag == 0)
                     throw new Exception("Please Connect to Wi-fi!");
 
-                var pos = context.Positions.FirstOrDefault(x => x.ID == user.PositionID && x.IsDeleted != true);
+                var pos = context.Positions.FirstOrDefault(x => x.PositionID == user.PositionID && x.IsDeleted != true);
                 if (pos == null)
                     throw new Exception("Please set user's position!");
 
-                var div = context.Divisions.FirstOrDefault(x => x.ID == pos.DivisionID && x.IsDeleted != true);
+                var div = context.Divisions.FirstOrDefault(x => x.DivisionID == pos.DivisionID && x.IsDeleted != true);
                 if (div == null)
                     throw new Exception("Please set position's division!");
 
-                var com = context.Companies.FirstOrDefault(x => x.ID == div.CompanyID && x.IsDeleted != true);
+                var com = context.Companies.FirstOrDefault(x => x.CompanyID == div.CompanyID && x.IsDeleted != true);
                 if (com == null)
                     throw new Exception("Please set division's company!");
 
-                data.CompanyID = com.ID;
+                data.CompanyID = com.CompanyID;
 
                 context.Wifis.Add(data);
                 context.SaveChanges();
@@ -142,7 +142,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Wifis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Wifis.FirstOrDefault(x => x.WifiID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -172,7 +172,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Wifis.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Wifis.FirstOrDefault(x => x.WifiID == data.WifiID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
@@ -259,7 +259,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.WifiID);
                 }
 
                 // Get Total Before Limit and Page
@@ -300,7 +300,7 @@ namespace API.Services
             {
                 return context.Wifis
                     .Include(x => x.Company)
-                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.WifiID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {

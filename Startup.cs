@@ -87,11 +87,11 @@ namespace API
             services.AddScoped<IService<Division>, DivisionService>();
             services.AddScoped<IService<Position>, PositionService>();
             services.AddScoped<IWifiService<Wifi>, WifiService>();
-            services.AddScoped<IService<DailyTask>, DailyTaskService>();
             services.AddScoped<IService<Calendar>, CalendarService>();
             services.AddScoped<IService<Shift>, ShiftService>();
 
-            services.AddScoped<IAttendanceService<Attendance>, AttendanceService>();
+            services.AddScoped<IDailyTaskService, DailyTaskService>();
+            services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();
             services.AddScoped<ICutiService, CutiService>();
             services.AddScoped<IDashboardService, DashboardService>();

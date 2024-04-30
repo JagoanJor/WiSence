@@ -29,7 +29,7 @@ namespace API.Services
                 var role = context.Roles.Where(x => x.IsDeleted != true && x.Name != "Admin");
                 if (role == null) throw new Exception("Data role tidak ada!");
 
-                var roleIDs = role.Select(x => x.ID).ToList();
+                var roleIDs = role.Select(x => x.RoleID).ToList();
 
                 int obj = 0;
                 obj += user.Count(x => roleIDs.Contains(x.RoleID));
@@ -134,13 +134,13 @@ namespace API.Services
                 var totalUser = userInCompany.Count();
                 if (totalUser == 0) return (0, 0, 0, 0);
 
-                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
                 if (ontime == null) ontime = 0;
 
-                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
                 if (terlambat == null) terlambat = 0;
 
-                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.ID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
                 if (cuti == null) cuti = 0;
 
                 var absen = (((totalUser - ontime) - terlambat) - cuti);

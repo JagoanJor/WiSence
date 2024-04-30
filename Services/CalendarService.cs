@@ -41,7 +41,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Calendars.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Calendars.FirstOrDefault(x => x.CalendarID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -71,7 +71,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Calendars.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Calendars.FirstOrDefault(x => x.CalendarID == data.CalendarID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Description = data.Description;
@@ -153,7 +153,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.CalendarID);
                 }
 
                 // Get Total Before Limit and Page
@@ -192,7 +192,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                return context.Calendars.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                return context.Calendars.FirstOrDefault(x => x.CalendarID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {

@@ -60,7 +60,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.CompanyID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 var contentPath = this._environment.ContentRootPath;
@@ -121,7 +121,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.CompanyID == data.CompanyID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
@@ -218,7 +218,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.CompanyID);
                 }
 
                 // Get Total Before Limit and Page
@@ -257,7 +257,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var query = from a in context.Companies where a.IsDeleted != true && a.ID == id select a;
+                var query = from a in context.Companies where a.IsDeleted != true && a.CompanyID == id select a;
                 query = query.Include("Wifis");
 
                 var data = query.FirstOrDefault();

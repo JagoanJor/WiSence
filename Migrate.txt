@@ -3,7 +3,7 @@ VISUAL STUDIO SQL SERVER
 ================================================================
 
 CREATE TABLE [dbo].[Attendance] (
-    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [AttendanceID]          BIGINT        IDENTITY (1, 1) NOT NULL,
     [UserID]      BIGINT        NULL,
     [Status]      VARCHAR (50)  NULL,
     [Description] VARCHAR (256) NULL,
@@ -15,140 +15,141 @@ CREATE TABLE [dbo].[Attendance] (
     [DateUp]      DATETIME      NULL,
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
-    CONSTRAINT [PK__Attendance__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Attendance__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([AttendanceID] ASC)
 );
 
 
 CREATE TABLE [dbo].[Company] (
-    [ID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [CompanyID]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]      VARCHAR (250) NULL,
     [Logo]      VARCHAR (250) NULL,
+    [Cuti]      INT           NULL,
     [DateIn]    DATETIME      NULL,
     [UserIn]    VARCHAR (50)  NULL,
     [DateUp]    DATETIME      NULL,
     [UserUp]    VARCHAR (50)  NULL,
     [IsDeleted] BIT           NULL,
-    CONSTRAINT [PK__Company__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Company__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([CompanyID] ASC)
 );
 
 CREATE TABLE [dbo].[Division] (
-    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
-    [Name]       VARCHAR (250) NULL,
-    [NumberOfEmployee]       INT  NULL,
-    [CompanyID]       BIGINT  NULL,
-    [DateIn]     DATETIME      NULL,
-    [UserIn]     VARCHAR (50)  NULL,
-    [DateUp]     DATETIME      NULL,
-    [UserUp]     VARCHAR (50)  NULL,
-    [IsDeleted]  BIT           NULL,
-    CONSTRAINT [PK__Division__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [DivisionID]               BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]             VARCHAR (250) NULL,
+    [NumberOfEmployee] INT           NULL,
+    [CompanyID]        BIGINT        NULL,
+    [DateIn]           DATETIME      NULL,
+    [UserIn]           VARCHAR (50)  NULL,
+    [DateUp]           DATETIME      NULL,
+    [UserUp]           VARCHAR (50)  NULL,
+    [IsDeleted]        BIT           NULL,
+    CONSTRAINT [PK__Division__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([DivisionID] ASC)
 );
 
 CREATE TABLE [dbo].[Wifi] (
-    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
-    [Name]       VARCHAR (250) NULL,
-    [IPAddress]       VARCHAR (50)  NULL,
-    [CompanyID]       BIGINT  NULL,
-    [DateIn]     DATETIME      NULL,
-    [UserIn]     VARCHAR (50)  NULL,
-    [DateUp]     DATETIME      NULL,
-    [UserUp]     VARCHAR (50)  NULL,
-    [IsDeleted]  BIT           NULL,
-    CONSTRAINT [PK__Wifi__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [WifiID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]      VARCHAR (250) NULL,
+    [IPAddress] VARCHAR (50)  NULL,
+    [CompanyID] BIGINT        NULL,
+    [DateIn]    DATETIME      NULL,
+    [UserIn]    VARCHAR (50)  NULL,
+    [DateUp]    DATETIME      NULL,
+    [UserUp]    VARCHAR (50)  NULL,
+    [IsDeleted] BIT           NULL,
+    CONSTRAINT [PK__Wifi__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([WifiID] ASC)
 );
 
 CREATE TABLE [dbo].[Position] (
-    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
+    [PositionID]         BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]       VARCHAR (250) NULL,
-    [DivisionID]       BIGINT  NULL,
+    [DivisionID] BIGINT        NULL,
     [DateIn]     DATETIME      NULL,
     [UserIn]     VARCHAR (50)  NULL,
     [DateUp]     DATETIME      NULL,
     [UserUp]     VARCHAR (50)  NULL,
     [IsDeleted]  BIT           NULL,
-    CONSTRAINT [PK__Position__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Position__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([PositionID] ASC)
 );
 
 CREATE TABLE [dbo].[User] (
-    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
-    [Email]      VARCHAR (50)  NOT NULL,
-    [Password]   VARCHAR (256) NOT NULL,
-    [Name]       VARCHAR (50)  NULL,
-    [NIK]        VARCHAR (250) NULL,
-    [Gender]     VARCHAR (50)  NULL,
-    [POB]        VARCHAR (50)  NULL,
-    [DOB]        DATETIME      NULL,
-    [Address]    VARCHAR (50)  NULL,
-    [Phone]      VARCHAR (50)  NULL,
-    [IDCardNumber]      VARCHAR (50)  NULL,
+    [UserID]            BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Email]         VARCHAR (50)  NOT NULL,
+    [Password]      VARCHAR (256) NOT NULL,
+    [Name]          VARCHAR (50)  NULL,
+    [NIK]           VARCHAR (250) NULL,
+    [Gender]        VARCHAR (50)  NULL,
+    [POB]           VARCHAR (50)  NULL,
+    [DOB]           DATETIME      NULL,
+    [Address]       VARCHAR (50)  NULL,
+    [Phone]         VARCHAR (50)  NULL,
+    [IDCardNumber]  VARCHAR (50)  NULL,
     [Religion]      VARCHAR (50)  NULL,
-    [LastEducation]      VARCHAR (50)  NULL,
-    [Major]      VARCHAR (50)  NULL,
-    [EmployeeType]      VARCHAR (50)  NULL,
-	[StartWork] DATETIME NULL,
-	[EndWork] DATETIME NULL,
-    [PositionID] BIGINT        NULL,
-    [CompanyID]  BIGINT        NULL,
-    [ShiftID]    BIGINT        NULL,
-    [IsAdmin]    BIT           NULL,
-    [RoleID]     BIGINT        NULL,
-    [DateIn]     DATETIME      NULL,
-    [UserIn]     VARCHAR (50)  NULL,
-    [DateUp]     DATETIME      NULL,
-    [UserUp]     VARCHAR (50)  NULL,
-    [IsDeleted]  BIT           NULL,
-    CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [LastEducation] VARCHAR (50)  NULL,
+    [Major]         VARCHAR (50)  NULL,
+    [EmployeeType]  VARCHAR (50)  NULL,
+    [StartWork]     DATETIME      NULL,
+    [EndWork]       DATETIME      NULL,
+    [PositionID]    BIGINT        NULL,
+    [CompanyID]     BIGINT        NULL,
+    [ShiftID]       BIGINT        NULL,
+    [IsAdmin]       BIT           NULL,
+    [RoleID]        BIGINT        NULL,
+    [DateIn]        DATETIME      NULL,
+    [UserIn]        VARCHAR (50)  NULL,
+    [DateUp]        DATETIME      NULL,
+    [UserUp]        VARCHAR (50)  NULL,
+    [IsDeleted]     BIT           NULL,
+    CONSTRAINT [PK__User__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([UserID] ASC)
 );
 
 CREATE TABLE [dbo].[Module] (
-    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [ModuleID]          BIGINT        IDENTITY (1, 1) NOT NULL,
     [Description] VARCHAR (250) NULL,
     [DateIn]      DATETIME      NULL,
     [UserIn]      VARCHAR (50)  NULL,
     [DateUp]      DATETIME      NULL,
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
-    CONSTRAINT [PK__Module__3214EC2755FECD97] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Module__3214EC2755FECD97] PRIMARY KEY CLUSTERED ([ModuleID] ASC)
 );
 
 CREATE TABLE [dbo].[DailyTask] (
-    [ID]         BIGINT       IDENTITY (1, 1) NOT NULL,
-    [UserID]     BIGINT       NULL,
-    [Task]       VARCHAR (50) NULL,
-    [Date]       DATETIME     NULL,
-    [DateIn]     DATETIME     NULL,
-    [UserIn]     VARCHAR (50) NULL,
-    [DateUp]     DATETIME     NULL,
-    [UserUp]     VARCHAR (50) NULL,
-    [IsDeleted]  BIT          NULL,
-    CONSTRAINT [PK__DailyTask__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [DailyTaskID]        BIGINT       IDENTITY (1, 1) NOT NULL,
+    [UserID]    BIGINT       NULL,
+    [Task]      VARCHAR (50) NULL,
+    [Date]      DATETIME     NULL,
+    [DateIn]    DATETIME     NULL,
+    [UserIn]    VARCHAR (50) NULL,
+    [DateUp]    DATETIME     NULL,
+    [UserUp]    VARCHAR (50) NULL,
+    [IsDeleted] BIT          NULL,
+    CONSTRAINT [PK__DailyTask__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([DailyTaskID] ASC)
 );
 
 CREATE TABLE [dbo].[Calendar] (
-    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
-    [Description] VARCHAR(250)  NULL,
+    [CalendarID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Description] VARCHAR (250) NULL,
     [Holiday]     DATETIME      NULL,
     [DateIn]      DATETIME      NULL,
     [UserIn]      VARCHAR (50)  NULL,
     [DateUp]      DATETIME      NULL,
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
-    CONSTRAINT [PK__Calendar__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Calendar__3214EC27A3A62003] PRIMARY KEY CLUSTERED ([CalendarID] ASC)
 );
 
 CREATE TABLE [dbo].[Role] (
-    [ID]        BIGINT       IDENTITY (1, 1) NOT NULL,
+    [RoleID]        BIGINT       IDENTITY (1, 1) NOT NULL,
     [Name]      VARCHAR (50) NOT NULL,
     [DateIn]    DATETIME     NULL,
     [UserIn]    VARCHAR (50) NULL,
     [DateUp]    DATETIME     NULL,
     [UserUp]    VARCHAR (50) NULL,
     [IsDeleted] BIT          NULL,
-    CONSTRAINT [PK__Role__3214EC2788E7351B] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Role__3214EC2788E7351B] PRIMARY KEY CLUSTERED ([RoleID] ASC)
 );
 
 CREATE TABLE [dbo].[RoleDetail] (
-    [ID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [RoleDetailID]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [RoleID]    BIGINT        NOT NULL,
     [ModuleID]  BIGINT        NOT NULL,
     [IsCreate]  BIT           NULL,
@@ -160,38 +161,65 @@ CREATE TABLE [dbo].[RoleDetail] (
     [UserIn]    VARCHAR (250) NULL,
     [UserUp]    VARCHAR (250) NULL,
     [IsDeleted] BIT           NULL,
-    CONSTRAINT [PK__RoleDeta__3214EC27AF399EAC] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__RoleDeta__3214EC27AF399EAC] PRIMARY KEY CLUSTERED ([RoleDetailID] ASC)
 );
 
 CREATE TABLE [dbo].[Cuti] (
-    [ID]          BIGINT        IDENTITY (1, 1) NOT NULL,
+    [CutiID]          BIGINT        IDENTITY (1, 1) NOT NULL,
     [UserID]      BIGINT        NOT NULL,
     [Description] VARCHAR (250) NULL,
     [Durasi]      INT           NULL,
     [Start]       DATETIME      NULL,
     [End]         DATETIME      NULL,
-	[Status]	  VARCHAR (50)  NULL,
+    [Status]      VARCHAR (50)  NULL,
     [DateIn]      DATETIME      NULL,
     [UserIn]      VARCHAR (50)  NULL,
     [DateUp]      DATETIME      NULL,
     [UserUp]      VARCHAR (50)  NULL,
     [IsDeleted]   BIT           NULL,
-    CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    CONSTRAINT [PK__Cuti__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([CutiID] ASC)
 );
 
 CREATE TABLE [dbo].[Shift] (
-    [ID]         BIGINT        IDENTITY (1, 1) NOT NULL,
-    [ClockIn]    DATETIME      NULL,
-    [ClockOut]   DATETIME      NULL,
-    [Description]VARCHAR (50)  NULL,
-    [DateIn]     DATETIME      NULL,
-    [UserIn]     VARCHAR (50)  NULL,
-    [DateUp]     DATETIME      NULL,
-    [UserUp]     VARCHAR (50)  NULL,
-    [IsDeleted]  BIT           NULL,
-    CONSTRAINT [PK__Shift__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ID] ASC)
+    [ShiftID]          BIGINT       IDENTITY (1, 1) NOT NULL,
+    [ClockIn]     DATETIME     NULL,
+    [ClockOut]    DATETIME     NULL,
+    [Description] VARCHAR (50) NULL,
+    [DateIn]      DATETIME     NULL,
+    [UserIn]      VARCHAR (50) NULL,
+    [DateUp]      DATETIME     NULL,
+    [UserUp]      VARCHAR (50) NULL,
+    [IsDeleted]   BIT          NULL,
+    CONSTRAINT [PK__Shift__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([ShiftID] ASC)
 );
 
+CREATE TABLE [dbo].[Passwords] (
+    [PasswordID]  BIGINT       IDENTITY (1, 1) NOT NULL,
+    [UserID]      BIGINT       NOT NULL,
+    [UniqueCode]  VARCHAR (36) NOT NULL,
+    [ExpiredDate] DATETIME     NULL,
+    [DateIn]      DATETIME     NOT NULL,
+    [DateUp]      DATETIME     NULL,
+    [UserIn]      VARCHAR (11) NOT NULL,
+    [UserUp]      VARCHAR (11) NULL,
+    [IsDeleted]   BIT          NULL,
+    CONSTRAINT [PK_Password] PRIMARY KEY CLUSTERED ([PasswordID] ASC)
+);
+
+CREATE TABLE [dbo].[UserLogs] (
+    [UserLogsID]  BIGINT        IDENTITY (1, 1) NOT FOR REPLICATION NOT NULL,
+    [ObjectID]    BIGINT        NULL,
+    [ModuleID]    BIGINT        NULL,
+    [UserID]      BIGINT        NOT NULL,
+    [Description] VARCHAR (250) NOT NULL,
+    [TransDate]   DATETIME      NOT NULL,
+    [DateIn]      DATETIME      NULL,
+    [DateUp]      DATETIME      NULL,
+    [UserIn]      VARCHAR (11)  NULL,
+    [UserUp]      VARCHAR (11)  NULL,
+    [IsDeleted]   BIT           NULL,
+    CONSTRAINT [PK_UserLogs] PRIMARY KEY CLUSTERED ([UserLogsID] ASC)
+);
 
 ========
 ||VIEW||
@@ -203,17 +231,17 @@ CREATE VIEW [dbo].[vReportAbsensi]
 AS
 SELECT DISTINCT
     U.Name AS Nama,
-    U.ID AS UserID,
+    U.UserID AS UserID,
     P.Name AS Posisi,
-    U.NIK AS NIK
+	U.NIK AS NIK,
     CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
     COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS Kerja,
     ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
     '' AS TotalKerja
 FROM
     [User] AS U
-    INNER JOIN Position AS P ON U.PositionID = P.ID
-    INNER JOIN Attendance AS A ON U.ID = A.UserID
+    INNER JOIN Position AS P ON U.PositionID = P.PositionID
+    INNER JOIN Attendance AS A ON U.UserID = A.UserID
     LEFT JOIN (
         SELECT CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday)) AS Periode, COUNT(*) AS CountHolidays
         FROM Calendar
@@ -221,9 +249,9 @@ FROM
         GROUP BY CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday))
     ) AS TotalLibur ON CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) = TotalLibur.Periode
 WHERE
-    P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsDeleted != 1 AND U.IsAdmin != 1
+    P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-    U.Name, U.ID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays, U.NIK;
+    U.Name, U.UserID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays, U.NIK;
 
 
     ~~~~~~~~VIEW REPORT ABSENSI LIST~~~~~~~~
@@ -231,7 +259,7 @@ GROUP BY
 CREATE VIEW [dbo].[vReportAbsensiList]
 AS 
 SELECT
-    U.ID AS UserID,
+    U.UserID AS UserID,
 	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
     CASE DATENAME(dw, A.Date)
         WHEN 'Sunday' THEN 'Minggu'
@@ -248,11 +276,11 @@ SELECT
     A.Status AS Status
 FROM
     [User] AS U
-    INNER JOIN Attendance AS A ON U.ID = A.UserID
+    INNER JOIN Attendance AS A ON U.UserID = A.UserID
 WHERE
     A.IsDeleted != 1 AND U.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-    U.ID, A.Date, A.ClockIn, A.ClockOut, A.Status;
+    U.UserID, A.Date, A.ClockIn, A.ClockOut, A.Status;
 
 
     ~~~~~~~~VIEW REPORT ABSENSI PER TAHUN~~~~~~~~
@@ -281,22 +309,22 @@ CREATE VIEW [dbo].[vReportAbsensiListPerTahun]
 AS
 SELECT
     CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
-    U.ID AS UserID,
+    U.UserID AS UserID,
     U.Name AS Nama,
 	P.Name AS Posisi,
-    U.NIK AS NIK,
+	U.NIK AS NIK,
     COUNT(CASE WHEN A.Status = 'Ontime' THEN 1 END) AS Ontime,
     COUNT(CASE WHEN A.Status = 'Terlambat' THEN 1 END) AS Terlambat,
     COUNT(CASE WHEN A.Status = 'Absen' THEN 1 END) AS Absen,
     COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti
 FROM
     [User] AS U
-    INNER JOIN Position AS P ON P.ID = U.PositionID
-    INNER JOIN Attendance AS A ON A.UserID = U.ID
+    INNER JOIN Position AS P ON P.PositionID = U.PositionID
+    INNER JOIN Attendance AS A ON A.UserID = U.UserID
 WHERE
 	P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-    CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, U.NIK;
+    CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, U.NIK;
 
 
     ~~~~~~~~VIEW REPORT CUTI~~~~~~~~
@@ -305,7 +333,7 @@ CREATE VIEW [dbo].[vReportCuti]
 AS
 SELECT DISTINCT
 	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
-	U.ID AS UserID,
+	U.UserID AS UserID,
 	U.Name AS Nama,
 	P.Name AS Posisi,
     U.NIK AS NIK,
@@ -313,13 +341,13 @@ SELECT DISTINCT
 	C.Cuti AS JatahCuti
 FROM
 	[User] AS U
-	INNER JOIN Position AS P ON P.ID = U.PositionID
-	INNER JOIN Attendance AS A ON U.ID = A.UserID
-	INNER JOIN Company AS C ON C.ID = U.CompanyID
+	INNER JOIN Position AS P ON P.PositionID = U.PositionID
+	INNER JOIN Attendance AS A ON U.UserID = A.UserID
+	INNER JOIN Company AS C ON C.CompanyID = U.CompanyID
 WHERE
 	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.ID, U.Name, P.Name, U.NIK, C.Cuti
+	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.UserID, U.Name, P.Name, U.NIK, C.Cuti
 
 
     ~~~~~~~~VIEW REPORT CUTI LIST~~~~~~~~
@@ -328,7 +356,7 @@ CREATE VIEW [dbo].[vReportCutiList]
 AS
 SELECT
 	CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
-	U.ID AS UserID,
+	U.UserID AS UserID,
 	CASE DATENAME(dw, A.Date)
         WHEN 'Sunday' THEN 'Minggu'
         WHEN 'Monday' THEN 'Senin'
@@ -342,8 +370,8 @@ SELECT
 	A.Description AS [Description]
 FROM
 	[User] AS U
-	INNER JOIN Position AS P ON P.ID = U.PositionID
-	INNER JOIN Attendance AS A ON U.ID = A.UserID
+	INNER JOIN Position AS P ON P.PositionID = U.PositionID
+	INNER JOIN Attendance AS A ON U.UserID = A.UserID
 WHERE
 	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND A.Status = 'Cuti' AND U.IsAdmin != 1
 
@@ -354,19 +382,19 @@ CREATE VIEW [dbo].[vReportCutiPerTahun]
 AS
 SELECT 
 	CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
-	U.ID AS UserID,
+	U.UserID AS UserID,
 	U.Name AS Nama,
 	P.Name AS Posisi,
-    U.NIK AS NIK,
+	U.NIK AS NIK,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
 	C.Cuti AS JatahCuti,
 	(C.Cuti - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
 FROM 
 	[User] AS U
-	INNER JOIN Position AS P ON P.ID = U.PositionID
-	INNER JOIN Attendance AS A ON A.UserID = U.ID
-	INNER JOIN Company AS C ON C.ID = U.CompanyID
+	INNER JOIN Position AS P ON P.PositionID = U.PositionID
+	INNER JOIN Attendance AS A ON A.UserID = U.UserID
+	INNER JOIN Company AS C ON C.CompanyID = U.CompanyID
 WHERE
 	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CAST(YEAR(A.Date) AS VARCHAR(4)), U.ID, U.Name, P.Name, C.Cuti, U.NIK
+	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Cuti, U.NIK

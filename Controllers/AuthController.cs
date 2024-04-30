@@ -65,7 +65,7 @@ namespace API.Controllers
                     user = Utils.UserFromToken(token);
 
                 if (user != null)
-                    Utils.UserLog(user.ID, string.Format("{0} logout", request.Email));
+                    Utils.UserLog(user.UserID, string.Format("{0} logout", request.Email));
 
                 return Ok();
             }
@@ -167,7 +167,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.ChangeProfile(request.FullName, request.Password, user.ID);
+                var result = _service.ChangeProfile(request.FullName, request.Password, user.UserID);
                 if (result == null)
                     return BadRequest(new { message = "Change Profile Failed" });
 

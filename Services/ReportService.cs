@@ -94,17 +94,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                // Check Attendance per User
-                var queryUser = String.Format($@"
-                    SELECT *
-                    FROM
-                        [User]
-                    WHERE
-                        IsDeleted != 1 AND IsAdmin != 1");
-                
-                var users = context.Users.FromSqlRaw(queryUser);
+                // Check Attendance per User                
+                var users = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
                 foreach (var user in users)
-                    CheckAttendance(user.ID);
+                    CheckAttendance(user.UserID);
 
                 // Get report function
                 var result = new vReportAbsensiPerTahun();
@@ -254,7 +247,7 @@ namespace API.Services
         public void CheckAttendance(Int64 userID)
         {
             var context = new EFContext();
-            var user = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true);
+            var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
             if (user == null)
                 return;
 
@@ -278,7 +271,7 @@ namespace API.Services
                             attendance.Description = "";
                             attendance.Status = "Absen";
                             attendance.DateIn = DateTime.Now;
-                            attendance.UserIn = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true).ID.ToString();
+                            attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
                             attendance.IsDeleted = false;
 
                             context.Attendances.Add(attendance);

@@ -43,7 +43,7 @@ namespace API.Services
             {
                 var obj = context.Roles
                     .Include(x => x.RoleDetails.Where(y => y.IsDeleted == null))
-                    .Where(x => x.ID == id)
+                    .Where(x => x.RoleID == id)
                     .FirstOrDefault();
                 if (obj == null) return false;
 
@@ -83,7 +83,7 @@ namespace API.Services
             {
                 var obj = context.Roles
                     .Include(x => x.RoleDetails.Where(y => y.IsDeleted == null))
-                    .Where(x => x.ID == data.ID).FirstOrDefault();
+                    .Where(x => x.RoleID == data.RoleID).FirstOrDefault();
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
@@ -205,7 +205,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.RoleID);
                 }
 
                 // Get Total Before Limit and Page
@@ -246,7 +246,7 @@ namespace API.Services
             {
                 return context.Roles
                     .Include(x => x.RoleDetails.Where(y => y.IsDeleted == null))
-                    .Where(x => x.ID == id && x.IsDeleted != true)
+                    .Where(x => x.RoleID == id && x.IsDeleted != true)
                     .FirstOrDefault();
             }
             catch (Exception ex)

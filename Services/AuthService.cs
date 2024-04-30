@@ -40,11 +40,11 @@ namespace API.Services
 
                 if (!Utils.VerifyHashedPassword(user.Password, password))
                 {
-                    Utils.UserLog(user.ID, String.Format("{0} login with IP Address {1} - Failed", email, ipAddress));
+                    Utils.UserLog(user.UserID, String.Format("{0} login with IP Address {1} - Failed", email, ipAddress));
                     return null;
                 }
 
-                Utils.UserLog(user.ID, String.Format("{0} login with IP Address {1}", email, ipAddress));
+                Utils.UserLog(user.UserID, String.Format("{0} login with IP Address {1}", email, ipAddress));
                 user.Password = "";
                 return user;
             }
@@ -67,7 +67,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Users.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Users.FirstOrDefault(x => x.UserID == id && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 if (!string.IsNullOrEmpty(password))
@@ -99,7 +99,7 @@ namespace API.Services
             try
             {
                 var query = from a in context.RoleDetails
-                            join b in context.Modules on a.ModuleID equals b.ID
+                            join b in context.Modules on a.ModuleID equals b.ModuleID
                             where a.RoleID == roleID && a.IsDeleted != true
                             select new { a.ModuleID, a.IsCreate, a.IsRead, a.IsUpdate, a.IsDelete, b.Description };
                 return query.ToArray();
@@ -125,7 +125,7 @@ namespace API.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] {
-                    new Claim("id", user.ID.ToString()),
+                    new Claim("id", user.UserID.ToString()),
                     new Claim("name", user.Name.ToString())
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -144,15 +144,15 @@ namespace API.Services
                 if (user == null)
                     throw new Exception("Invalid Email");
 
-                var password = context.Passwords.FirstOrDefault(x => x.UserID == user.ID && x.IsDeleted != true);
+                var password = context.Passwords.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true);
                 var code = Guid.NewGuid().ToString();
                 if (password == null)
                 {
                     var newPassword = new Password();
-                    newPassword.UserID = user.ID;
+                    newPassword.UserID = user.UserID;
                     newPassword.UniqueCode = code;
                     newPassword.ExpiredDate = DateTime.Now.AddMinutes(-2).AddHours(3);
-                    newPassword.UserIn = user.ID.ToString();
+                    newPassword.UserIn = user.UserID.ToString();
                     newPassword.DateIn = DateTime.Now.AddMinutes(-2);
                     context.Passwords.Add(newPassword);
                 }
@@ -160,7 +160,7 @@ namespace API.Services
                 {
                     password.UniqueCode = code;
                     password.ExpiredDate = DateTime.Now.AddMinutes(-2).AddHours(3);
-                    password.UserUp = user.ID.ToString();
+                    password.UserUp = user.UserID.ToString();
                     password.DateUp = DateTime.Now.AddMinutes(-2);
                 }
 
@@ -202,7 +202,7 @@ namespace API.Services
                 if (password.ExpiredDate < DateTime.Now.AddMinutes(-2))
                     throw new Exception("Your Code is expired");
 
-                var user = context.Users.FirstOrDefault(x => x.ID == password.UserID && x.IsDeleted != true);
+                var user = context.Users.FirstOrDefault(x => x.UserID == password.UserID && x.IsDeleted != true);
                 if (user == null)
                     throw new Exception("Invalid User");
 

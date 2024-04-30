@@ -46,7 +46,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Users.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Users.FirstOrDefault(x => x.UserID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -93,7 +93,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Users.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Users.FirstOrDefault(x => x.UserID == data.UserID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.RoleID = data.RoleID;
@@ -254,7 +254,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.UserID);
                 }
 
                 // Get Total Before Limit and Page
@@ -302,7 +302,7 @@ namespace API.Services
                     .Include(x => x.Role)
                     .Include(x => x.Company)
                     .Include(x => x.Shift)
-                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.UserID == id && x.IsDeleted != true);
                 if (obj != null) obj.Password = "";
                 return obj;
             }
@@ -325,20 +325,20 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var position = context.Positions.FirstOrDefault(x => x.ID == PositionID && x.IsDeleted != true);
+                var position = context.Positions.FirstOrDefault(x => x.PositionID == PositionID && x.IsDeleted != true);
                 if (position == null)
                     throw new Exception("No Position Found!");
 
-                var division = context.Divisions.FirstOrDefault(x => x.ID == position.DivisionID && x.IsDeleted != true);
+                var division = context.Divisions.FirstOrDefault(x => x.DivisionID == position.DivisionID && x.IsDeleted != true);
                 if (division == null)
                     throw new Exception("Division of the position not found!");
                 
                 var count = 0;
 
-                var allPosition = context.Positions.Where(x => x.DivisionID == division.ID && x.IsDeleted != true);
+                var allPosition = context.Positions.Where(x => x.DivisionID == division.DivisionID && x.IsDeleted != true);
                 foreach (var all in allPosition)
                 {
-                    count += context.Users.Where(x => x.PositionID == all.ID && x.IsAdmin != true && x.IsDeleted != true).Count();
+                    count += context.Users.Where(x => x.PositionID == all.PositionID && x.IsAdmin != true && x.IsDeleted != true).Count();
                 }
 
                 division.NumberOfEmployee = count;
@@ -367,11 +367,11 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var position = context.Positions.FirstOrDefault(x => x.ID == PositionID && x.IsDeleted != true);
+                var position = context.Positions.FirstOrDefault(x => x.PositionID == PositionID && x.IsDeleted != true);
                 if (position == null)
                     throw new Exception("No Position Found!");
 
-                var division = context.Divisions.FirstOrDefault(x => x.ID == position.DivisionID && x.IsDeleted != true);
+                var division = context.Divisions.FirstOrDefault(x => x.DivisionID == position.DivisionID && x.IsDeleted != true);
                 if (division == null)
                     throw new Exception("Division of the position not found!");
 

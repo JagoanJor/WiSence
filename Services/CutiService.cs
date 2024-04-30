@@ -15,7 +15,7 @@ namespace API.Services
 {
     public interface ICutiService
     {
-        IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date);
+        IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
         Cuti GetById(Int64 id);
         Cuti Create(Cuti data);
         Cuti Edit(Cuti data);
@@ -80,7 +80,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 if (obj.Status == "Disetujui")
@@ -117,7 +117,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == data.CutiID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 if (data.Status != "Disetujui" && obj.Status == "Disetujui")
@@ -197,13 +197,17 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<CutiResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
         {
             var context = new EFContext();
             try
             {
                 var query = from a in context.Cutis where a.IsDeleted != true select a;
                 query = query.Include("User");
+
+                // If not Admin, just return the user data
+                if (user.IsAdmin != true)
+                    query = query.Where(x => x.UserID == user.UserID);
 
                 //Date
                 if (!string.IsNullOrEmpty(date))
@@ -250,6 +254,7 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
+                                case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "durasi": query = query.Where(x => x.Durasi.ToString().Contains(value)); break;
@@ -280,6 +285,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
+                            case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
                             case "durasi": query = query.OrderByDescending(x => x.Durasi); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
@@ -290,6 +296,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
+                            case "userid": query = query.OrderBy(x => x.User.UserID); break;
                             case "name": query = query.OrderBy(x => x.User.Name); break;
                             case "durasi": query = query.OrderBy(x => x.Durasi); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
@@ -299,7 +306,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.CutiID);
                 }
 
                 // Get Total Before Limit and Page
@@ -314,23 +321,23 @@ namespace API.Services
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date);
+                    return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 }
 
                 var cutiResponses = new List<CutiResponse>();
                 foreach (var cuti in data)
                 {
-                    var user = context.Users.FirstOrDefault(x => x.ID == cuti.UserID && x.IsDeleted != true);
-                    if (user == null)
-                        throw new Exception($"User with ID {cuti.User.ID} not found");
+                    var users = context.Users.FirstOrDefault(x => x.UserID == cuti.UserID && x.IsDeleted != true);
+                    if (users == null)
+                        throw new Exception($"User with ID {cuti.User.UserID} not found");
 
-                    var company = context.Companies.FirstOrDefault(x => x.ID == user.CompanyID && x.IsDeleted != true);
+                    var company = context.Companies.FirstOrDefault(x => x.CompanyID == users.CompanyID && x.IsDeleted != true);
                     if (company == null)
                         throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
-                    var sisaCuti = SisaCuti(user.ID, company.ID); 
+                    var sisaCuti = SisaCuti(users.UserID, company.CompanyID); 
                     var cutiResponse = new CutiResponse(
-                        cuti.ID,
+                        cuti.CutiID,
                         cuti.DateIn,
                         cuti.DateUp,
                         cuti.UserIn,
@@ -372,7 +379,7 @@ namespace API.Services
             {
                 return context.Cutis
                     .Include(x => x.User)
-                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -393,10 +400,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Companies.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Companies.FirstOrDefault(x => x.CompanyID == id && x.IsDeleted != true);
                 
                 obj.Cuti = jatah;
-                obj.UserUp = user.ID.ToString();
+                obj.UserUp = user.UserID.ToString();
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
 
                 context.Companies.Update(obj);
@@ -431,7 +438,7 @@ namespace API.Services
                         count++;
                 }
 
-                var com = context.Companies.FirstOrDefault(x => x.ID == companyID && x.IsDeleted != true);
+                var com = context.Companies.FirstOrDefault(x => x.CompanyID == companyID && x.IsDeleted != true);
                 if (com == null)
                     throw new Exception("Company not found!");
 
@@ -458,7 +465,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Cutis.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Cutis.FirstOrDefault(x => x.CutiID == id && x.IsDeleted != true);
                 if (obj == null)
                     throw new Exception("Data cuti tidak ditemukan!");
 

@@ -10,7 +10,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public class DailyTaskService : IService<DailyTask>
+    public interface IDailyTaskService
+    {
+        IEnumerable<DailyTask> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
+        DailyTask GetById(Int64 id);
+        DailyTask Create(DailyTask data);
+        DailyTask Edit(DailyTask data);
+        bool Delete(Int64 id, String userID);
+    }
+    public class DailyTaskService : IDailyTaskService
     {
         public DailyTask Create(DailyTask data)
         {
@@ -41,7 +49,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.DailyTasks.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.DailyTasks.FirstOrDefault(x => x.DailyTaskID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -71,7 +79,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.DailyTasks.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.DailyTasks.FirstOrDefault(x => x.DailyTaskID == data.DailyTaskID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.UserID = data.UserID;
@@ -98,13 +106,17 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<DailyTask> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<DailyTask> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
         {
             var context = new EFContext();
             try
             {
                 var query = from a in context.DailyTasks where a.IsDeleted != true select a;
                 query = query.Include("User");
+
+                // If not Admin, just return the user data
+                if (user.IsAdmin != true)
+                    query = query.Where(x => x.UserID == user.UserID);
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
@@ -172,7 +184,7 @@ namespace API.Services
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.ID);
+                    query = query.OrderByDescending(x => x.DailyTaskID);
                 }
 
                 // Get Total Before Limit and Page
@@ -187,7 +199,7 @@ namespace API.Services
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date);
+                    return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 }
 
                 return data;
@@ -213,7 +225,7 @@ namespace API.Services
             {
                 return context.DailyTasks
                     .Include(x => x.User)
-                    .FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.DailyTaskID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {

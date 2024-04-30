@@ -6,9 +6,6 @@ namespace API.Entities
 {
     public abstract class Entity
     {
-        [Key]
-        public Int64 ID { get; set; }
-
         public Nullable<DateTime> DateIn { get; set; }
         [JsonIgnore]
         public Nullable<DateTime> DateUp { get; set; }

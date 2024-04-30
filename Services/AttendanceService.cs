@@ -11,12 +11,17 @@ using NativeWifi;
 
 namespace API.Services
 {
-    public interface IAttendanceService<T> : IService<T>
+    public interface IAttendanceService
     {
-        T ClockIn(User user);
-        T ClockOut(User user);
+        IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
+        Attendance GetById(Int64 id);
+        Attendance Create(Attendance data);
+        Attendance Edit(Attendance data);
+        bool Delete(Int64 id, String userID);
+        Attendance ClockIn(User user);
+        Attendance ClockOut(User user);
     }
-    public class AttendanceService : IAttendanceService<Attendance>
+    public class AttendanceService : IAttendanceService
     {
         public Attendance Create(Attendance data)
         {
@@ -47,7 +52,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var obj = context.Attendances.FirstOrDefault(x => x.AttendanceID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -77,7 +82,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.ID == data.ID && x.IsDeleted != true);
+                var obj = context.Attendances.FirstOrDefault(x => x.AttendanceID == data.AttendanceID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.UserID = data.UserID;
@@ -107,7 +112,7 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
         {
             var context = new EFContext();
             try
@@ -115,9 +120,13 @@ namespace API.Services
                 var query = from a in context.Attendances where a.IsDeleted != true select a;
                 query = query.Include("User");
 
+                // If not Admin, just return the user data
+                if (user.IsAdmin != true)
+                    query = query.Where(x => x.UserID == user.UserID);
+
                 // Check user's attendance
-                foreach (var user in query)
-                    CheckAttendance(user.ID);
+                foreach (var users in query)
+                    CheckAttendance(users.UserID);
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
@@ -143,6 +152,7 @@ namespace API.Services
                             {
                                 case "status": query = query.Where(x => x.Status.Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
+                                case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
                                 case "clockin":
@@ -174,6 +184,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
+                            case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
                             case "status": query = query.OrderByDescending(x => x.Status); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
@@ -183,6 +194,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
+                            case "userid": query = query.OrderBy(x => x.User.UserID); break;
                             case "name": query = query.OrderBy(x => x.User.Name); break;
                             case "status": query = query.OrderBy(x => x.Status); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
@@ -206,7 +218,7 @@ namespace API.Services
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date);
+                    return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 }
 
                 return data;
@@ -231,7 +243,7 @@ namespace API.Services
             try
             {
                 // Check user's attendance
-                var attendance = context.Attendances.FirstOrDefault(x => x.ID == id && x.IsDeleted != true);
+                var attendance = context.Attendances.FirstOrDefault(x => x.AttendanceID == id && x.IsDeleted != true);
                 CheckAttendance((Int64)(attendance.UserID));
 
                 return attendance;
@@ -291,7 +303,7 @@ namespace API.Services
                 if (wifi == null)
                     throw new Exception("Perangkat belum terhubung ke Wifi!");
                 
-                var shift = context.Shifts.FirstOrDefault(x => x.ID == user.ShiftID && x.IsDeleted != true);
+                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
 
@@ -300,9 +312,9 @@ namespace API.Services
 
                 var data = new Attendance();
 
-                data.UserID = user.ID;
+                data.UserID = user.UserID;
                 data.ClockIn = DateTime.Now;
-                data.UserIn = user.ID.ToString();
+                data.UserIn = user.UserID.ToString();
                 data.DateIn = DateTime.Now;
                 data.Date = DateTime.Now;
                 data.IsDeleted = false;
@@ -317,7 +329,7 @@ namespace API.Services
                     data.Status = "Absen";
 
                 // Check user's attendance
-                CheckAttendance(user.ID);
+                CheckAttendance(user.UserID);
                 
                 context.Attendances.Add(data);
                 context.SaveChanges();
@@ -386,13 +398,13 @@ namespace API.Services
                 }
 
                 var data = context.Attendances
-                    .Where(x => x.UserID == user.ID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
                     .FirstOrDefault();
 
                 if (data == null)
                     throw new Exception("Pastikan kamu sudah melakukan Clock In!");
 
-                var shift = context.Shifts.FirstOrDefault(x => x.ID == user.ShiftID && x.IsDeleted != true);
+                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
@@ -400,7 +412,7 @@ namespace API.Services
                     throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn?.ToString("HH:mm")}.");
 
                 data.ClockOut = DateTime.Now;
-                data.UserUp = user.ID.ToString();
+                data.UserUp = user.UserID.ToString();
                 data.DateUp = DateTime.Now;
 
                 context.Attendances.Update(data);
@@ -423,10 +435,10 @@ namespace API.Services
         }
 
         // Function to make sure there is no empty attendance
-        public void CheckAttendance(Int64 userID)
+        public void CheckAttendance(Int64? userID)
         {
             var context = new EFContext();
-            var user = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true);
+            var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
             if (user == null)
                 return;
 
@@ -450,7 +462,7 @@ namespace API.Services
                             attendance.Description = "";
                             attendance.Status = "Absen";
                             attendance.DateIn = DateTime.Now;
-                            attendance.UserIn = context.Users.FirstOrDefault(x => x.ID == userID && x.IsDeleted != true).ID.ToString();
+                            attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
                             attendance.IsDeleted = false;
 
                             context.Attendances.Add(attendance);
