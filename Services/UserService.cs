@@ -23,7 +23,8 @@ namespace API.Services
                 context.Users.Add(data);
                 context.SaveChanges();
 
-                Division(data.PositionID);
+                if (data.PositionID != 0 || data.PositionID != null)
+                    Division(data.PositionID);
 
                 return data;
             }
