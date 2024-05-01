@@ -5,7 +5,7 @@ namespace API.Responses
 {
     public class LeaveResponse
     {
-        public Int64 ID { get; set; }
+        public Int64 LeaveID { get; set; }
         public DateTime? DateIn { get; set; }
         public DateTime? DateUp { get; set; }
         public String UserIn { get; set; }
@@ -19,9 +19,9 @@ namespace API.Responses
         public String Status { get; set; }
         public int? LeaveAllowance { get; set; }
         public User User { get; set; }
-        public LeaveResponse(Int64 id, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? duration, DateTime? start, DateTime? end, String status, int? leaveAllowance, User user)
+        public LeaveResponse(Int64 leaveID, DateTime? dateIn, DateTime? dateUp, String userIn, String userUp, Boolean? isDeleted, Int64 userID, String description, int? duration, DateTime? start, DateTime? end, String status, int? leaveAllowance, User user)
         {
-            ID = id;
+            LeaveID = leaveID;
             DateIn = dateIn;
             DateUp = dateUp;
             UserIn = userIn;

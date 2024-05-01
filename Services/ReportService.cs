@@ -252,6 +252,9 @@ namespace API.Services
                 return;
 
             var currentDate = user.StartWork.Value.Date;
+            if (currentDate == null)
+                throw new Exception("Tanggal mulai kerja belum diatur!");
+
             while (currentDate.Date < DateTime.Now.Date)
             {
                 var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
