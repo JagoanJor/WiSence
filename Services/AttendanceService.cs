@@ -294,9 +294,9 @@ namespace API.Services
                 }
 
                 var query = String.Format($@"
-                                SELECT TOP 1 W.ID, W.Name, W.IPAddress, W.CompanyID, W.DateIn, W.UserIn, W.DateUp, W.UserUp, W.IsDeleted
+                                SELECT TOP 1 W.WifiID, W.Name, W.IPAddress, W.CompanyID, W.DateIn, W.UserIn, W.DateUp, W.UserUp, W.IsDeleted
                                 FROM Wifi AS W
-                                INNER JOIN Company AS C ON C.ID = W.CompanyID
+                                INNER JOIN Company AS C ON C.CompanyID = W.CompanyID
                                 WHERE C.IsDeleted != 1 AND W.IsDeleted != 1 AND W.IPAddress = '{ipAddress}' AND W.Name = '{wifiSSID}' AND W.CompanyID = {user.CompanyID}");
                 var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
 
