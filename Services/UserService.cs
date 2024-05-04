@@ -18,7 +18,6 @@ namespace API.Services
             {
                 if (string.IsNullOrEmpty(data.Password)) data.Password = "password";
                 data.Password = Utils.HashPassword(data.Password);
-                data.CompanyID = getCompanyID(data.PositionID);
 
                 context.Users.Add(data);
                 context.SaveChanges();
@@ -116,7 +115,7 @@ namespace API.Services
                 obj.StartWork = data.StartWork;
                 obj.EndWork = data.EndWork;
                 obj.PositionID = data.PositionID;
-                obj.CompanyID = getCompanyID(data.PositionID);
+                obj.CompanyID = data.CompanyID;
                 obj.ShiftID = data.ShiftID;
                 obj.IsAdmin = data.IsAdmin;
 
@@ -353,35 +352,6 @@ namespace API.Services
             {
                 Trace.WriteLine(ex.Message);
                 if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-
-        public long? getCompanyID(long? PositionID)
-        {
-            var context = new EFContext();
-            try
-            {
-                var position = context.Positions.FirstOrDefault(x => x.PositionID == PositionID && x.IsDeleted != true);
-                if (position == null)
-                    throw new Exception("No Position Found!");
-
-                var division = context.Divisions.FirstOrDefault(x => x.DivisionID == position.DivisionID && x.IsDeleted != true);
-                if (division == null)
-                    throw new Exception("Division of the position not found!");
-
-                return division.CompanyID;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if(ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
                 throw ex;

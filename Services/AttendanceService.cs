@@ -267,6 +267,11 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                // Check attendance today
+                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && x.Status == "Cuti");
+                if (attendance != null)
+                    throw new Exception("User sudah melakukan absensi dengan status Cuti!");
+
                 var wifiSSID = "";
                 var ipAddress = "";
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
@@ -448,7 +453,7 @@ namespace API.Services
 
             while (currentDate.Date < DateTime.Now.Date)
             {
-                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
 
                 if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                 {
