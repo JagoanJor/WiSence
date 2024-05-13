@@ -181,7 +181,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "VendorController");
+                Trace.WriteLine(message, "DashboardController");
                 return BadRequest(new { message });
             }
         }

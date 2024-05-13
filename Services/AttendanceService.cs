@@ -130,12 +130,18 @@ namespace API.Services
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.Description.Contains(search)
+                {
+                    if (DateTime.TryParse(search, out DateTime searchDate))
+                        query = query.Where(x => x.Date == searchDate.Date
+                        || (x.Date.Value.Month == searchDate.Month && x.Date.Value.Day == searchDate.Day));
+                    else
+                        query = query.Where(x => x.Description.Contains(search)
                         || x.Status.Contains(search)
                         || x.User.Name.Contains(search)
                         || x.ClockIn.ToString().Contains(search)
                         || x.ClockOut.ToString().Contains(search)
                         || x.Date.ToString().Contains(search));
+                }
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))

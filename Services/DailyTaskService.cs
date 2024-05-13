@@ -126,6 +126,7 @@ namespace API.Services
                         || (x.Date.Month == searchDate.Month && x.Date.Day == searchDate.Day));
                     else
                         query = query.Where(x => x.UserID.ToString().Contains(search)
+                        || x.User.Name.Contains(search)
                         || x.Task.Contains(search));
                 }
 
