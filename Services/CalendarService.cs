@@ -106,8 +106,13 @@ namespace API.Services
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
+                {
                     if (DateTime.TryParse(search, out DateTime searchDate))
                         query = query.Where(x => x.Holiday == searchDate || (x.Holiday.Month == searchDate.Month && x.Holiday.Year == searchDate.Year));
+                    else
+                        query = query.Where(x => x.Description.Contains(search));
+                }
+
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -122,7 +127,11 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
-                                case "name": query = query.Where(x => x.Holiday.ToString().Contains(value)); break;
+                                case "description": query = query.Where(x => x.Description.Contains(value)); break;
+                                case "holiday":
+                                    DateTime.TryParse(value, out DateTime searchDate);
+                                    query = query.Where(x => x.Holiday.Date == searchDate.Date);
+                                    break;
                             }
                         }
                     }
@@ -140,14 +149,16 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderByDescending(x => x.Holiday); break;
+                            case "description": query = query.OrderByDescending(x => x.Description); break;
+                            case "holiday": query = query.OrderByDescending(x => x.Holiday); break;
                         }
                     }
                     else
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "name": query = query.OrderBy(x => x.Holiday); break;
+                            case "description": query = query.OrderBy(x => x.Description); break;
+                            case "holiday": query = query.OrderBy(x => x.Holiday); break;
                         }
                     }
                 }
