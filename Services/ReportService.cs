@@ -13,7 +13,7 @@ namespace API.Services
     public interface IReportService
     {
         vReportAbsensi getReportAbsensi(Int64 userID, int bulan, int tahun);
-        vReportAbsensiPerTahun getReportAbsensiPerTahun(int tahun);
+        ReportAbsensiPerTahunResponse getReportAbsensiPerTahun(int tahun);
         ReportCutiResponse getReportCuti(Int64 userID, int bulan, int tahun);
         ReportCutiPerTahunResponse getReportCutiPerTahun(int tahun);
     }
@@ -35,11 +35,18 @@ namespace API.Services
                     FROM
                         vReportAbsensi
                     WHERE
-                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
+                        UserID = {userID}");
 
                 var header = context.vReportAbsensis.FromSqlRaw(query).FirstOrDefault();
                 if (header == null)
                     return null;
+
+                header.Kerja = context.Attendances.Where(x => x.UserID == header.UserID && x.IsDeleted != true && x.Date.Value.Month == bulan && x.Date.Value.Year == tahun).Count();
+                header.Libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Month == bulan && x.Holiday.Year == tahun)
+                                .ToList()
+                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
+                                .Count();
+                header.Periode = $"{bulan} {tahun}";
 
                 var queryList = String.Format($@"
                     SELECT *
@@ -89,7 +96,7 @@ namespace API.Services
             }
         }
 
-        public vReportAbsensiPerTahun getReportAbsensiPerTahun(int tahun)
+        public ReportAbsensiPerTahunResponse getReportAbsensiPerTahun(int tahun)
         {
             var context = new EFContext();
             try
@@ -100,26 +107,30 @@ namespace API.Services
                     CheckAttendance(user.UserID);
 
                 // Get report function
-                var result = new vReportAbsensiPerTahun();
-                var query = String.Format($@"
-                    SELECT *
-                    FROM
-                        vReportAbsensiPerTahun
-                    WHERE
-                        Periode = '{tahun}'");
-
-                var header = context.vReportAbsensiPerTahuns.FromSqlRaw(query).FirstOrDefault();
-                if (header == null)
-                    return null;
+                var libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun && x.Holiday.Year == tahun)
+                                .ToList()
+                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
+                                .Count();
 
                 var queryList = String.Format($@"
                     SELECT *
                     FROM
-                        vReportAbsensiListPerTahun
-                    WHERE
-                        Periode = '{tahun}'");
+                        vReportAbsensiListPerTahun");
 
-                var detail = context.vReportAbsensiListPerTahuns.FromSqlRaw(queryList);
+                var detail = context.vReportAbsensiListPerTahuns.FromSqlRaw(queryList).ToList();
+
+                foreach (var data in detail)
+                {
+                    var checkAttendance = context.Attendances.Where(x => x.UserID == data.UserID && x.IsDeleted != true && x.Date.Value.Year == tahun);
+                    if (checkAttendance != null)
+                    {
+                        data.Ontime = checkAttendance.Where(x => x.Status == "Ontime").Count();
+                        data.WFH = checkAttendance.Where(x => x.Status == "WFH").Count();
+                        data.Terlambat = checkAttendance.Where(x => x.Status == "Terlambat").Count();
+                        data.Absen = checkAttendance.Where(x => x.Status == "Absen").Count();
+                        data.Cuti = checkAttendance.Where(x => x.Status == "Cuti").Count();
+                    }
+                }
 
                 int hariKerja = 0;
 
@@ -136,14 +147,9 @@ namespace API.Services
                     }
                 }
 
-                int hariKerjaTanpaLibur = hariKerja - header.Libur;
+                int hariKerjaTanpaLibur = hariKerja - libur;
 
-                result.Periode = header.Periode;
-                result.Libur = header.Libur;
-                result.TotalKerja = $"{hariKerjaTanpaLibur} hari kerja";
-                result.vReportAbsensiListPerTahuns = detail != null ? detail.ToList() : null;
-
-                return result;
+                return new ReportAbsensiPerTahunResponse(tahun.ToString(), libur, $"{hariKerjaTanpaLibur} hari kerja", detail != null ? detail : null);
             }
             catch (Exception ex)
             {
@@ -183,18 +189,21 @@ namespace API.Services
                     WHERE
                         UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
 
-                var detail = context.vReportCutiLists.FromSqlRaw(queryList);
+                var detail = context.vReportCutiLists.FromSqlRaw(queryList).ToList();
 
                 var querySisaCuti = String.Format($@"
                     SELECT *
                     FROM
-                        vReportCutiPerTahun
-                    WHERE
-                        Periode = '{tahun}'");
+                        vReportCutiPerTahun");
 
                 var sisaCuti = context.vReportCutiPerTahuns.FromSqlRaw(querySisaCuti).FirstOrDefault();
+                var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
+                var checkCuti = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Status == "Cuti" && x.Date.Value.Year == tahun).Count();
 
-                return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail != null ? detail.ToList() : null);
+                if (sisaCuti != null)
+                    sisaCuti.SisaCuti = header.JatahCuti - checkCuti;
+
+                return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail != null ? detail : null);
             }
             catch (Exception ex)
             {
@@ -217,14 +226,20 @@ namespace API.Services
             {
                 var query = String.Format($@"
                     SELECT *
-                    FROM
-                        vReportCutiPerTahun
-                    WHERE
-                        Periode = '{tahun}'");
+                    FROM vReportCutiPerTahun");
 
-                var detail = context.vReportCutiPerTahuns.FromSqlRaw(query);
+                var detail = context.vReportCutiPerTahuns.FromSqlRaw(query).ToList();
+                
+                foreach (var data in detail)
+                {
+                    var user = context.Users.FirstOrDefault(x => x.UserID == data.UserID && x.IsDeleted != true);
+                    var checkCuti = context.Attendances.Where(x => x.Status == "Cuti" && x.IsDeleted != true && x.UserID == user.UserID && x.Date.Value.Year == tahun).Count();
 
-                return new ReportCutiPerTahunResponse(tahun.ToString(), detail != null ? detail.ToList() : null);
+                    data.Cuti = checkCuti;
+                    data.SisaCuti = data.JatahCuti - data.Cuti;
+                }
+
+                return new ReportCutiPerTahunResponse(tahun.ToString(), detail != null ? detail : null);
             }
             catch (Exception ex)
             {

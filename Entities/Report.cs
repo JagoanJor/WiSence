@@ -33,20 +33,9 @@ namespace API.Entities
     }
 
     [Keyless]
-    [Table(name: "vReportAbsensiPerTahun")]
-    public class vReportAbsensiPerTahun
-    {
-        public String Periode { get; set; }
-        public int Libur { get; set; }
-        public String TotalKerja { get; set; }
-        public ICollection<vReportAbsensiListPerTahun> vReportAbsensiListPerTahuns { get; set;  }
-    }
-
-    [Keyless]
     [Table(name: "vReportAbsensiListPerTahun")]
     public class vReportAbsensiListPerTahun
     {
-        public String Periode { get; set; }
         public Int64 UserID { get; set; }
         public String Nama { get; set; }
         public String Posisi { get; set; }
@@ -86,7 +75,6 @@ namespace API.Entities
     [Table(name: "vReportCutiPerTahun")]
     public class vReportCutiPerTahun
     {
-        public String Periode { get; set; }
         public Int64 UserID { get; set; }
         public String Nama { get; set; }
         public String Posisi { get; set; }

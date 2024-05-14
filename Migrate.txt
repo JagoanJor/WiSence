@@ -233,25 +233,16 @@ SELECT DISTINCT
     U.Name AS Nama,
     U.UserID AS UserID,
     P.Name AS Posisi,
-	U.NIK AS NIK,
-    CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
-    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' OR A.Status = 'WFH' THEN 1 END) AS Kerja,
-    ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
+    U.NIK AS NIK,
+    '' AS Periode,
+    0 AS Kerja,
+    0 AS Libur,
     '' AS TotalKerja
 FROM
     [User] AS U
     INNER JOIN Position AS P ON U.PositionID = P.PositionID
-    INNER JOIN Attendance AS A ON U.UserID = A.UserID
-    LEFT JOIN (
-        SELECT CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday)) AS Periode, COUNT(*) AS CountHolidays
-        FROM Calendar
-        WHERE Calendar.IsDeleted != 1 AND DATEPART(WEEKDAY, Holiday) NOT IN (1, 7)
-        GROUP BY CONCAT(DATENAME(MONTH, Holiday), ' ', YEAR(Holiday))
-    ) AS TotalLibur ON CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) = TotalLibur.Periode
 WHERE
-    P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsAdmin != 1
-GROUP BY
-    U.Name, U.UserID, P.Name, CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)), TotalLibur.CountHolidays, U.NIK;
+    P.IsDeleted != 1 AND U.IsAdmin != 1;
 
 
     ~~~~~~~~VIEW REPORT ABSENSI LIST~~~~~~~~
@@ -283,49 +274,25 @@ GROUP BY
     U.UserID, A.Date, A.ClockIn, A.ClockOut, A.Status;
 
 
-    ~~~~~~~~VIEW REPORT ABSENSI PER TAHUN~~~~~~~~
-
-CREATE VIEW [dbo].[vReportAbsensiPerTahun]
-AS
-SELECT DISTINCT
-	CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
-	ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
-	'' AS TotalKerja
-FROM
-	Attendance AS A
-	LEFT JOIN (
-        SELECT CAST(YEAR(Holiday) AS VARCHAR(4)) AS Periode, COUNT(*) AS CountHolidays
-        FROM Calendar
-        WHERE Calendar.IsDeleted != 1 AND DATEPART(WEEKDAY, Holiday) NOT IN (1, 7)
-        GROUP BY YEAR(Holiday)
-    ) AS TotalLibur ON YEAR(A.Date) = TotalLibur.Periode
-WHERE
-	A.IsDeleted != 1
-
-
     ~~~~~~~~VIEW REPORT ABSENSI LIST PER TAHUN~~~~~~~~
 
 CREATE VIEW [dbo].[vReportAbsensiListPerTahun]
 AS
 SELECT
-    CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
     U.UserID AS UserID,
     U.Name AS Nama,
 	P.Name AS Posisi,
 	U.NIK AS NIK,
-    COUNT(CASE WHEN A.Status = 'Ontime' THEN 1 END) AS Ontime,
-    COUNT(CASE WHEN A.Status = 'Terlambat' THEN 1 END) AS Terlambat,
-    COUNT(CASE WHEN A.Status = 'WFH' THEN 1 END) AS WFH,
-    COUNT(CASE WHEN A.Status = 'Absen' THEN 1 END) AS Absen,
-    COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti
+    0 AS Ontime,
+    0 AS Terlambat,
+    0 AS WFH,
+    0 AS Absen,
+    0 AS Cuti
 FROM
     [User] AS U
     INNER JOIN Position AS P ON P.PositionID = U.PositionID
-    INNER JOIN Attendance AS A ON A.UserID = U.UserID
 WHERE
-	P.IsDeleted != 1 AND A.IsDeleted != 1 AND U.IsDeleted != 1 AND U.IsAdmin != 1
-GROUP BY
-    CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, U.NIK;
+	P.IsDeleted != 1 AND U.IsDeleted != 1 AND U.IsAdmin != 1
 
 
     ~~~~~~~~VIEW REPORT CUTI~~~~~~~~
@@ -381,21 +348,17 @@ WHERE
 
 CREATE VIEW [dbo].[vReportCutiPerTahun]
 AS
-SELECT 
-	CAST(YEAR(A.Date) AS VARCHAR(4)) AS Periode,
+SELECT
 	U.UserID AS UserID,
 	U.Name AS Nama,
 	P.Name AS Posisi,
 	U.NIK AS NIK,
-	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
+	0 AS Cuti,
 	C.Leave AS JatahCuti,
-	(C.Leave - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
+	0 AS SisaCuti
 FROM 
 	[User] AS U
 	INNER JOIN Position AS P ON P.PositionID = U.PositionID
-	INNER JOIN Attendance AS A ON A.UserID = U.UserID
 	INNER JOIN Company AS C ON C.CompanyID = U.CompanyID
 WHERE
-	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
-GROUP BY
-	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Leave, U.NIK
+	U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1

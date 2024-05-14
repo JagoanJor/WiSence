@@ -30,7 +30,7 @@ namespace API.Controllers
         public IActionResult getReportAbsensiPerTahun(int tahun)
         {
             var result = _service.getReportAbsensiPerTahun(tahun);
-            var response = new Response<vReportAbsensiPerTahun>(result);
+            var response = new Response<ReportAbsensiPerTahunResponse>(result);
             return Ok(response);
         }
 
