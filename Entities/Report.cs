@@ -53,6 +53,7 @@ namespace API.Entities
         public String NIK { get; set; }
         public int Ontime { get; set; }
         public int Terlambat { get; set; }
+        public int WFH { get; set; }
         public int Absen { get; set; }
         public int Cuti { get; set; }
     }

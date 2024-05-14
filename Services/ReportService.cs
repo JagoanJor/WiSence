@@ -222,13 +222,9 @@ namespace API.Services
                     WHERE
                         Periode = '{tahun}'");
 
-                var header = context.vReportCutiPerTahuns.FromSqlRaw(query).FirstOrDefault();
-                if (header == null)
-                    return null;
-
                 var detail = context.vReportCutiPerTahuns.FromSqlRaw(query);
 
-                return new ReportCutiPerTahunResponse(header.Periode, detail != null ? detail.ToList() : null);
+                return new ReportCutiPerTahunResponse(tahun.ToString(), detail != null ? detail.ToList() : null);
             }
             catch (Exception ex)
             {

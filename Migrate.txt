@@ -235,7 +235,7 @@ SELECT DISTINCT
     P.Name AS Posisi,
 	U.NIK AS NIK,
     CONCAT(DATENAME(MONTH, A.Date), ' ', YEAR(A.Date)) AS Periode,
-    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' THEN 1 END) AS Kerja,
+    COUNT(CASE WHEN A.Status = 'Ontime' OR A.Status = 'Terlambat' OR A.Status = 'WFH' THEN 1 END) AS Kerja,
     ISNULL(TotalLibur.CountHolidays, 0) AS Libur,
     '' AS TotalKerja
 FROM
@@ -315,6 +315,7 @@ SELECT
 	U.NIK AS NIK,
     COUNT(CASE WHEN A.Status = 'Ontime' THEN 1 END) AS Ontime,
     COUNT(CASE WHEN A.Status = 'Terlambat' THEN 1 END) AS Terlambat,
+    COUNT(CASE WHEN A.Status = 'WFH' THEN 1 END) AS WFH,
     COUNT(CASE WHEN A.Status = 'Absen' THEN 1 END) AS Absen,
     COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti
 FROM

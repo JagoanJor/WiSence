@@ -519,6 +519,10 @@ namespace API.Services
                     }
                 }
 
+                var checkCuti = context.Leaves.Where(x => x.Start.Value.Date == obj.Start.Value.Date && x.LeaveID != obj.LeaveID && x.IsDeleted != true);
+                if (checkCuti != null)
+                    context.Leaves.RemoveRange(checkCuti);
+
                 context.Leaves.Update(obj);
                 context.SaveChanges();
 
