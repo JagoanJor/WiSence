@@ -337,7 +337,6 @@ SELECT DISTINCT
 	U.Name AS Nama,
 	P.Name AS Posisi,
     U.NIK AS NIK,
-	DATENAME(MONTH, U.StartWork) AS MulaiPerhitungan,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
 	C.Leave AS JatahCuti
 FROM
@@ -346,15 +345,9 @@ FROM
 	INNER JOIN Attendance AS A ON U.UserID = A.UserID
 	INNER JOIN Company AS C ON C.CompanyID = U.CompanyID
 WHERE
-	U.IsDeleted != 1 AND
-	P.IsDeleted != 1 AND
-	A.IsDeleted != 1 AND
-	C.IsDeleted != 1 AND
-	U.IsAdmin != 1 AND
-	A.Date >= DATEADD(MONTH, DATEDIFF(MONTH, 0, U.StartWork) % 12, DATEFROMPARTS(YEAR(A.Date), 1, 1)) AND
-    A.Date < DATEADD(MONTH, DATEDIFF(MONTH, 0, U.StartWork) % 12 + 12, DATEFROMPARTS(YEAR(A.Date), 1, 1))
+	U.IsDeleted != 1 AND P.IsDeleted != 1 AND A.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.UserID, U.Name, P.Name, U.NIK, C.Leave, U.StartWork
+	CONCAT(DATENAME(MONTH,A.Date), ' ', YEAR(A.Date)), U.UserID, U.Name, P.Name, U.NIK, C.Leave
 
 
     ~~~~~~~~VIEW REPORT CUTI LIST~~~~~~~~
@@ -393,7 +386,6 @@ SELECT
 	U.Name AS Nama,
 	P.Name AS Posisi,
 	U.NIK AS NIK,
-	DATENAME(MONTH, U.StartWork) AS MulaiPerhitungan,
 	COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END) AS Cuti,
 	C.Leave AS JatahCuti,
 	(C.Leave - COUNT(CASE WHEN A.Status = 'Cuti' THEN 1 END)) AS SisaCuti
@@ -403,12 +395,6 @@ FROM
 	INNER JOIN Attendance AS A ON A.UserID = U.UserID
 	INNER JOIN Company AS C ON C.CompanyID = U.CompanyID
 WHERE
-	A.IsDeleted != 1 AND 
-    U.IsDeleted != 1 AND 
-    P.IsDeleted != 1 AND 
-    C.IsDeleted != 1 AND 
-    U.IsAdmin != 1 AND
-    A.Date >= DATEADD(MONTH, DATEDIFF(MONTH, 0, U.StartWork) % 12, DATEFROMPARTS(YEAR(A.Date), 1, 1)) AND
-    A.Date < DATEADD(MONTH, DATEDIFF(MONTH, 0, U.StartWork) % 12 + 12, DATEFROMPARTS(YEAR(A.Date), 1, 1))
+	A.IsDeleted != 1 AND U.IsDeleted != 1 AND P.IsDeleted != 1 AND C.IsDeleted != 1 AND U.IsAdmin != 1
 GROUP BY
-	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Leave, U.NIK, U.StartWork
+	CAST(YEAR(A.Date) AS VARCHAR(4)), U.UserID, U.Name, P.Name, C.Leave, U.NIK

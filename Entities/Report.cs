@@ -66,7 +66,6 @@ namespace API.Entities
         public String Nama { get; set; }
         public String Posisi { get; set; }
         public String NIK { get; set; }
-        public String MulaiPerhitungan { get; set; }
         public int Cuti { get; set; }
         public int JatahCuti { get; set; }
         public ICollection<vReportCutiList> vReportCutiLists { get; set; }
@@ -91,7 +90,6 @@ namespace API.Entities
         public String Nama { get; set; }
         public String Posisi { get; set; }
         public String NIK { get; set; }
-        public String MulaiPerhitungan { get; set; }
         public int Cuti { get; set; }
         public int JatahCuti { get; set; }
         public int SisaCuti { get; set; }

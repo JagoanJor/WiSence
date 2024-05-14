@@ -123,11 +123,11 @@ namespace API.Services
                 {
                     if (DateTime.TryParse(search, out DateTime searchDate))
                         query = query.Where(x => x.Date == searchDate
-                            || (x.Date.Month == searchDate.Month && x.Date.Day == searchDate.Day));
+                        || (x.Date.Month == searchDate.Month && x.Date.Day == searchDate.Day));
                     else
                         query = query.Where(x => x.UserID.ToString().Contains(search)
-                            || x.User.Name.Contains(search)
-                            || x.Task.Contains(search));
+                        || x.User.Name.Contains(search)
+                        || x.Task.Contains(search));
                 }
 
                 // Filtering
