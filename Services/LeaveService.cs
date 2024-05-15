@@ -38,6 +38,10 @@ namespace API.Services
                 {
                     while(true)
                     {
+                        var checkLeave = context.Leaves.FirstOrDefault(x => x.Start.Value.Date <= currentDate.Date && x.End.Value.Date >= currentDate.Date && x.IsDeleted != true && x.UserID == data.UserID && (x.Status == "Disetujui" || x.Status == "Menunggu"));
+                        if (checkLeave != null)
+                            throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya antara tanggal {checkLeave.Start.Value.Date.ToString("MM/dd/yyyy")} - {checkLeave.End.Value.Date.ToString("MM/dd/yyyy")}");
+
                         var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
                         if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                         {
@@ -85,7 +89,7 @@ namespace API.Services
 
                 if (obj.Status == "Disetujui")
                 {
-                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true);
+                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true && x.UserID == obj.UserID);
                     if (attendance != null)
                         context.Attendances.RemoveRange(attendance);
                 }
@@ -122,7 +126,7 @@ namespace API.Services
 
                 if (data.Status != "Disetujui" && obj.Status == "Disetujui")
                 {
-                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true);
+                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true && x.UserID == obj.UserID && x.Status == "Cuti");
                     if (attendance != null)
                         context.Attendances.RemoveRange(attendance);
                 }
@@ -141,7 +145,7 @@ namespace API.Services
                             currentDate = currentDate.AddDays(1);
                         };
 
-                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == data.UserID);
 
                         // Check jika data sudah pernah kebuat sebagai absen, maka akan diubah menjadi
                         // status cuti
@@ -167,6 +171,36 @@ namespace API.Services
                             context.Attendances.Update(checkData);
                         }
                         currentDate = currentDate.AddDays(1);
+                    }
+                }
+
+                if (data.Status == "Menunggu" && obj.Status == "Menunggu")
+                {
+                    var currentDate = data.Start.Value.Date;
+
+                    //Validate to make sure there are no holiday or saturday or sunday set as Cuti
+                    for (int i = 1; i <= data.Duration; i++)
+                    {
+                        while (true)
+                        {
+                            var checkLeave = context.Leaves.FirstOrDefault(x => x.Start.Value.Date <= currentDate.Date && x.End.Value.Date >= currentDate.Date && x.IsDeleted != true && x.UserID == data.UserID && (x.Status == "Disetujui" || x.Status == "Menunggu"));
+                            if (checkLeave != null)
+                                throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya antara tanggal {checkLeave.Start.Value.Date.ToString("MM/dd/yyyy")} - {checkLeave.End.Value.Date.ToString("MM/dd/yyyy")}");
+
+                            var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
+                            if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                            {
+                                if (i == 1)
+                                    data.Start = currentDate;
+                                if (i == data.Duration)
+                                    data.End = currentDate;
+
+                                currentDate = currentDate.AddDays(1);
+                                break;
+                            }
+
+                            currentDate = currentDate.AddDays(1);
+                        };
                     }
                 }
 
@@ -490,7 +524,7 @@ namespace API.Services
                             currentDate = currentDate.AddDays(1);
                         };
 
-                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+                        var checkData = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == obj.UserID);
 
                         // Check jika data sudah pernah kebuat sebagai absen, maka akan diubah menjadi
                         // status cuti
@@ -518,10 +552,6 @@ namespace API.Services
                         currentDate = currentDate.AddDays(1);
                     }
                 }
-
-                var checkCuti = context.Leaves.Where(x => x.Start.Value.Date == obj.Start.Value.Date && x.LeaveID != obj.LeaveID && x.IsDeleted != true);
-                if (checkCuti != null)
-                    context.Leaves.RemoveRange(checkCuti);
 
                 context.Leaves.Update(obj);
                 context.SaveChanges();
