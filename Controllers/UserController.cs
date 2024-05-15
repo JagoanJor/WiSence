@@ -78,22 +78,22 @@ namespace API.Controllers
             }
         }
 
-        /*[Authorize]*/
+        [Authorize]
         [HttpPost]
         public IActionResult Create([FromBody] User obj)
         {
             try
             {
-                /*var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
                 var user = (User)null;
                 if (token != null)
                     user = Utils.UserFromToken(token);
 
                 if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });*/
+                    return BadRequest(new { message = "Invalid Token" });
 
-                obj.UserIn = "0";
+                obj.UserIn = user.UserID.ToString();
                 obj.DateIn = DateTime.Now.AddMinutes(-2);
                 obj.IsDeleted = false;
 

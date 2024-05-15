@@ -16,6 +16,9 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                var user = context.Users.FirstOrDefault(x => x.UserID.ToString() == data.UserIn);
+                data.CompanyID = user.CompanyID;
+
                 if (string.IsNullOrEmpty(data.Password)) data.Password = "password";
                 data.Password = Utils.HashPassword(data.Password);
 
