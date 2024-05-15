@@ -28,10 +28,6 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var checkAttendance = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true && x.UserID == data.UserID && x.Status != "Cuti" && x.Status != "WFH");
-                if (checkAttendance != null)
-                    throw new Exception($"Anda sudah memiliki data absensi dengan status {checkAttendance.Status}");
-
                 context.Attendances.Add(data);
                 context.SaveChanges();
 
@@ -278,9 +274,9 @@ namespace API.Services
             try
             {
                 // Check attendance today
-                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && x.Status == "Cuti");
+                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && (x.Status == "Cuti" || x.Status == "WFH"));
                 if (attendance != null)
-                    throw new Exception("User sudah melakukan absensi dengan status Cuti!");
+                    throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
 
                 var wifiSSID = "";
                 var ipAddress = "";

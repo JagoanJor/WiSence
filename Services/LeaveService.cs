@@ -89,7 +89,7 @@ namespace API.Services
 
                 if (obj.Status == "Disetujui")
                 {
-                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true && x.UserID == obj.UserID);
+                    var attendance = context.Attendances.Where(x => x.Date.Value.Date >= obj.Start.Value.Date && x.Date.Value.Date <= obj.End.Value.Date && x.IsDeleted != true && x.UserID == obj.UserID && x.Status == "Cuti");
                     if (attendance != null)
                         context.Attendances.RemoveRange(attendance);
                 }
