@@ -40,7 +40,7 @@ namespace API.Services
                     {
                         var checkLeave = context.Leaves.FirstOrDefault(x => x.Start.Value.Date <= currentDate.Date && x.End.Value.Date >= currentDate.Date && x.IsDeleted != true && x.UserID == data.UserID && (x.Status == "Disetujui" || x.Status == "Menunggu"));
                         if (checkLeave != null)
-                            throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya antara tanggal {checkLeave.Start.Value.Date.ToString("MM/dd/yyyy")} - {checkLeave.End.Value.Date.ToString("MM/dd/yyyy")}");
+                            throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya pada tanggal {currentDate.Date.ToString("dd MMMM yyyy")}");
 
                         var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
                         if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
@@ -185,7 +185,7 @@ namespace API.Services
                         {
                             var checkLeave = context.Leaves.FirstOrDefault(x => x.Start.Value.Date <= currentDate.Date && x.End.Value.Date >= currentDate.Date && x.IsDeleted != true && x.UserID == data.UserID && (x.Status == "Disetujui" || x.Status == "Menunggu"));
                             if (checkLeave != null)
-                                throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya antara tanggal {checkLeave.Start.Value.Date.ToString("MM/dd/yyyy")} - {checkLeave.End.Value.Date.ToString("MM/dd/yyyy")}");
+                                throw new Exception($"Permohonan cuti sudah pernah dibuat sebelumnya pada tanggal {currentDate.Date.ToString("dd MMMM yyyy")}");
 
                             var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate && x.IsDeleted != true);
                             if (holiday == null && currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
