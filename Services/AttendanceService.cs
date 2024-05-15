@@ -28,6 +28,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+                var checkAttendance = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true && x.UserID == data.UserID && x.Status != "Cuti" && x.Status != "WFH");
+                if (checkAttendance != null)
+                    throw new Exception($"Anda sudah memiliki data absensi dengan status {checkAttendance.Status}");
+
                 context.Attendances.Add(data);
                 context.SaveChanges();
 
