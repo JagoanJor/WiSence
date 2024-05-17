@@ -196,7 +196,7 @@ namespace API.Services
                                     query = query.Where(x => x.ClockOut.Value.Date == searchClockOut.Date || x.ClockOut.Value.Hour == searchClockOut.Hour || x.ClockOut.Value.Minute == searchClockOut.Minute);
                                     break;
                                 case "date":
-                                    var searchDate = value.Split("-", StringSplitOptions.RemoveEmptyEntries);
+                                    var searchDate = value.Split("/", StringSplitOptions.RemoveEmptyEntries);
                                     DateTime.TryParse(searchDate[0].Trim(), out DateTime searchStart);
                                     DateTime.TryParse(searchDate[1].Trim(), out DateTime searchEnd);
                                     query = query.Where(x => x.Date.Value.Date >= searchStart.Date && x.Date.Value.Date <= searchEnd.Date);
