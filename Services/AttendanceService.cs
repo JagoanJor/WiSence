@@ -128,6 +128,31 @@ namespace API.Services
                 foreach (var users in query)
                     CheckAttendance(users.UserID);
 
+                //Date
+                if (!string.IsNullOrEmpty(date))
+                {
+                    var dateList = date.Split("|", StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var d in dateList)
+                    {
+                        var dates = d.Split(":", StringSplitOptions.RemoveEmptyEntries);
+                        if (dates.Length == 2)
+                        {
+                            var fieldName = dates[0].Trim().ToLower();
+                            if (fieldName == "startdate")
+                            {
+                                DateTime.TryParse(dates[1].Trim(), out DateTime startDate);
+                                query = query.Where(x => x.Date >= startDate);
+                            }
+                            else if (fieldName == "enddate")
+                            {
+                                DateTime.TryParse(dates[1].Trim(), out DateTime endDate);
+                                endDate = endDate.AddHours(23).AddMinutes(59).AddSeconds(59);
+                                query = query.Where(x => x.Date <= endDate);
+                            }
+                        }
+                    }
+                }
+
                 // Searching
                 if (!string.IsNullOrEmpty(search))
                 {
@@ -138,6 +163,7 @@ namespace API.Services
                         query = query.Where(x => x.Description.Contains(search)
                         || x.Status.Contains(search)
                         || x.User.Name.Contains(search)
+                        || x.User.NIK.Contains(search)
                         || x.ClockIn.ToString().Contains(search)
                         || x.ClockOut.ToString().Contains(search)
                         || x.Date.ToString().Contains(search));

@@ -270,12 +270,22 @@ namespace API.Services
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.User.Name.Contains(search)
-                        || x.Duration.ToString().Contains(search)
-                        || x.Description.Contains(search)
-                        || x.Status.Contains(search));
+                {
+                    if (DateTime.TryParse(search, out DateTime searchDate))
+                        query = query.Where(x => x.Start.Value.Date == searchDate.Date
+                            || (x.Start.Value.Month == searchDate.Month && x.Start.Value.Day == searchDate.Day)
+                            || x.End.Value.Date == searchDate.Date
+                            || (x.End.Value.Month == searchDate.Month && x.End.Value.Day == searchDate.Day));
+                    else
+                        query = query.Where(x => x.User.Name.Contains(search)
+                            || x.User.NIK.Contains(search)
+                            || x.Duration.ToString().Contains(search)
+                            || x.Description.Contains(search)
+                            || x.Status.Contains(search));
+                }
 
                 // Filtering
+                int? getFilterLeaveAllowance = null;
                 if (!string.IsNullOrEmpty(filter))
                 {
                     var filterList = filter.Split("|", StringSplitOptions.RemoveEmptyEntries);
@@ -291,9 +301,14 @@ namespace API.Services
                                 case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
-                                case "Duration": query = query.Where(x => x.Duration.ToString().Contains(value)); break;
+                                case "duration": query = query.Where(x => x.Duration.ToString().Contains(value)); break;
                                 case "description": query = query.Where(x => x.Description.Contains(value)); break;
-                                case "status": query = query.Where(x => x.Status.Contains(value)); break;
+                                case "status":
+                                    if (value.Equals("Disetujui"))
+                                        query = query.Where(x => x.Status.Equals(value));
+                                    else
+                                        query = query.Where(x => x.Status.Contains(value));
+                                    break;
                                 case "start":
                                     DateTime.TryParse(value, out DateTime searchStart);
                                     query = query.Where(x => x.Start.Value.Date == searchStart.Date);
@@ -301,6 +316,10 @@ namespace API.Services
                                 case "end":
                                     DateTime.TryParse(value, out DateTime searchEnd);
                                     query = query.Where(x => x.End.Value.Date == searchEnd.Date);
+                                    break;
+                                case "leaveallowance":
+                                    int.TryParse(value, out int searchLeaveAllowance);
+                                    getFilterLeaveAllowance = searchLeaveAllowance;
                                     break;
                             }
                         }
@@ -321,7 +340,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
-                            case "Duration": query = query.OrderByDescending(x => x.Duration); break;
+                            case "duration": query = query.OrderByDescending(x => x.Duration); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
                             case "status": query = query.OrderByDescending(x => x.Status); break;
                         }
@@ -332,7 +351,7 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderBy(x => x.User.UserID); break;
                             case "name": query = query.OrderBy(x => x.User.Name); break;
-                            case "Duration": query = query.OrderBy(x => x.Duration); break;
+                            case "duration": query = query.OrderBy(x => x.Duration); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
                             case "status": query = query.OrderBy(x => x.Status); break;
                         }
@@ -369,25 +388,53 @@ namespace API.Services
                     if (company == null)
                         throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
-                    var leaveAllowance = SisaCuti(users.UserID, company.CompanyID); 
-                    var leaveResponse = new LeaveResponse(
-                        cuti.LeaveID,
-                        cuti.DateIn,
-                        cuti.DateUp,
-                        cuti.UserIn,
-                        cuti.UserUp,
-                        cuti.IsDeleted,
-                        cuti.UserID,
-                        cuti.Description,
-                        cuti.Duration,
-                        cuti.Start,
-                        cuti.End,
-                        cuti.Status,
-                        leaveAllowance,
-                        cuti.User
-                    );
+                    var leaveAllowance = SisaCuti(users.UserID, company.CompanyID);
+                    
+                    if (getFilterLeaveAllowance != null)
+                    {
+                        if (leaveAllowance == getFilterLeaveAllowance)
+                        {
+                            var leaveResponse = new LeaveResponse(
+                                cuti.LeaveID,
+                                cuti.DateIn,
+                                cuti.DateUp,
+                                cuti.UserIn,
+                                cuti.UserUp,
+                                cuti.IsDeleted,
+                                cuti.UserID,
+                                cuti.Description,
+                                cuti.Duration,
+                                cuti.Start,
+                                cuti.End,
+                                cuti.Status,
+                                leaveAllowance,
+                                cuti.User
+                            );
 
-                    leaveResponses.Add(leaveResponse);
+                            leaveResponses.Add(leaveResponse);
+                        }
+                    }
+                    else
+                    {
+                        var leaveResponse = new LeaveResponse(
+                            cuti.LeaveID,
+                            cuti.DateIn,
+                            cuti.DateUp,
+                            cuti.UserIn,
+                            cuti.UserUp,
+                            cuti.IsDeleted,
+                            cuti.UserID,
+                            cuti.Description,
+                            cuti.Duration,
+                            cuti.Start,
+                            cuti.End,
+                            cuti.Status,
+                            leaveAllowance,
+                            cuti.User
+                        );
+
+                        leaveResponses.Add(leaveResponse);
+                    }
                 }
 
                 return leaveResponses;
