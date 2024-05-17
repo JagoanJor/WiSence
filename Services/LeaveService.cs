@@ -236,21 +236,14 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var query = from a in context.Leaves
-                            where a.IsDeleted != true
-                            select new
-                            {
-                                Leave = a,
-                                User = a.User,
-                                LeaveAllowance = SisaCuti(a.User.UserID, (long)a.User.CompanyID)
-                            };
+                var query = from a in context.Leaves where a.IsDeleted != true select a;
                 query = query.Include("User");
 
                 // If not Admin, just return the user data
                 if (user.IsAdmin != true)
-                    query = query.Where(x => x.Leave.UserID == user.UserID);
+                    query = query.Where(x => x.UserID == user.UserID);
 
-                // Date
+                //Date
                 if (!string.IsNullOrEmpty(date))
                 {
                     var dateList = date.Split("|", StringSplitOptions.RemoveEmptyEntries);
@@ -263,13 +256,13 @@ namespace API.Services
                             if (fieldName == "startdate")
                             {
                                 DateTime.TryParse(dates[1].Trim(), out DateTime startDate);
-                                query = query.Where(x => x.Leave.End >= startDate);
+                                query = query.Where(x => x.End >= startDate);
                             }
                             else if (fieldName == "enddate")
                             {
                                 DateTime.TryParse(dates[1].Trim(), out DateTime endDate);
                                 endDate = endDate.AddHours(23).AddMinutes(59).AddSeconds(59);
-                                query = query.Where(x => x.Leave.Start <= endDate);
+                                query = query.Where(x => x.Start <= endDate);
                             }
                         }
                     }
@@ -279,16 +272,16 @@ namespace API.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     if (DateTime.TryParse(search, out DateTime searchDate))
-                        query = query.Where(x => x.Leave.Start.Value.Date == searchDate.Date
-                            || (x.Leave.Start.Value.Month == searchDate.Month && x.Leave.Start.Value.Day == searchDate.Day)
-                            || x.Leave.End.Value.Date == searchDate.Date
-                            || (x.Leave.End.Value.Month == searchDate.Month && x.Leave.End.Value.Day == searchDate.Day));
+                        query = query.Where(x => x.Start.Value.Date == searchDate.Date
+                            || (x.Start.Value.Month == searchDate.Month && x.Start.Value.Day == searchDate.Day)
+                            || x.End.Value.Date == searchDate.Date
+                            || (x.End.Value.Month == searchDate.Month && x.End.Value.Day == searchDate.Day));
                     else
                         query = query.Where(x => x.User.Name.Contains(search)
                             || x.User.NIK.Contains(search)
-                            || x.Leave.Duration.ToString().Contains(search)
-                            || x.Leave.Description.Contains(search)
-                            || x.Leave.Status.Contains(search));
+                            || x.Duration.ToString().Contains(search)
+                            || x.Description.Contains(search)
+                            || x.Status.Contains(search));
                 }
 
                 // Filtering
@@ -308,32 +301,29 @@ namespace API.Services
                                 case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
                                 case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
                                 case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
-                                case "duration": query = query.Where(x => x.Leave.Duration.ToString().Contains(value)); break;
-                                case "description": query = query.Where(x => x.Leave.Description.Contains(value)); break;
+                                case "duration": query = query.Where(x => x.Duration.ToString().Contains(value)); break;
+                                case "description": query = query.Where(x => x.Description.Contains(value)); break;
                                 case "status":
                                     if (value.Equals("Disetujui"))
-                                        query = query.Where(x => x.Leave.Status.Equals(value));
+                                        query = query.Where(x => x.Status.Equals(value));
                                     else
-                                        query = query.Where(x => x.Leave.Status.Contains(value));
+                                        query = query.Where(x => x.Status.Contains(value));
                                     break;
                                 case "start":
                                     DateTime.TryParse(value, out DateTime searchStart);
-                                    query = query.Where(x => x.Leave.Start.Value.Date == searchStart.Date);
+                                    query = query.Where(x => x.Start.Value.Date == searchStart.Date);
                                     break;
                                 case "end":
                                     DateTime.TryParse(value, out DateTime searchEnd);
-                                    query = query.Where(x => x.Leave.End.Value.Date == searchEnd.Date);
+                                    query = query.Where(x => x.End.Value.Date == searchEnd.Date);
                                     break;
-                                case "leaveallowance": query = query.Where(x => x.LeaveAllowance.ToString().Contains(value)); break;
+                                case "leaveallowance":
+                                    int.TryParse(value, out int searchLeaveAllowance);
+                                    getFilterLeaveAllowance = searchLeaveAllowance;
+                                    break;
                             }
                         }
                     }
-                }
-
-                // Apply leave allowance filter if needed
-                if (getFilterLeaveAllowance.HasValue)
-                {
-                    query = query.Where(x => x.LeaveAllowance == getFilterLeaveAllowance.Value);
                 }
 
                 // Sorting
@@ -350,9 +340,9 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
                             case "name": query = query.OrderByDescending(x => x.User.Name); break;
-                            case "duration": query = query.OrderByDescending(x => x.Leave.Duration); break;
-                            case "description": query = query.OrderByDescending(x => x.Leave.Description); break;
-                            case "status": query = query.OrderByDescending(x => x.Leave.Status); break;
+                            case "duration": query = query.OrderByDescending(x => x.Duration); break;
+                            case "description": query = query.OrderByDescending(x => x.Description); break;
+                            case "status": query = query.OrderByDescending(x => x.Status); break;
                         }
                     }
                     else
@@ -361,15 +351,15 @@ namespace API.Services
                         {
                             case "userid": query = query.OrderBy(x => x.User.UserID); break;
                             case "name": query = query.OrderBy(x => x.User.Name); break;
-                            case "duration": query = query.OrderBy(x => x.Leave.Duration); break;
-                            case "description": query = query.OrderBy(x => x.Leave.Description); break;
-                            case "status": query = query.OrderBy(x => x.Leave.Status); break;
+                            case "duration": query = query.OrderBy(x => x.Duration); break;
+                            case "description": query = query.OrderBy(x => x.Description); break;
+                            case "status": query = query.OrderBy(x => x.Status); break;
                         }
                     }
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.Leave.LeaveID);
+                    query = query.OrderByDescending(x => x.LeaveID);
                 }
 
                 // Get Total Before Limit and Page
@@ -388,26 +378,63 @@ namespace API.Services
                 }
 
                 var leaveResponses = new List<LeaveResponse>();
-                foreach (var item in data)
+                foreach (var cuti in data)
                 {
-                    var leaveResponse = new LeaveResponse(
-                        item.Leave.LeaveID,
-                        item.Leave.DateIn,
-                        item.Leave.DateUp,
-                        item.Leave.UserIn,
-                        item.Leave.UserUp,
-                        item.Leave.IsDeleted,
-                        item.Leave.UserID,
-                        item.Leave.Description,
-                        item.Leave.Duration,
-                        item.Leave.Start,
-                        item.Leave.End,
-                        item.Leave.Status,
-                        item.LeaveAllowance,
-                        item.User
-                    );
+                    var users = context.Users.FirstOrDefault(x => x.UserID == cuti.UserID && x.IsDeleted != true);
+                    if (users == null)
+                        throw new Exception($"User with ID {cuti.User.UserID} not found");
 
-                    leaveResponses.Add(leaveResponse);
+                    var company = context.Companies.FirstOrDefault(x => x.CompanyID == users.CompanyID && x.IsDeleted != true);
+                    if (company == null)
+                        throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
+
+                    var leaveAllowance = SisaCuti(users.UserID, company.CompanyID);
+                    
+                    if (getFilterLeaveAllowance != null)
+                    {
+                        if (leaveAllowance == getFilterLeaveAllowance)
+                        {
+                            var leaveResponse = new LeaveResponse(
+                                cuti.LeaveID,
+                                cuti.DateIn,
+                                cuti.DateUp,
+                                cuti.UserIn,
+                                cuti.UserUp,
+                                cuti.IsDeleted,
+                                cuti.UserID,
+                                cuti.Description,
+                                cuti.Duration,
+                                cuti.Start,
+                                cuti.End,
+                                cuti.Status,
+                                leaveAllowance,
+                                cuti.User
+                            );
+
+                            leaveResponses.Add(leaveResponse);
+                        }
+                    }
+                    else
+                    {
+                        var leaveResponse = new LeaveResponse(
+                            cuti.LeaveID,
+                            cuti.DateIn,
+                            cuti.DateUp,
+                            cuti.UserIn,
+                            cuti.UserUp,
+                            cuti.IsDeleted,
+                            cuti.UserID,
+                            cuti.Description,
+                            cuti.Duration,
+                            cuti.Start,
+                            cuti.End,
+                            cuti.Status,
+                            leaveAllowance,
+                            cuti.User
+                        );
+
+                        leaveResponses.Add(leaveResponse);
+                    }
                 }
 
                 return leaveResponses;
