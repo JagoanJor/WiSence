@@ -80,9 +80,7 @@ namespace API
             });
 
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IService<User>, UserService>();
             services.AddScoped<IService<Role>, RoleService>();
-            services.AddScoped<IService<Vendor>, VendorService>();
             services.AddScoped<IService<Module>, ModuleService>();
             services.AddScoped<IService<Division>, DivisionService>();
             services.AddScoped<IService<Position>, PositionService>();
@@ -90,6 +88,7 @@ namespace API
             services.AddScoped<IService<Calendar>, CalendarService>();
             services.AddScoped<IService<Shift>, ShiftService>();
 
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDailyTaskService, DailyTaskService>();
             services.AddScoped<IAttendanceService, AttendanceService>();
             services.AddScoped<ICompanyService<Company>, CompanyService>();

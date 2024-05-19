@@ -9,7 +9,11 @@ using API.Helpers;
 
 namespace API.Services
 {
-    public class UserService : IService<User>
+    public interface IUserService : IService<User>
+    {
+        IEnumerable<User> GetExpiredUser(ref Int32 total);
+    }
+    public class UserService : IUserService
     {
         public User Create(User data)
         {
@@ -362,6 +366,39 @@ namespace API.Services
             finally
             {
                 context.Dispose();
+            }
+        }
+
+        public IEnumerable<User> GetExpiredUser(ref Int32 total)
+        {
+            var context = new EFContext();
+            try
+            {
+                var userExpired = new List<User>();
+                var obj = context.Users.Where(x => x.IsAdmin != true && x.IsDeleted != true);
+
+                foreach (var data in obj)
+                {
+                    if (data.EndWork != null)
+                    {
+                        TimeSpan diff = data.EndWork.Value.Date - DateTime.Now.Date;
+
+                        if (diff.Days >= 0 && diff.Days <= 7)
+                            userExpired.Add(data);
+                    }
+                }
+                
+                total = userExpired.Count;
+                userExpired.OrderBy(x => x.EndWork);
+                return userExpired;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
             }
         }
     }

@@ -18,9 +18,9 @@ namespace API.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        private IService<User> _service;
+        private IUserService _service;
 
-        public UserController(IService<User> service)
+        public UserController(IUserService service)
         {
             _service = service;
         }
@@ -175,6 +175,33 @@ namespace API.Controllers
             {
                 var message = ex.Message;
                 var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    message = inner.Message;
+                    inner = inner.InnerException;
+                }
+                Trace.WriteLine(message, "UserController");
+                return BadRequest(new { message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("GetExpiredUser")]
+        public IActionResult GetExpiredUser()
+        {
+            try
+            {
+                var total = 0;
+                var result = _service.GetExpiredUser(ref total);
+                var response = new ListResponse<User>(result, total, 0);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var message = ex.Message;
+                var inner = ex.InnerException;
+                
                 while (inner != null)
                 {
                     message = inner.Message;

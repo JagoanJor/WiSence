@@ -25,7 +25,6 @@ namespace API.Helpers
         public DbSet<RoleDetail> RoleDetails { get; set; }
         public DbSet<UserLog> UserLogs { get; set; }
         public DbSet<Module> Modules { get; set; }
-        public DbSet<Vendor> Vendors { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<Division> Divisions { get; set; }
