@@ -23,8 +23,6 @@ namespace API.Services
         User ChangeProfile(String fullName, String password, Int64 id);
         IEnumerable<dynamic> GetRoles(Int64 roleID);
         string GenerateToken(User user);
-        void ForgetPassword(String email);
-        void RecoveryPassword(String uniqueCode, String newPassword);
     }
 
     public class AuthService : IAuthService
@@ -133,105 +131,6 @@ namespace API.Services
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
-        }
-
-        public void ForgetPassword(String email)
-        {
-            var context = new EFContext();
-            try
-            {
-                var user = context.Users.FirstOrDefault(x => x.Email == email && x.IsDeleted != true);
-                if (user == null)
-                    throw new Exception("Invalid Email");
-
-                var password = context.Passwords.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true);
-                var code = Guid.NewGuid().ToString();
-                if (password == null)
-                {
-                    var newPassword = new Password();
-                    newPassword.UserID = user.UserID;
-                    newPassword.UniqueCode = code;
-                    newPassword.ExpiredDate = DateTime.Now.AddMinutes(-2).AddHours(3);
-                    newPassword.UserIn = user.UserID.ToString();
-                    newPassword.DateIn = DateTime.Now.AddMinutes(-2);
-                    context.Passwords.Add(newPassword);
-                }
-                else
-                {
-                    password.UniqueCode = code;
-                    password.ExpiredDate = DateTime.Now.AddMinutes(-2).AddHours(3);
-                    password.UserUp = user.UserID.ToString();
-                    password.DateUp = DateTime.Now.AddMinutes(-2);
-                }
-
-                // Sending Email
-                var sendTo = string.Format("{0}<{1}>", user.Name, user.Email);
-                var subject = string.Format("Reset Password of {0}", user.Name);
-                var htmlBody = Utils.EmailTemplate("ForgetPassword.html");
-                htmlBody = htmlBody.Replace("%NAME%", user.Name);
-                htmlBody = htmlBody.Replace("%CODE%", code);
-
-                Utils.SendEmail(sendTo, subject, htmlBody);
-
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-
-
-        public void RecoveryPassword(String uniqueCode, String newPassword)
-        {
-            var context = new EFContext();
-            try
-            {
-                var password = context.Passwords.FirstOrDefault(x => x.UniqueCode == uniqueCode && x.IsDeleted != true);
-                if (password == null)
-                    throw new Exception("Invalid Code");
-
-                if (password.ExpiredDate < DateTime.Now.AddMinutes(-2))
-                    throw new Exception("Your Code is expired");
-
-                var user = context.Users.FirstOrDefault(x => x.UserID == password.UserID && x.IsDeleted != true);
-                if (user == null)
-                    throw new Exception("Invalid User");
-
-                user.Password = Utils.HashPassword(newPassword);
-                context.Passwords.Remove(password);
-
-                // Sending Email
-                var sendTo = string.Format("{0}<{1}>", user.Name, user.Email);
-                var subject = string.Format("Reset Password of {0} Succeed", user.Name);
-                var htmlBody = Utils.EmailTemplate("ResetPassword.html");
-                htmlBody = htmlBody.Replace("%NAME%", user.Name);
-
-                Utils.SendEmail(sendTo, subject, htmlBody);
-
-
-                context.SaveChanges();
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
         }
     }
 }

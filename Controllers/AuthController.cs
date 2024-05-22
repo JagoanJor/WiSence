@@ -116,42 +116,6 @@ namespace API.Controllers
             }
         }
 
-        [HttpPost("forget-password")]
-        public IActionResult ForgetPassword([FromBody] ForgetPasswordRequest request)
-        {
-            try
-            {
-                _service.ForgetPassword(request.Email);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-                if (ex.InnerException != null)
-                    message = ex.InnerException.Message;
-                Trace.WriteLine(message, "AuthController");
-                return BadRequest(new { message });
-            }
-        }
-
-        [HttpPost("recovery-password")]
-        public IActionResult RecoveryPassword([FromBody] RecoveryPasswordRequest request)
-        {
-            try
-            {
-                _service.RecoveryPassword(request.Code, request.Password);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-                if (ex.InnerException != null)
-                    message = ex.InnerException.Message;
-                Trace.WriteLine(message, "AuthController");
-                return BadRequest(new { message });
-            }
-        }
-
         [Authorize]
         [HttpPost("change-profile")]
         public IActionResult ChangeProfile([FromBody] ChangeProfileRequest request)

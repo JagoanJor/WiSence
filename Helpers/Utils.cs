@@ -45,13 +45,6 @@ namespace API.Helpers
         public static string Storage { get { return Configuration.GetSection("AppSettings:Storage").Value; } }
         public static string FrontURL { get { return Configuration.GetSection("AppSettings:FrontURL").Value; } }
 
-        public static string MailFrom { get { return Configuration.GetSection("AppSettings:MailFrom").Value; } }
-        public static string MailDisplay { get { return Configuration.GetSection("AppSettings:MailDisplay").Value; } }
-        public static string MailHost { get { return Configuration.GetSection("AppSettings:MailHost").Value; } }
-        public static string MailUsername { get { return Configuration.GetSection("AppSettings:MailUsername").Value; } }
-        public static string MailPassword { get { return Configuration.GetSection("AppSettings:MailPassword").Value; } }
-        public static int MailPort { get { return Convert.ToInt32(Configuration.GetSection("AppSettings:MailPort").Value); } }
-
         public static User UserFromToken(string token)
         {
             try
@@ -132,72 +125,6 @@ namespace API.Helpers
                 saltBytes[i] = hashWithSaltBytes[hashSizeInBytes + i];
 
             return HashPassword(password, saltBytes) == passwordHash;
-        }
-
-        public static void SendEmail(string sendTo, string subject, string htmlBody, List<IFormFile> attachments = null)
-        {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(MailDisplay, MailFrom));
-
-            var addressList = sendTo.Split(";", StringSplitOptions.RemoveEmptyEntries);
-            foreach (var address in addressList)
-                message.To.Add(MailboxAddress.Parse(address));
-
-            message.Subject = subject;
-
-            var builder = new BodyBuilder();
-            builder.HtmlBody = htmlBody;
-            if (attachments != null)
-            {
-                byte[] fileBytes;
-                foreach (var file in attachments)
-                {
-                    if (file.Length > 0)
-                    {
-                        using (var ms = new MemoryStream())
-                        {
-                            file.CopyTo(ms);
-                            fileBytes = ms.ToArray();
-                        }
-                        builder.Attachments.Add(file.FileName, fileBytes, ContentType.Parse(file.ContentType));
-                    }
-                }
-            }
-
-            message.Body = builder.ToMessageBody();
-
-            var client = new SmtpClient();
-            try
-            {
-                client.Connect(MailHost, MailPort, MailKit.Security.SecureSocketOptions.StartTls);
-                client.Authenticate(MailUsername, MailPassword);
-                client.Send(message);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                client.Disconnect(true);
-                client.Dispose();
-            }
-        }
-
-        public static string EmailTemplate(string file)
-        {
-            var path = Utils.Template + "/" + file;
-
-            var sr = new StreamReader(path);
-            var htmlBody = sr.ReadToEnd();
-            sr.Close();
-
-            htmlBody = htmlBody.Replace("%PUBLIC_URL%", Utils.FrontURL);
-            return htmlBody;
         }
 
         public static void UserLog(Int64 userID, String description, Int64 userIn = 0, Int64 moduleID = 0, Int64 objectID = 0)
