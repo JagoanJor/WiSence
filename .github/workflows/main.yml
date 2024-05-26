@@ -1,6 +1,7 @@
 # github action to deploy munsonpickles api to azure
 
-name: :rocket: Deploy WiSence API
+name: 
+  🚀 Deploy WiSence API
 
 on:
   workflow_dispatch:
