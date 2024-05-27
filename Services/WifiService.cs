@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.NetworkInformation;
+using System.Text;
 using API.Entities;
 using API.Helpers;
 
@@ -78,10 +79,11 @@ namespace API.Services
                 int flag = 0;
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
+                StringBuilder networkDetails = new StringBuilder();
                 foreach (NetworkInterface networkInterface in networkInterfaces)
                 {
-                    // Log network interface details
-                    Console.WriteLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
+                    // Accumulate network interface details
+                    networkDetails.AppendLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
                 }
 
                 foreach (NetworkInterface networkInterface in networkInterfaces)
@@ -108,7 +110,8 @@ namespace API.Services
                 }
 
                 if (flag == 0)
-                    throw new Exception("Please Connect to Wi-fi!");
+                    throw new Exception($"Please Connect to Ethernet! Network details:\n{networkDetails.ToString()}");
+                //throw new Exception("Please Connect to Wi-fi!");
 
                 var pos = context.Positions.FirstOrDefault(x => x.PositionID == user.PositionID && x.IsDeleted != true);
                 if (pos == null)
