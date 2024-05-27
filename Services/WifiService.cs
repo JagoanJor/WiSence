@@ -83,12 +83,7 @@ namespace API.Services
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
                 StringBuilder networkDetails = new StringBuilder();
-                foreach (NetworkInterface networkInterface in networkInterfaces)
-                {
-                    // Accumulate network interface details
-                    networkDetails.AppendLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
-                }
-                
+
                 foreach (NetworkInterface networkInterface in networkInterfaces)
                 {
                     if (isRunningInAzure)
@@ -139,6 +134,49 @@ namespace API.Services
                             }
                         }
                     }
+                }
+
+                string targetInterfaceName = "Ethernet 3";
+                string wifiName = string.Empty;
+                string ipAddress = string.Empty;
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
+                    // Accumulate network interface details
+                    networkDetails.AppendLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
+
+                    if (networkInterface.Name.Equals(targetInterfaceName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                        var ipAddressInfo = ipProperties.UnicastAddresses
+                            .FirstOrDefault(addr => addr.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
+                        var gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                        if (gatewayInfo != null)
+                        {
+                            ipAddress = ipAddressInfo?.Address.ToString() ?? "No IP Address Found";
+
+                            // Attempt to get Wi-Fi name if the interface type is Wireless80211
+                            if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                            {
+                                var wlanClient = new WlanClient();
+                                foreach (var wlanInterface in wlanClient.Interfaces)
+                                {
+                                    if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                    {
+                                        wifiName = wlanInterface.CurrentConnection.profileName;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(ipAddress))
+                {
+                    throw new Exception($"Could not find IP Address for interface '{targetInterfaceName}'. Network details:\r\n{networkDetails}");
                 }
 
                 if (flag == 0)
