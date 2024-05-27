@@ -80,6 +80,12 @@ namespace API.Services
 
                 foreach (NetworkInterface networkInterface in networkInterfaces)
                 {
+                    // Log network interface details
+                    Console.WriteLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
+                }
+
+                foreach (NetworkInterface networkInterface in networkInterfaces)
+                {
                     IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
                     GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
 
