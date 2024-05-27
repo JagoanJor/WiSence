@@ -76,7 +76,10 @@ namespace API.Services
             var context = new EFContext();
             try
             {
+
+                bool isRunningInAzure = Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID") != null;
                 int flag = 0;
+
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 
                 StringBuilder networkDetails = new StringBuilder();
@@ -85,32 +88,61 @@ namespace API.Services
                     // Accumulate network interface details
                     networkDetails.AppendLine($"Interface: {networkInterface.Name}, Type: {networkInterface.NetworkInterfaceType}");
                 }
-
+                
                 foreach (NetworkInterface networkInterface in networkInterfaces)
                 {
-                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
-
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                        if (gatewayInfo != null)
+                    if (isRunningInAzure)
+                    {
+                        if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
                         {
-                            WlanClient client = new WlanClient();
-                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
-                            {
-                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
-                                {
-                                    data.Name = wlanInterface.CurrentConnection.profileName;
-                                }
-                            }
+                            IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                            GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
 
-                            data.IPAddress = gatewayInfo.Address.ToString();
-                            flag = 1;
-                            break;
+                            if (gatewayInfo != null)
+                            {
+                                data.IPAddress = gatewayInfo.Address.ToString();
+                                data.Name = networkInterface.Name; // Use network interface name
+                                flag = 1;
+                                break;
+                            }
                         }
+                    }
+                    else
+                    {
+                        // Original logic for local environment
+                        if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
+                        {
+                            IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
+                            GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
+
+                            if (gatewayInfo != null)
+                            {
+                                if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211)
+                                {
+                                    WlanClient client = new WlanClient();
+                                    foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
+                                    {
+                                        if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
+                                        {
+                                            data.Name = wlanInterface.CurrentConnection.profileName;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    data.Name = networkInterface.Name;
+                                }
+
+                                data.IPAddress = gatewayInfo.Address.ToString();
+                                flag = 1;
+                                break;
+                            }
+                        }
+                    }
                 }
 
                 if (flag == 0)
-                    throw new Exception($"Please Connect to Ethernet! Network details:\n{networkDetails.ToString()}");
+                    throw new Exception($"Please Connect to Ethernet! Network details:\r\n{networkDetails.ToString()}");
                 //throw new Exception("Please Connect to Wi-fi!");
 
                 var pos = context.Positions.FirstOrDefault(x => x.PositionID == user.PositionID && x.IsDeleted != true);
