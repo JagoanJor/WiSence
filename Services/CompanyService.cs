@@ -128,6 +128,7 @@ namespace API.Services
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
+                obj.MaxRange = data.MaxRange;
 
                 if (data.Logo != "" && data.Logo != null)
                 {
