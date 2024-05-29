@@ -408,14 +408,22 @@ namespace API.Services
                 var range = 0.0;
                 var index = 0;
                 var lastIndex = location.Count() - 1;
+                var nearestLocation = "";
+                var nearestRange = 0.0;
 
                 foreach (var loc in location)
                 {
                     range = GetDistance(longtitude, latitude, loc.Longtitude, loc.Latitude);
+                    if (nearestRange == 0 || nearestRange > range)
+                    {
+                        nearestRange = range;
+                        nearestLocation = loc.Name;
+                    }
+
                     if (range <= company.MaxRange)
                         break;
                     if (range > company.MaxRange && index == lastIndex)
-                        throw new Exception($"Jarak anda saat ini adalah {Math.Round(range, 2)} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor!");
+                        throw new Exception($"Jarak anda saat ini adalah {Math.Round(range, 2)} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor! Lokasi terdekat adalah {nearestLocation}.");
                     index++;
                 }
 
