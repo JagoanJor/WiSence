@@ -415,7 +415,7 @@ namespace API.Services
                     if (range <= company.MaxRange)
                         break;
                     if (range > company.MaxRange && index == lastIndex)
-                        throw new Exception($"Jarak anda saat ini adalah {range} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor!");
+                        throw new Exception($"Jarak anda saat ini adalah {Math.Round(range, 2)} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor!");
                     index++;
                 }
 
