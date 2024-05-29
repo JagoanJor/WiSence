@@ -137,9 +137,9 @@ namespace API.Helpers
                 userLog.ModuleID = moduleID;
                 userLog.ObjectID = objectID;
                 userLog.Description = description;
-                userLog.TransDate = DateTime.Now.AddMinutes(-2);
+                userLog.TransDate = DateTime.Now.AddHours(7);
                 userLog.UserIn = userIn == 0 ? userID.ToString() : userIn.ToString();
-                userLog.DateIn = DateTime.Now.AddMinutes(-2);
+                userLog.DateIn = DateTime.Now.AddHours(7);
 
                 context.UserLogs.Add(userLog);
 

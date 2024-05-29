@@ -49,13 +49,13 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 foreach (var role in obj.RoleDetails)
                 {
                     role.IsDeleted = true;
                     role.UserUp = userID;
-                    role.DateUp = DateTime.Now.AddMinutes(-2);
+                    role.DateUp = DateTime.Now.AddHours(7);
                 }
 
                 context.SaveChanges();
@@ -88,7 +88,7 @@ namespace API.Services
 
                 obj.Name = data.Name;
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 // Update & Set IsDeleted on Existing
                 if (obj.RoleDetails != null)
@@ -106,7 +106,7 @@ namespace API.Services
                             role.IsDelete = newRole.IsDelete;
                         }
                         role.UserUp = data.UserUp;
-                        role.DateUp = DateTime.Now.AddMinutes(-2);
+                        role.DateUp = DateTime.Now.AddHours(7);
                     }
                 }
 
@@ -120,7 +120,7 @@ namespace API.Services
                         {
                             var newRole = new RoleDetail();
                             newRole.UserIn = data.UserUp;
-                            newRole.DateIn = DateTime.Now.AddMinutes(-2);
+                            newRole.DateIn = DateTime.Now.AddHours(7);
                             newRole.ModuleID = role.ModuleID;
                             newRole.IsCreate = role.IsCreate;
                             newRole.IsRead = role.IsRead;

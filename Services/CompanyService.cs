@@ -70,7 +70,7 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 // Delete user data (Except admin)
                 var user = context.Users.Where(x => x.IsAdmin != true && x.IsDeleted != true);
@@ -147,7 +147,7 @@ namespace API.Services
 
                 obj.Leave = data.Leave;
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 

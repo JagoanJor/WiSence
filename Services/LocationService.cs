@@ -63,7 +63,7 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 
@@ -96,7 +96,7 @@ namespace API.Services
                 obj.Latitude = data.Latitude;
                 obj.CompanyID = data.CompanyID;
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 

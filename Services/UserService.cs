@@ -58,7 +58,7 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID.ToString();
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 // Delete User's cuti data
                 var cuti = context.Leaves.Where(x => x.UserID == id);
@@ -127,7 +127,7 @@ namespace API.Services
                 obj.IsAdmin = data.IsAdmin;
 
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 if (!string.IsNullOrEmpty(data.Password))
                     obj.Password = Utils.HashPassword(data.Password);
@@ -381,7 +381,7 @@ namespace API.Services
                 {
                     if (data.EndWork != null)
                     {
-                        TimeSpan diff = data.EndWork.Value.Date - DateTime.Now.Date;
+                        TimeSpan diff = data.EndWork.Value.Date - DateTime.Now.AddHours(7).Date;
 
                         if (diff.Days >= 0 && diff.Days <= 7)
                             userExpired.Add(data);

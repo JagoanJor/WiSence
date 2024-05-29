@@ -55,7 +55,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.Date && x.Status != "Cuti").Count();
+                var obj = context.Attendances.Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.AddHours(7).Date && x.Status != "Cuti").Count();
                 if (obj == null) return 0;
 
                 return obj;
@@ -134,13 +134,13 @@ namespace API.Services
                 var totalUser = userInCompany.Count();
                 if (totalUser == 0) return (0, 0, 0, 0);
 
-                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
                 if (ontime == null) ontime = 0;
 
-                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
                 if (terlambat == null) terlambat = 0;
 
-                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.Date).Count();
+                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
                 if (cuti == null) cuti = 0;
 
                 var absen = (((totalUser - ontime) - terlambat) - cuti);

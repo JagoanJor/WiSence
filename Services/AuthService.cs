@@ -72,7 +72,7 @@ namespace API.Services
                     obj.Password = Utils.HashPassword(password);
                 obj.Name = fullName;
                 obj.UserUp = id.ToString();
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
                 obj.Password = "";

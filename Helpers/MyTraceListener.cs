@@ -21,9 +21,9 @@ namespace API.Helpers
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 
-                using (var writer = new StreamWriter(path + DateTime.Now.AddMinutes(-2).ToString("yyyyMMdd") + ".txt", true))
+                using (var writer = new StreamWriter(path + DateTime.Now.AddHours(7).AddMinutes(-2).ToString("yyyyMMdd") + ".txt", true))
                 {
-                    writer.WriteLine(string.Format("[{0:HH:mm:ss.ffff}] {1}", DateTime.Now.AddMinutes(-2), msg));
+                    writer.WriteLine(string.Format("[{0:HH:mm:ss.ffff}] {1}", DateTime.Now.AddHours(7).AddMinutes(-2), msg));
                     writer.Close();
                 }
             }

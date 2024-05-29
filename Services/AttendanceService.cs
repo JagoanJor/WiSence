@@ -57,7 +57,7 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 
@@ -92,7 +92,7 @@ namespace API.Services
                 obj.ClockIn = data.ClockIn;
                 obj.ClockOut = data.ClockOut;
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 
@@ -302,7 +302,7 @@ namespace API.Services
             try
             {
                 // Check attendance today
-                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && (x.Status == "Cuti" || x.Status == "WFH"));
+                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && (x.Status == "Cuti" || x.Status == "WFH"));
                 if (attendance != null)
                     throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
 
@@ -346,23 +346,23 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
                     throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn?.ToString("HH:mm")}.");
 
                 var data = new Attendance();
 
                 data.UserID = user.UserID;
-                data.ClockIn = DateTime.Now;
+                data.ClockIn = DateTime.Now.AddHours(7);
                 data.UserIn = user.UserID.ToString();
-                data.DateIn = DateTime.Now;
-                data.Date = DateTime.Now;
+                data.DateIn = DateTime.Now.AddHours(7);
+                data.Date = DateTime.Now.AddHours(7);
                 data.IsDeleted = false;
 
                 DateTime lateTime = shift.ClockIn.Value.AddHours(1).AddMinutes(30);
 
-                if (DateTime.Now.TimeOfDay <= shift.ClockIn?.TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay <= shift.ClockIn?.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.AddHours(7).TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.AddHours(7).TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
@@ -395,7 +395,7 @@ namespace API.Services
             try
             {
                 // Check attendance today
-                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && (x.Status == "Cuti" || x.Status == "WFH"));
+                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && (x.Status == "Cuti" || x.Status == "WFH"));
                 if (attendance != null)
                     throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
 
@@ -423,23 +423,23 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
                     throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn?.ToString("HH:mm")}.");
 
                 var data = new Attendance();
 
                 data.UserID = user.UserID;
-                data.ClockIn = DateTime.Now;
+                data.ClockIn = DateTime.Now.AddHours(7);
                 data.UserIn = user.UserID.ToString();
-                data.DateIn = DateTime.Now;
-                data.Date = DateTime.Now;
+                data.DateIn = DateTime.Now.AddHours(7);
+                data.Date = DateTime.Now.AddHours(7);
                 data.IsDeleted = false;
 
                 DateTime lateTime = shift.ClockIn.Value.AddHours(1).AddMinutes(30);
 
-                if (DateTime.Now.TimeOfDay <= shift.ClockIn?.TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay <= shift.ClockIn?.TimeOfDay)
                     data.Status = "Ontime";
-                else if (DateTime.Now.TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                else if (DateTime.Now.AddHours(7).TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.AddHours(7).TimeOfDay < lateTime.TimeOfDay)
                     data.Status = "Terlambat";
                 else
                     data.Status = "Absen";
@@ -514,7 +514,7 @@ namespace API.Services
                 }
 
                 var data = context.Attendances
-                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && x.IsDeleted != true)
                     .FirstOrDefault();
 
                 if (data == null)
@@ -524,12 +524,12 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.ClockIn?.TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn?.TimeOfDay)
                     throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn?.ToString("HH:mm")}.");
 
-                data.ClockOut = DateTime.Now;
+                data.ClockOut = DateTime.Now.AddHours(7);
                 data.UserUp = user.UserID.ToString();
-                data.DateUp = DateTime.Now;
+                data.DateUp = DateTime.Now.AddHours(7);
 
                 context.Attendances.Update(data);
                 context.SaveChanges();
@@ -556,7 +556,7 @@ namespace API.Services
             try
             {
                 var data = context.Attendances
-                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && x.IsDeleted != true)
                     .FirstOrDefault();
 
                 if (data == null)
@@ -586,12 +586,12 @@ namespace API.Services
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
-                if (DateTime.Now.TimeOfDay < shift.ClockIn?.TimeOfDay)
+                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn?.TimeOfDay)
                     throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn?.ToString("HH:mm")}.");
 
-                data.ClockOut = DateTime.Now;
+                data.ClockOut = DateTime.Now.AddHours(7);
                 data.UserUp = user.UserID.ToString();
-                data.DateUp = DateTime.Now;
+                data.DateUp = DateTime.Now.AddHours(7);
 
                 context.Attendances.Update(data);
                 context.SaveChanges();
@@ -624,7 +624,7 @@ namespace API.Services
             if (currentDate == null)
                 throw new Exception("Tanggal mulai kerja user belum diatur!");
 
-            while (currentDate.Date < DateTime.Now.Date)
+            while (currentDate.Date < DateTime.Now.AddHours(7).Date)
             {
                 var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
 
@@ -642,7 +642,7 @@ namespace API.Services
                             attendance.ClockOut = currentDate;
                             attendance.Description = "";
                             attendance.Status = "Absen";
-                            attendance.DateIn = DateTime.Now;
+                            attendance.DateIn = DateTime.Now.AddHours(7);
                             attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
                             attendance.IsDeleted = false;
 

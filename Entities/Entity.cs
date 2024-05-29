@@ -19,7 +19,7 @@ namespace API.Entities
         public Entity()
         {
             UserIn = "";
-            DateIn = DateTime.Now.AddMinutes(-2);
+            DateIn = DateTime.Now.AddHours(7);
         }
 
     }

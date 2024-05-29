@@ -94,7 +94,7 @@ namespace API.Controllers
                 foreach (var role in obj.RoleDetails)
                     role.UserIn = user.UserID.ToString();
 
-                obj.DateIn = DateTime.Now.AddMinutes(-2);
+                obj.DateIn = DateTime.Now.AddHours(7);
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);

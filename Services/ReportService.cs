@@ -266,7 +266,7 @@ namespace API.Services
             if (currentDate == null)
                 throw new Exception("Tanggal mulai kerja belum diatur!");
 
-            while (currentDate.Date < DateTime.Now.Date)
+            while (currentDate.Date < DateTime.Now.AddHours(7).Date)
             {
                 var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
 
@@ -284,7 +284,7 @@ namespace API.Services
                             attendance.ClockOut = currentDate;
                             attendance.Description = "";
                             attendance.Status = "Absen";
-                            attendance.DateIn = DateTime.Now;
+                            attendance.DateIn = DateTime.Now.AddHours(7);
                             attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
                             attendance.IsDeleted = false;
 

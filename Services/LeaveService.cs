@@ -96,7 +96,7 @@ namespace API.Services
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 
@@ -158,7 +158,7 @@ namespace API.Services
                             attendance.ClockOut = currentDate;
                             attendance.Description = obj.Description;
                             attendance.Status = "Cuti";
-                            attendance.DateIn = DateTime.Now;
+                            attendance.DateIn = DateTime.Now.AddHours(7);
                             attendance.UserIn = obj.UserIn;
                             attendance.IsDeleted = false;
 
@@ -211,7 +211,7 @@ namespace API.Services
                 obj.Duration = data.Duration;
                 obj.Status = data.Status;
                 obj.UserUp = data.UserUp;
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.SaveChanges();
 
@@ -485,7 +485,7 @@ namespace API.Services
                 
                 obj.Leave = jatah;
                 obj.UserUp = user.UserID.ToString();
-                obj.DateUp = DateTime.Now.AddMinutes(-2);
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 context.Companies.Update(obj);
                 context.SaveChanges();
@@ -511,7 +511,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Date.Value.Year == DateTime.Now.Year && x.Status == "Cuti");
+                var obj = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Date.Value.Year == DateTime.Now.AddHours(7).Year && x.Status == "Cuti");
                 int count = 0;
                 if (obj != null)
                 {
@@ -555,7 +555,7 @@ namespace API.Services
 
                 obj.Status = status;
                 obj.UserUp = userID.ToString();
-                obj.DateUp = DateTime.Now;
+                obj.DateUp = DateTime.Now.AddHours(7);
 
                 if (status == "Disetujui")
                 {
@@ -584,7 +584,7 @@ namespace API.Services
                             attendance.ClockOut = currentDate;
                             attendance.Description = obj.Description;
                             attendance.Status = "Cuti";
-                            attendance.DateIn = DateTime.Now;
+                            attendance.DateIn = DateTime.Now.AddHours(7);
                             attendance.UserIn = obj.UserIn;
                             attendance.IsDeleted = false;
 

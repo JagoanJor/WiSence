@@ -93,7 +93,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 obj.UserIn = user.UserID.ToString();
-                obj.DateIn = DateTime.Now.AddMinutes(-2);
+                obj.DateIn = DateTime.Now.AddHours(7);
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
