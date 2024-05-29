@@ -24,7 +24,6 @@ CREATE TABLE [dbo].[Company] (
     [Name]      VARCHAR (250) NULL,
     [Logo]      VARCHAR (250) NULL,
     [Leave]      INT           NULL,
-    [MaxRange]      FLOAT           NULL,
     [DateIn]    DATETIME      NULL,
     [UserIn]    VARCHAR (50)  NULL,
     [DateUp]    DATETIME      NULL,
@@ -62,8 +61,8 @@ CREATE TABLE [dbo].[Wifi] (
 CREATE TABLE [dbo].[Location] (
     [LocationID]        BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]      VARCHAR (250) NULL,
-    [Longtitude] FLOAT  NULL,
-    [Latitude] FLOAT        NULL,
+    [Longtitude] DECIMAL  NULL,
+    [Latitude] DECIMAL        NULL,
     [CompanyID] BIGINT        NULL,
     [DateIn]    DATETIME      NULL,
     [UserIn]    VARCHAR (50)  NULL,

@@ -222,13 +222,6 @@ namespace API.Helpers
                 System.IO.File.Delete(pathFile);
             }
         }
-
-        public static DateTime ConvertToIndonesianTime(DateTime utcDateTime)
-        {
-            var indonesianTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-            return TimeZoneInfo.ConvertTimeFromUtc(utcDateTime, indonesianTimeZone);
-        }
-
     }
 }
 
