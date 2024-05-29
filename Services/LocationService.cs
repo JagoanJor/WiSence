@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,102 +8,18 @@ using API.Entities;
 using API.Helpers;
 
 using Microsoft.EntityFrameworkCore;
-using NativeWifi;
 
 namespace API.Services
 {
-    public interface IWifiService<T> : IService<T>
+    public class LocationService : IService<Location>
     {
-        T Create(T data, User user);
-    }
-    public class WifiService : IWifiService<Wifi>
-    {
-        public Wifi Create(Wifi data)
+        public Location Create(Location data)
         {
             var context = new EFContext();
             try
             {
-                *//*int flag = 0;
-                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-                foreach (NetworkInterface networkInterface in networkInterfaces)
-                {
-                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
-
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                        if (gatewayInfo != null)
-                        {
-                            WlanClient client = new WlanClient();
-                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
-                            {
-                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
-                                {
-                                    data.Name = wlanInterface.CurrentConnection.profileName;
-                                }
-                            }
-
-                            data.IPAddress = gatewayInfo.Address.ToString();
-                            flag = 1;
-                            break;
-                        }
-                }
-
-                if (flag == 0)
-                    throw new Exception("Please Connect to Wi-fi!");
-
-                context.Wifis.Add(data);
-                context.SaveChanges();*//*
-
-                return data;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-
-        public Wifi Create(Wifi data, User user)
-        {
-            var context = new EFContext();
-            try
-            {
-                int flag = 0;
-                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-                foreach (NetworkInterface networkInterface in networkInterfaces)
-                {
-                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
-
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                        if (gatewayInfo != null)
-                        {
-                            WlanClient client = new WlanClient();
-                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
-                            {
-                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
-                                {
-                                    data.Name = wlanInterface.CurrentConnection.profileName;
-                                }
-                            }
-
-                            data.IPAddress = gatewayInfo.Address.ToString();
-                            flag = 1;
-                            break;
-                        }
-                }
-
-                if (flag == 0)
-                    throw new Exception("Please Connect to Wi-fi!");
+                var userID = Int64.Parse(data.UserIn);
+                var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != null);
 
                 var pos = context.Positions.FirstOrDefault(x => x.PositionID == user.PositionID && x.IsDeleted != true);
                 if (pos == null)
@@ -117,9 +33,8 @@ namespace API.Services
                 if (com == null)
                     throw new Exception("Please set division's company!");
 
-                data.CompanyID = com.CompanyID;
-
-                context.Wifis.Add(data);
+                data.CompanyID = user.CompanyID;
+                context.Locations.Add(data);
                 context.SaveChanges();
 
                 return data;
@@ -143,7 +58,7 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Wifis.FirstOrDefault(x => x.WifiID == id && x.IsDeleted != true);
+                var obj = context.Locations.FirstOrDefault(x => x.LocationID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
@@ -168,16 +83,17 @@ namespace API.Services
             }
         }
 
-        public Wifi Edit(Wifi data)
+        public Location Edit(Location data)
         {
             var context = new EFContext();
             try
             {
-                var obj = context.Wifis.FirstOrDefault(x => x.WifiID == data.WifiID && x.IsDeleted != true);
+                var obj = context.Locations.FirstOrDefault(x => x.LocationID == data.LocationID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
-                obj.IPAddress = data.IPAddress;
+                obj.Longtitude = data.Longtitude;
+                obj.Latitude = data.Latitude;
                 obj.CompanyID = data.CompanyID;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddMinutes(-2);
@@ -200,18 +116,17 @@ namespace API.Services
             }
         }
 
-        public IEnumerable<Wifi> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public IEnumerable<Location> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
         {
             var context = new EFContext();
             try
             {
-                var query = from a in context.Wifis where a.IsDeleted != true select a;
+                var query = from a in context.Locations where a.IsDeleted != true select a;
                 query = query.Include("Company");
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
-                    query = query.Where(x => x.Name.Contains(search)
-                        || x.IPAddress.Contains(search));
+                    query = query.Where(x => x.Name.Contains(search));
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -227,7 +142,6 @@ namespace API.Services
                             switch (fieldName)
                             {
                                 case "name": query = query.Where(x => x.Name.Contains(value)); break;
-                                case "ipaddress": query = query.Where(x => x.IPAddress.Contains(value)); break;
                             }
                         }
                     }
@@ -246,7 +160,6 @@ namespace API.Services
                         switch (orderBy.ToLower())
                         {
                             case "name": query = query.OrderByDescending(x => x.Name); break;
-                            case "ipaddress": query = query.OrderByDescending(x => x.IPAddress); break;
                         }
                     }
                     else
@@ -254,13 +167,12 @@ namespace API.Services
                         switch (orderBy.ToLower())
                         {
                             case "name": query = query.OrderBy(x => x.Name); break;
-                            case "ipaddress": query = query.OrderBy(x => x.IPAddress); break;
                         }
                     }
                 }
                 else
                 {
-                    query = query.OrderByDescending(x => x.WifiID);
+                    query = query.OrderByDescending(x => x.LocationID);
                 }
 
                 // Get Total Before Limit and Page
@@ -294,14 +206,14 @@ namespace API.Services
             }
         }
 
-        public Wifi GetById(Int64 id)
+        public Location GetById(Int64 id)
         {
             var context = new EFContext();
             try
             {
-                return context.Wifis
+                return context.Locations
                     .Include(x => x.Company)
-                    .FirstOrDefault(x => x.WifiID == id && x.IsDeleted != true);
+                    .FirstOrDefault(x => x.LocationID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -319,4 +231,3 @@ namespace API.Services
     }
 }
 
-*/

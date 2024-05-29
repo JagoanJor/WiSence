@@ -58,6 +58,20 @@ CREATE TABLE [dbo].[Wifi] (
     CONSTRAINT [PK__Wifi__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([WifiID] ASC)
 );
 
+CREATE TABLE [dbo].[Location] (
+    [LocationID]        BIGINT        IDENTITY (1, 1) NOT NULL,
+    [Name]      VARCHAR (250) NULL,
+    [Longtitude] DECIMAL  NULL,
+    [Latitude] DECIMAL        NULL,
+    [CompanyID] BIGINT        NULL,
+    [DateIn]    DATETIME      NULL,
+    [UserIn]    VARCHAR (50)  NULL,
+    [DateUp]    DATETIME      NULL,
+    [UserUp]    VARCHAR (50)  NULL,
+    [IsDeleted] BIT           NULL,
+    CONSTRAINT [PK__Location__3214EC27591C7B66] PRIMARY KEY CLUSTERED ([LocationID] ASC)
+);
+
 CREATE TABLE [dbo].[Position] (
     [PositionID]         BIGINT        IDENTITY (1, 1) NOT NULL,
     [Name]       VARCHAR (250) NULL,

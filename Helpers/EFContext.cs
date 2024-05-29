@@ -29,7 +29,8 @@ namespace API.Helpers
         public DbSet<Company> Companies { get; set; }
         public DbSet<Division> Divisions { get; set; }
         public DbSet<Position> Positions { get; set; }
-        public DbSet<Wifi> Wifis { get; set; }
+        //public DbSet<Wifi> Wifis { get; set; }
+        public DbSet<Location> Locations { get; set; }
         public DbSet<DailyTask> DailyTasks { get; set; }
         public DbSet<Calendar> Calendars { get; set; }
         public DbSet<Leave> Leaves { get; set; }

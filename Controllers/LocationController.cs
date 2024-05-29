@@ -14,11 +14,11 @@ namespace API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class AttendanceController : ControllerBase
+    public class LocationController : ControllerBase
     {
-        private IAttendanceService _service;
+        private IService<Location> _service;
 
-        public AttendanceController(IAttendanceService service)
+        public LocationController(IService<Location> service)
         {
             _service = service;
         }
@@ -29,18 +29,9 @@ namespace API.Controllers
         {
             try
             {
-                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                var user = (User)null;
-                if (token != null)
-                    user = Utils.UserFromToken(token);
-
-                if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });
-
                 var total = 0;
-                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
-                var response = new ListResponse<Attendance>(result, total, page);
+                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
+                var response = new ListResponse<Location>(result, total, page);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -52,7 +43,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "LocationController");
                 return BadRequest(new { message });
             }
         }
@@ -67,7 +58,7 @@ namespace API.Controllers
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
-                var response = new Response<Attendance>(result);
+                var response = new Response<Location>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -79,14 +70,14 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "LocationController");
                 return BadRequest(new { message });
             }
         }
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Attendance obj)
+        public IActionResult Create([FromBody] Location obj)
         {
             try
             {
@@ -104,7 +95,7 @@ namespace API.Controllers
                 obj.IsDeleted = false;
 
                 var result = _service.Create(obj);
-                var response = new Response<Attendance>(result);
+                var response = new Response<Location>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -116,14 +107,15 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "LocationController");
                 return BadRequest(new { message });
             }
+
         }
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Attendance obj)
+        public IActionResult Edit([FromBody] Location obj)
         {
             try
             {
@@ -139,7 +131,7 @@ namespace API.Controllers
                 obj.UserUp = user.UserID.ToString();
 
                 var result = _service.Edit(obj);
-                var response = new Response<Attendance>(result);
+                var response = new Response<Location>(result);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -151,7 +143,7 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "LocationController");
                 return BadRequest(new { message });
             }
         }
@@ -185,75 +177,11 @@ namespace API.Controllers
                     message = inner.Message;
                     inner = inner.InnerException;
                 }
-                Trace.WriteLine(message, "AttendanceController");
+                Trace.WriteLine(message, "LocationController");
                 return BadRequest(new { message });
             }
         }
 
-        [Authorize]
-        [HttpPost("ClockIn")]
-        public IActionResult ClockIn(Double longtitude = 0.0, Double latitude = 0.0)
-        {
-            try
-            {
-                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                var user = (User)null;
-                if (token != null)
-                    user = Utils.UserFromToken(token);
-
-                if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });
-
-                var result = _service.ClockIn(user, longtitude, latitude);
-                var response = new Response<Attendance>(result);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-                var inner = ex.InnerException;
-                while (inner != null)
-                {
-                    message = inner.Message;
-                    inner = inner.InnerException;
-                }
-                Trace.WriteLine(message, "AttendanceController");
-                return BadRequest(new { message });
-            }
-        }
-
-        [Authorize]
-        [HttpPut("ClockOut")]
-        public IActionResult ClockOut(Double longtitude = 0.0, Double latitude = 0.0)
-        {
-            try
-            {
-                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
-                var user = (User)null;
-                if (token != null)
-                    user = Utils.UserFromToken(token);
-
-                if (user == null)
-                    return BadRequest(new { message = "Invalid Token" });
-
-                var result = _service.ClockOut(user, longtitude, latitude);
-                var response = new Response<Attendance>(result);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                var message = ex.Message;
-                var inner = ex.InnerException;
-                while (inner != null)
-                {
-                    message = inner.Message;
-                    inner = inner.InnerException;
-                }
-                Trace.WriteLine(message, "AttendanceController");
-                return BadRequest(new { message });
-            }
-        }
     }
 }
+

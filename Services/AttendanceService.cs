@@ -18,8 +18,8 @@ namespace API.Services
         Attendance Create(Attendance data);
         Attendance Edit(Attendance data);
         bool Delete(Int64 id, String userID);
-        Attendance ClockIn(User user);
-        Attendance ClockOut(User user);
+        Attendance ClockIn(User user, Double longtitude, Double latitude);
+        Attendance ClockOut(User user, Double longtitude, Double latitude);
     }
     public class AttendanceService : IAttendanceService
     {
@@ -296,7 +296,7 @@ namespace API.Services
             }
         }
 
-        public Attendance ClockIn(User user)
+        /*public Attendance ClockIn(User user)
         {
             var context = new EFContext();
             try
@@ -387,9 +387,86 @@ namespace API.Services
             {
                 context.Dispose();
             }
+        }*/
+
+        public Attendance ClockIn(User user, Double longtitude, Double latitude)
+        {
+            var context = new EFContext();
+            try
+            {
+                // Check attendance today
+                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.Date && (x.Status == "Cuti" || x.Status == "WFH"));
+                if (attendance != null)
+                    throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
+
+                var company = context.Companies.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                if (company.MaxRange == null)
+                    throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
+
+                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+
+                var range = 0.0;
+                var index = 0;
+                var lastIndex = location.Count() - 1;
+
+                foreach (var loc in location)
+                {
+                    range = GetDistance(longtitude, latitude, loc.Longtitude, loc.Latitude);
+                    if (range <= company.MaxRange)
+                        break;
+                    if (range > company.MaxRange && index == lastIndex)
+                        throw new Exception($"Jarak anda saat ini adalah {range} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor!");
+                    index++;
+                }
+
+                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+                if (shift == null)
+                    throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
+
+                if (DateTime.Now.TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
+                    throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn?.ToString("HH:mm")}.");
+
+                var data = new Attendance();
+
+                data.UserID = user.UserID;
+                data.ClockIn = DateTime.Now;
+                data.UserIn = user.UserID.ToString();
+                data.DateIn = DateTime.Now;
+                data.Date = DateTime.Now;
+                data.IsDeleted = false;
+
+                DateTime lateTime = shift.ClockIn.Value.AddHours(1).AddMinutes(30);
+
+                if (DateTime.Now.TimeOfDay <= shift.ClockIn?.TimeOfDay)
+                    data.Status = "Ontime";
+                else if (DateTime.Now.TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.TimeOfDay < lateTime.TimeOfDay)
+                    data.Status = "Terlambat";
+                else
+                    data.Status = "Absen";
+
+                // Check user's attendance
+                CheckAttendance(user.UserID);
+                
+                context.Attendances.Add(data);
+                context.SaveChanges();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                 throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
         }
 
-        public Attendance ClockOut(User user)
+        /*public Attendance ClockOut(User user)
         {
             var context = new EFContext();
             try
@@ -442,6 +519,68 @@ namespace API.Services
 
                 if (data == null)
                     throw new Exception("Pastikan kamu sudah melakukan Clock In!");
+
+                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+                if (shift == null)
+                    throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
+
+                if (DateTime.Now.TimeOfDay < shift.ClockIn?.TimeOfDay)
+                    throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn?.ToString("HH:mm")}.");
+
+                data.ClockOut = DateTime.Now;
+                data.UserUp = user.UserID.ToString();
+                data.DateUp = DateTime.Now;
+
+                context.Attendances.Update(data);
+                context.SaveChanges();
+
+                return data;
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }*/
+        
+        public Attendance ClockOut(User user, Double longtitude, Double latitude)
+        {
+            var context = new EFContext();
+            try
+            {
+                var data = context.Attendances
+                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.Date && x.IsDeleted != true)
+                    .FirstOrDefault();
+
+                if (data == null)
+                    throw new Exception("Pastikan kamu sudah melakukan Clock In!");
+
+                var company = context.Companies.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                if (company.MaxRange == null)
+                    throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
+
+                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+
+                var range = 0.0;
+                var index = 0;
+                var lastIndex = location.Count() - 1;
+
+                foreach (var loc in location)
+                {
+                    range = GetDistance(longtitude, latitude, loc.Longtitude, loc.Latitude);
+                    if (range <= company.MaxRange)
+                        break;
+                    if (range > company.MaxRange && index == lastIndex)
+                        throw new Exception($"Jarak anda saat ini adalah {range} km! Clock In hanya bisa dilakukan dalam jarak {company.MaxRange} km dari Kantor!");
+                    index++;
+                }
 
                 var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
@@ -526,6 +665,27 @@ namespace API.Services
             }
 
             context.SaveChanges();
+        }
+
+
+        public double GetDistance(Double long1, Double lat1, Double long2, Double lat2)
+        {
+            var dLat = ToRadians(lat2 - lat1);
+            var dLon = ToRadians(long2 - long1);
+
+            var lati1 = ToRadians(lat1);
+            var lati2 = ToRadians(lat2);
+
+            var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                    Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lati1) * Math.Cos(lati2);
+            var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+            return 6371.0 * c;
+        }
+
+        private static double ToRadians(Double angle)
+        {
+            return Math.PI / 180 * angle;
         }
     }
 }

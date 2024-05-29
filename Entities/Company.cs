@@ -15,7 +15,9 @@ namespace API.Entities
         public String Name { get; set; }
         public String Logo { get; set; }
         public int? Leave { get; set; }
+        public Double? MaxRange { get; set; }
         public ICollection<Division> Divisions { get; set; }
-        public ICollection<Wifi> Wifis { get; set; }
+        //public ICollection<Wifi> Wifis { get; set; }
+        public ICollection<Location> Locations { get; set; }
     }
 }
