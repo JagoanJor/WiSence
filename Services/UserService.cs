@@ -107,7 +107,8 @@ namespace API.Services
 
                 obj.Name = data.Name;
                 obj.Email = data.Email;
-                obj.Password = data.Password;
+                if (data.Password != null)
+                    obj.Password = data.Password;
                 obj.NIK = data.NIK;
                 obj.Gender = data.Gender;
                 obj.POB = data.POB;
