@@ -261,7 +261,7 @@ namespace API.Services
             try
             {
                 var query = from a in context.Companies where a.IsDeleted != true && a.CompanyID == id select a;
-                query = query.Include("Wifis");
+                query = query.Include("Locations");
 
                 var data = query.FirstOrDefault();
 
