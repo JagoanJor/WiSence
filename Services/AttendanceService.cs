@@ -404,6 +404,8 @@ namespace API.Services
                     throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
 
                 var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                if (location == null)
+                    throw new Exception("Belum ada data Lokasi!");
 
                 var range = 0.0;
                 var index = 0;
