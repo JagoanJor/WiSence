@@ -403,10 +403,11 @@ namespace API.Services
                 if (company.MaxRange == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
 
-                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
-                if (location == null)
+                var checkLoc = context.Locations.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                if (checkLoc == null)
                     throw new Exception("Belum ada data Lokasi!");
 
+                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
                 var range = 0.0;
                 var index = 0;
                 var lastIndex = location.Count() - 1;
