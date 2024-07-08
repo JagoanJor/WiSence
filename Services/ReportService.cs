@@ -4,9 +4,11 @@ using API.Responses;
 using Microsoft.EntityFrameworkCore;
 using NativeWifi;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Services
 {
@@ -25,7 +27,7 @@ namespace API.Services
             try
             {
                 // Check user's attendance
-                CheckAttendance(userID);
+                CheckAttendanceAsync(userID);
 
                 // Get report function
                 var result = new vReportAbsensi();
@@ -104,7 +106,7 @@ namespace API.Services
                 // Check Attendance per User                
                 var users = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
                 foreach (var user in users)
-                    CheckAttendance(user.UserID);
+                    CheckAttendanceAsync(user.UserID);
 
                 // Get report function
                 var libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun && x.Holiday.Year == tahun)
@@ -255,58 +257,62 @@ namespace API.Services
             }
         }
 
-        public void CheckAttendance(Int64 userID)
+        public async Task CheckAttendanceAsync(Int64 userID)
         {
-            var context = new EFContext();
-            var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
-            if (user == null)
-                return;
-
-            var currentDate = user.StartWork.Value.Date;
-            if (currentDate == null)
-                throw new Exception("Tanggal mulai kerja belum diatur!");
-
-            while (currentDate.Date < DateTime.Now.AddHours(7).Date)
+            using (var context = new EFContext())
             {
-                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true);
+                var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
+                if (user == null)
+                    return;
 
-                if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                var startDate = user.StartWork?.Date ?? throw new Exception("Tanggal mulai kerja belum diatur!");
+                var endDate = DateTime.Now.AddHours(7).Date;
+
+                // Retrieve holidays and existing attendances in bulk
+                var holidays = await context.Calendars.Where(x => x.Holiday >= startDate && x.Holiday < endDate && x.IsDeleted != true).ToListAsync();
+                var existingAttendances = await context.Attendances.Where(x => x.UserID == userID && x.Date >= startDate && x.Date < endDate && x.IsDeleted != true).ToListAsync();
+
+                var newAttendances = new List<Attendance>();
+
+                for (var currentDate = startDate; currentDate < endDate; currentDate = currentDate.AddDays(1))
                 {
-                    var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
-                    if (holiday == null)
+                    if (currentDate.DayOfWeek == DayOfWeek.Saturday || currentDate.DayOfWeek == DayOfWeek.Sunday)
+                        continue;
+
+                    var isHoliday = holidays.Any(x => x.Holiday.Date == currentDate);
+                    if (isHoliday)
+                        continue;
+
+                    var existingAttendance = existingAttendances.FirstOrDefault(x => x.Date.Value.Date == currentDate);
+                    if (existingAttendance == null)
                     {
-                        if (haveAttend == null)
+                        newAttendances.Add(new Attendance
                         {
-                            var attendance = new Attendance();
-                            attendance.UserID = userID;
-                            attendance.Date = currentDate;
-                            attendance.ClockIn = currentDate;
-                            attendance.ClockOut = currentDate;
-                            attendance.Description = "";
-                            attendance.Status = "Absen";
-                            attendance.DateIn = DateTime.Now.AddHours(7);
-                            attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
-                            attendance.IsDeleted = false;
-
-                            context.Attendances.Add(attendance);
-                        }
-                        else
-                        {
-                            if (haveAttend.ClockOut == null)
-                            {
-                                haveAttend.Status = "Absen";
-                                haveAttend.ClockOut = currentDate;
-
-                                context.Attendances.Update(haveAttend);
-                            }
-                        }
+                            UserID = userID,
+                            Date = currentDate,
+                            ClockIn = currentDate,
+                            ClockOut = currentDate,
+                            Description = "",
+                            Status = "Absen",
+                            DateIn = DateTime.Now.AddHours(7),
+                            UserIn = user.UserID.ToString(),
+                            IsDeleted = false
+                        });
+                    }
+                    else if (existingAttendance.ClockOut == null)
+                    {
+                        existingAttendance.Status = "Absen";
+                        existingAttendance.ClockOut = currentDate;
                     }
                 }
 
-                currentDate = currentDate.AddDays(1);
-            }
+                if (newAttendances.Any())
+                {
+                    await context.Attendances.AddRangeAsync(newAttendances);
+                }
 
-            context.SaveChanges();
+                await context.SaveChangesAsync();
+            }
         }
     }
 }
