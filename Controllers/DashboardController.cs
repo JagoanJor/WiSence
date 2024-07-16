@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System;
 using API.Helpers;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -25,11 +26,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("TotalKaryawan")]
-        public IActionResult GetTotalKaryawan()
+        public async Task<IActionResult> GetTotalKaryawan()
         {
             try
             {
-                var result = _service.TotalKaryawan();
+                var result = await _service.TotalKaryawanAsync();
                 var response = new TotalResponse(result);
                 return Ok(response);
             }
@@ -49,11 +50,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("TotalHadir")]
-        public IActionResult GetTotalHadir()
+        public async Task<IActionResult> GetTotalHadir()
         {
             try
             {
-                var result = _service.TotalHadir();
+                var result = await _service.TotalHadirAsync();
                 var response = new TotalResponse(result);
                 return Ok(response);
             }
@@ -73,11 +74,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("TotalPosition")]
-        public IActionResult GetTotalPosition()
+        public async Task<IActionResult> GetTotalPosition()
         {
             try
             {
-                var result = _service.TotalPosition();
+                var result = await _service.TotalPositionAsync();
                 var response = new TotalResponse(result);
                 return Ok(response);
             }
@@ -97,11 +98,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("TotalDivision")]
-        public IActionResult GetTotalDivision()
+        public async Task<IActionResult> GetTotalDivision()
         {
             try
             {
-                var result = _service.TotalDivision();
+                var result = await _service.TotalDivisionAsync();
                 var response = new TotalResponse(result);
                 return Ok(response);
             }
@@ -121,7 +122,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("JumlahKehadiranHariIni")]
-        public IActionResult GetJumlahKehadiranHariIni()
+        public async Task<IActionResult> GetJumlahKehadiranHariIni()
         {
             try
             {
@@ -134,7 +135,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var (ontime, terlambat, cuti, absen) = _service.GetJumlahKehadiranHariIni(user);
+                var (ontime, terlambat, cuti, absen) = await _service.GetJumlahKehadiranHariIniAsync(user);
                 var response = new JumlahKehadiranHariIni(ontime, terlambat, cuti, absen);
                 return Ok(response);
             }
@@ -154,7 +155,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("CheckCuti")]
-        public IActionResult CheckCuti()
+        public async Task<IActionResult> CheckCuti()
         {
             try
             {
@@ -167,7 +168,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.CheckCuti();
+                var result = await _service.CheckCutiAsync();
 
                 var response = new Response<object>(result);
                 return Ok(response);

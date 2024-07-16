@@ -4,185 +4,167 @@ using System.Diagnostics;
 using System.Linq;
 using System;
 using API.Responses;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
     public interface IDashboardService
     {
-        int TotalKaryawan();
-        int TotalHadir();
-        int TotalPosition();
-        int TotalDivision();
-        (int ontime, int terlambat, int cuti, int absen) GetJumlahKehadiranHariIni(User user);
-        bool CheckCuti();
+        Task<int> TotalKaryawanAsync();
+        Task<int> TotalHadirAsync();
+        Task<int> TotalPositionAsync();
+        Task<int> TotalDivisionAsync();
+        Task<(int ontime, int terlambat, int cuti, int absen)> GetJumlahKehadiranHariIniAsync(User user);
+        Task<bool> CheckCutiAsync();
     }
+
     public class DashboardService : IDashboardService
     {
-        public int TotalKaryawan()
+        public async Task<int> TotalKaryawanAsync()
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var user = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
-                if (user == null) return 0;
+                try
+                {
+                    var users = await context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true).ToListAsync();
+                    if (users == null || users.Count == 0) return 0;
 
-                var role = context.Roles.Where(x => x.IsDeleted != true && x.Name != "Admin");
-                if (role == null) throw new Exception("Data role tidak ada!");
+                    var roles = await context.Roles.Where(x => x.IsDeleted != true && x.Name != "Admin").Select(x => x.RoleID).ToListAsync();
+                    if (roles == null || roles.Count == 0) throw new Exception("Data role tidak ada!");
 
-                var roleIDs = role.Select(x => x.RoleID).ToList();
+                    int count = users.Count(x => roles.Contains(x.RoleID));
+                    return count;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                int obj = 0;
-                obj += user.Count(x => roleIDs.Contains(x.RoleID));
-
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public int TotalHadir()
+        public async Task<int> TotalHadirAsync()
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var obj = context.Attendances.Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.AddHours(7).Date && x.Status != "Cuti").Count();
-                if (obj == null) return 0;
+                try
+                {
+                    int count = await context.Attendances
+                        .Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.UtcNow.Date && x.Status != "Cuti")
+                        .CountAsync();
+                    return count;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public int TotalPosition()
+        public async Task<int> TotalPositionAsync()
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var obj = context.Positions.Where(x => x.IsDeleted != true).Count();
-                if (obj == null) return 0;
+                try
+                {
+                    int count = await context.Positions.Where(x => x.IsDeleted != true).CountAsync();
+                    return count;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public int TotalDivision()
+        public async Task<int> TotalDivisionAsync()
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var obj = context.Divisions.Where(x => x.IsDeleted != true).Count();
-                if (obj == null) return 0;
+                try
+                {
+                    int count = await context.Divisions.Where(x => x.IsDeleted != true).CountAsync();
+                    return count;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                return obj;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public (int ontime, int terlambat, int cuti, int absen) GetJumlahKehadiranHariIni(User user)
+        public async Task<(int ontime, int terlambat, int cuti, int absen)> GetJumlahKehadiranHariIniAsync(User user)
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var userInCompany = context.Users.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true && x.IsAdmin != true);
-                if (userInCompany == null)
-                    throw new Exception("Please set user's company!");
+                try
+                {
+                    var userInCompany = await context.Users.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true && x.IsAdmin != true).ToListAsync();
+                    if (userInCompany == null || userInCompany.Count == 0)
+                        throw new Exception("Please set user's company!");
 
-                var totalUser = userInCompany.Count();
-                if (totalUser == 0) return (0, 0, 0, 0);
+                    int totalUser = userInCompany.Count();
 
-                var ontime = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
-                if (ontime == null) ontime = 0;
+                    int ontime = await context.Attendances
+                        .Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
+                        .CountAsync();
 
-                var terlambat = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
-                if (terlambat == null) terlambat = 0;
+                    int terlambat = await context.Attendances
+                        .Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
+                        .CountAsync();
 
-                var cuti = context.Attendances.Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.Now.AddHours(7).Date).Count();
-                if (cuti == null) cuti = 0;
+                    int cuti = await context.Attendances
+                        .Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
+                        .CountAsync();
 
-                var absen = (((totalUser - ontime) - terlambat) - cuti);
+                    int absen = totalUser - ontime - terlambat - cuti;
 
-                return (ontime, terlambat, cuti, absen);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
+                    return (ontime, terlambat, cuti, absen);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public bool CheckCuti()
+        public async Task<bool> CheckCutiAsync()
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var obj = context.Leaves.Count(x => x.Status == "Menunggu" && x.IsDeleted != true);
-                if (obj == 0)
-                    return false;
+                try
+                {
+                    int count = await context.Leaves.CountAsync(x => x.Status == "Menunggu" && x.IsDeleted != true);
+                    return count > 0;
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
     }
