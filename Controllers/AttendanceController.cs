@@ -9,6 +9,7 @@ using API.Entities;
 using API.Helpers;
 using API.Responses;
 using API.Services;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -25,7 +26,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
+        public async Task<IActionResult> Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
         {
             try
             {
@@ -39,7 +40,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var total = 0;
-                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
+                var result = await _service.GetAllAsync(limit, page, total, search, sort, filter, date, user);
                 var response = new ListResponse<Attendance>(result, total, page);
                 return Ok(response);
             }
@@ -59,11 +60,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var result = _service.GetById(id);
+                var result = await _service.GetByIdAsync(id);
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
@@ -86,7 +87,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Attendance obj)
+        public async Task<IActionResult> Create([FromBody] Attendance obj)
         {
             try
             {
@@ -103,7 +104,7 @@ namespace API.Controllers
                 obj.DateIn = DateTime.Now.AddHours(7);
                 obj.IsDeleted = false;
 
-                var result = _service.Create(obj);
+                var result = await _service.CreateAsync(obj);
                 var response = new Response<Attendance>(result);
                 return Ok(response);
             }
@@ -123,7 +124,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Attendance obj)
+        public async Task<IActionResult> Edit([FromBody] Attendance obj)
         {
             try
             {
@@ -138,7 +139,7 @@ namespace API.Controllers
 
                 obj.UserUp = user.UserID.ToString();
 
-                var result = _service.Edit(obj);
+                var result = await _service.EditAsync(obj);
                 var response = new Response<Attendance>(result);
                 return Ok(response);
             }
@@ -158,7 +159,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -171,7 +172,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.Delete(id, user.UserID.ToString());
+                var result = await _service.DeleteAsync(id, user.UserID.ToString());
 
                 var response = new Response<object>(result);
                 return Ok(response);
@@ -192,7 +193,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost("ClockIn")]
-        public IActionResult ClockIn(Double longtitude = 0.0, Double latitude = 0.0)
+        public async Task<IActionResult> ClockIn(Double longtitude = 0.0, Double latitude = 0.0)
         {
             try
             {
@@ -205,7 +206,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.ClockIn(user, longtitude, latitude);
+                var result = await _service.ClockInAsync(user, longtitude, latitude);
                 var response = new Response<Attendance>(result);
                 return Ok(response);
             }
@@ -225,7 +226,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut("ClockOut")]
-        public IActionResult ClockOut(Double longtitude = 0.0, Double latitude = 0.0)
+        public async Task<IActionResult> ClockOut(Double longtitude = 0.0, Double latitude = 0.0)
         {
             try
             {
@@ -238,7 +239,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.ClockOut(user, longtitude, latitude);
+                var result = await _service.ClockOutAsync(user, longtitude, latitude);
                 var response = new Response<Attendance>(result);
                 return Ok(response);
             }

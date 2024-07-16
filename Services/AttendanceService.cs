@@ -2,34 +2,33 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.NetworkInformation;
+using System.Threading.Tasks;
 using API.Entities;
 using API.Helpers;
-
 using Microsoft.EntityFrameworkCore;
-using NativeWifi;
 
 namespace API.Services
 {
     public interface IAttendanceService
     {
-        IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
-        Attendance GetById(Int64 id);
-        Attendance Create(Attendance data);
-        Attendance Edit(Attendance data);
-        bool Delete(Int64 id, String userID);
-        Attendance ClockIn(User user, Double longtitude, Double latitude);
-        Attendance ClockOut(User user, Double longtitude, Double latitude);
+        Task<IEnumerable<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user);
+        Task<Attendance> GetByIdAsync(long id);
+        Task<Attendance> CreateAsync(Attendance data);
+        Task<Attendance> EditAsync(Attendance data);
+        Task<bool> DeleteAsync(long id, string userID);
+        Task<Attendance> ClockInAsync(User user, double longitude, double latitude);
+        Task<Attendance> ClockOutAsync(User user, double longitude, double latitude);
     }
+
     public class AttendanceService : IAttendanceService
     {
-        public Attendance Create(Attendance data)
+        public async Task<Attendance> CreateAsync(Attendance data)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
                 context.Attendances.Add(data);
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return data;
             }
@@ -39,27 +38,23 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public bool Delete(Int64 id, String userID)
+        public async Task<bool> DeleteAsync(long id, string userID)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.AttendanceID == id && x.IsDeleted != true);
+                var obj = await context.Attendances.FirstOrDefaultAsync(x => x.AttendanceID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -69,20 +64,16 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Attendance Edit(Attendance data)
+        public async Task<Attendance> EditAsync(Attendance data)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
-                var obj = context.Attendances.FirstOrDefault(x => x.AttendanceID == data.AttendanceID && x.IsDeleted != true);
+                var obj = await context.Attendances.FirstOrDefaultAsync(x => x.AttendanceID == data.AttendanceID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.UserID = data.UserID;
@@ -94,7 +85,7 @@ namespace API.Services
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return obj;
             }
@@ -104,21 +95,16 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public IEnumerable<Attendance> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
+        public async Task<IEnumerable<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
-                var query = from a in context.Attendances where a.IsDeleted != true select a;
-                query = query.Include("User");
+                var query = context.Attendances.Where(a => a.IsDeleted != true).Include("User");
 
                 // If not Admin, just return the user data
                 if (user.IsAdmin != true)
@@ -126,9 +112,9 @@ namespace API.Services
 
                 // Check user's attendance
                 foreach (var users in query)
-                    CheckAttendance(users.UserID);
+                    CheckAttendanceAsync(users.UserID);
 
-                //Date
+                // Date
                 if (!string.IsNullOrEmpty(date))
                 {
                     var dateList = date.Split("|", StringSplitOptions.RemoveEmptyEntries);
@@ -241,18 +227,18 @@ namespace API.Services
                 }
 
                 // Get Total Before Limit and Page
-                total = query.Count();
+                total = await query.CountAsync();
 
                 // Set Limit and Page
                 if (limit != 0)
                     query = query.Skip(page * limit).Take(limit);
 
                 // Get Data
-                var data = query.ToList();
+                var data = await query.ToListAsync();
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
+                    return await GetAllAsync(limit, page, total, search, sort, filter, date, user);
                 }
 
                 return data;
@@ -263,22 +249,18 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Attendance GetById(Int64 id)
+        public async Task<Attendance> GetByIdAsync(long id)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
                 // Check user's attendance
-                var attendance = context.Attendances.FirstOrDefault(x => x.AttendanceID == id && x.IsDeleted != true);
-                CheckAttendance((Int64)(attendance.UserID));
+                var attendance = await context.Attendances.FirstOrDefaultAsync(x => x.AttendanceID == id && x.IsDeleted != true);
+                CheckAttendanceAsync((long)attendance.UserID);
 
                 return attendance;
             }
@@ -288,135 +270,38 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        /*public Attendance ClockIn(User user)
+        public async Task<Attendance> ClockInAsync(User user, double longitude, double latitude)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
                 // Check attendance today
-                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && (x.Status == "Cuti" || x.Status == "WFH"));
+                var attendance = await context.Attendances.FirstOrDefaultAsync(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && (x.Status == "Cuti" || x.Status == "WFH"));
                 if (attendance != null)
                     throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
 
-                var wifiSSID = "";
-                var ipAddress = "";
-                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-                foreach (NetworkInterface networkInterface in networkInterfaces)
-                {
-                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
-
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                        if (gatewayInfo != null)
-                        {
-                            WlanClient client = new WlanClient();
-                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
-                            {
-                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
-                                {
-                                    wifiSSID = wlanInterface.CurrentConnection.profileName;
-                                }
-                            }
-
-                            ipAddress = gatewayInfo.Address.ToString();
-                            break;
-                        }
-                }
-
-                var query = String.Format($@"
-                                SELECT TOP 1 W.WifiID, W.Name, W.IPAddress, W.CompanyID, W.DateIn, W.UserIn, W.DateUp, W.UserUp, W.IsDeleted
-                                FROM Wifi AS W
-                                INNER JOIN Company AS C ON C.CompanyID = W.CompanyID
-                                WHERE C.IsDeleted != 1 AND W.IsDeleted != 1 AND W.IPAddress = '{ipAddress}' AND W.Name = '{wifiSSID}' AND W.CompanyID = {user.CompanyID}");
-                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
-
-                if (wifi == null)
-                    throw new Exception("Perangkat belum terhubung ke Wifi!");
-                
-                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
-                if (shift == null)
-                    throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
-
-                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn.Value.AddMinutes(-30).TimeOfDay)
-                    throw new Exception($"Clock In hanya bisa dilakukan 30 menit sebelum pukul {shift.ClockIn?.ToString("HH:mm")}.");
-
-                var data = new Attendance();
-
-                data.UserID = user.UserID;
-                data.ClockIn = DateTime.Now.AddHours(7);
-                data.UserIn = user.UserID.ToString();
-                data.DateIn = DateTime.Now.AddHours(7);
-                data.Date = DateTime.Now.AddHours(7);
-                data.IsDeleted = false;
-
-                DateTime lateTime = shift.ClockIn.Value.AddHours(1).AddMinutes(30);
-
-                if (DateTime.Now.AddHours(7).TimeOfDay <= shift.ClockIn?.TimeOfDay)
-                    data.Status = "Ontime";
-                else if (DateTime.Now.AddHours(7).TimeOfDay >= shift.ClockIn?.TimeOfDay && DateTime.Now.AddHours(7).TimeOfDay < lateTime.TimeOfDay)
-                    data.Status = "Terlambat";
-                else
-                    data.Status = "Absen";
-
-                // Check user's attendance
-                CheckAttendance(user.UserID);
-                
-                context.Attendances.Add(data);
-                context.SaveChanges();
-
-                return data;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }*/
-
-        public Attendance ClockIn(User user, Double longtitude, Double latitude)
-        {
-            var context = new EFContext();
-            try
-            {
-                // Check attendance today
-                var attendance = context.Attendances.FirstOrDefault(x => x.UserID == user.UserID && x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && (x.Status == "Cuti" || x.Status == "WFH"));
-                if (attendance != null)
-                    throw new Exception($"User sudah memiliki data absensi dengan status {attendance.Status}!");
-
-                var company = context.Companies.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                var company = await context.Companies.FirstOrDefaultAsync(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
                 if (company.MaxRange == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
 
-                var checkLoc = context.Locations.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                var checkLoc = await context.Locations.FirstOrDefaultAsync(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
                 if (checkLoc == null)
                     throw new Exception("Belum ada data Lokasi!");
 
-                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                var location = await context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true).ToListAsync();
                 var range = 0.0;
                 var index = 0;
-                var lastIndex = location.Count() - 1;
+                var lastIndex = location.Count - 1;
                 var nearestLocation = "";
                 var nearestRange = 0.0;
 
                 foreach (var loc in location)
                 {
-                    range = GetDistance(longtitude, latitude, loc.Longtitude, loc.Latitude);
+                    range = GetDistance(longitude, latitude, loc.Longtitude, loc.Latitude);
                     if (nearestRange == 0 || nearestRange > range)
                     {
                         nearestRange = range;
@@ -430,7 +315,7 @@ namespace API.Services
                     index++;
                 }
 
-                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+                var shift = await context.Shifts.FirstOrDefaultAsync(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur shift kerja anda!");
 
@@ -456,10 +341,10 @@ namespace API.Services
                     data.Status = "Absen";
 
                 // Check user's attendance
-                CheckAttendance(user.UserID);
-                
+                CheckAttendanceAsync(user.UserID);
+
                 context.Attendances.Add(data);
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return data;
             }
@@ -469,123 +354,35 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                 throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        /*public Attendance ClockOut(User user)
+        public async Task<Attendance> ClockOutAsync(User user, double longitude, double latitude)
         {
-            var context = new EFContext();
+            using var context = new EFContext();
             try
             {
-                var wifiSSID = "";
-                var ipAddress = "";
-                NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-                foreach (NetworkInterface networkInterface in networkInterfaces)
-                {
-                    IPInterfaceProperties ipProperties = networkInterface.GetIPProperties();
-                    GatewayIPAddressInformation gatewayInfo = ipProperties.GatewayAddresses.FirstOrDefault();
-
-                    if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 || networkInterface.NetworkInterfaceType == NetworkInterfaceType.Ethernet)
-                        if (gatewayInfo != null)
-                        {
-                            WlanClient client = new WlanClient();
-                            foreach (WlanClient.WlanInterface wlanInterface in client.Interfaces)
-                            {
-                                if (wlanInterface.InterfaceGuid == new Guid(networkInterface.Id))
-                                {
-                                    wifiSSID = wlanInterface.CurrentConnection.profileName;
-                                }
-                            }
-
-                            ipAddress = gatewayInfo.Address.ToString();
-                            break;
-                        }
-                }
-
-                var query = String.Format($@"
-                                SELECT TOP 1 WifiID, Name, IPAddress, CompanyID, DateIn, UserIn, DateUp, UserUp, IsDeleted
-                                FROM Wifi
-                                WHERE (IsDeleted = 0 OR IsDeleted IS NULL) AND (IPAddress = '{ipAddress}' OR Name = '{wifiSSID}')");
-                var wifi = context.Wifis.FromSqlRaw(query).FirstOrDefault();
-
-                if (wifi != null)
-                {
-                    if (wifi.Name != wifiSSID || wifi.IPAddress != ipAddress)
-                        throw new Exception("Perangkat belum terhubung ke Wifi!");
-                }
-                else
-                {
-                    throw new Exception("Perangkat belum terhubung ke Wifi!");
-                }
-
-                var data = context.Attendances
+                var data = await context.Attendances
                     .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && x.IsDeleted != true)
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
 
                 if (data == null)
                     throw new Exception("Pastikan kamu sudah melakukan Clock In!");
 
-                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
-                if (shift == null)
-                    throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
-
-                if (DateTime.Now.AddHours(7).TimeOfDay < shift.ClockIn?.TimeOfDay)
-                    throw new Exception($"Clock Out hanya dapat dilakukan saat dan setelah pukul {shift.ClockIn?.ToString("HH:mm")}.");
-
-                data.ClockOut = DateTime.Now.AddHours(7);
-                data.UserUp = user.UserID.ToString();
-                data.DateUp = DateTime.Now.AddHours(7);
-
-                context.Attendances.Update(data);
-                context.SaveChanges();
-
-                return data;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }*/
-        
-        public Attendance ClockOut(User user, Double longtitude, Double latitude)
-        {
-            var context = new EFContext();
-            try
-            {
-                var data = context.Attendances
-                    .Where(x => x.UserID == user.UserID && x.Date.Value.Date == DateTime.Now.AddHours(7).Date && x.IsDeleted != true)
-                    .FirstOrDefault();
-
-                if (data == null)
-                    throw new Exception("Pastikan kamu sudah melakukan Clock In!");
-
-                var company = context.Companies.FirstOrDefault(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                var company = await context.Companies.FirstOrDefaultAsync(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
                 if (company.MaxRange == null)
                     throw new Exception("Silahkan menghubungi admin untuk mengatur jarak maksimal absensi!");
 
-                var location = context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true);
+                var location = await context.Locations.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true).ToListAsync();
 
                 var range = 0.0;
                 var index = 0;
-                var lastIndex = location.Count() - 1;
+                var lastIndex = location.Count - 1;
 
                 foreach (var loc in location)
                 {
-                    range = GetDistance(longtitude, latitude, loc.Longtitude, loc.Latitude);
+                    range = GetDistance(longitude, latitude, loc.Longtitude, loc.Latitude);
                     if (range <= company.MaxRange)
                         break;
                     if (range > company.MaxRange && index == lastIndex)
@@ -593,7 +390,7 @@ namespace API.Services
                     index++;
                 }
 
-                var shift = context.Shifts.FirstOrDefault(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+                var shift = await context.Shifts.FirstOrDefaultAsync(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
                 if (shift == null)
                     throw new Exception("Hubungi admin untuk mengatur shift kerja anda!");
 
@@ -604,8 +401,7 @@ namespace API.Services
                 data.UserUp = user.UserID.ToString();
                 data.DateUp = DateTime.Now.AddHours(7);
 
-                context.Attendances.Update(data);
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return data;
             }
@@ -615,19 +411,15 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
         // Function to make sure there is no empty attendance
-        public void CheckAttendance(Int64? userID)
+        public async Task CheckAttendanceAsync(long? userID)
         {
-            var context = new EFContext();
-            var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
+            using var context = new EFContext();
+            var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
             if (user == null)
                 return;
 
@@ -637,11 +429,11 @@ namespace API.Services
 
             while (currentDate.Date < DateTime.Now.AddHours(7).Date)
             {
-                var haveAttend = context.Attendances.FirstOrDefault(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
+                var haveAttend = await context.Attendances.FirstOrDefaultAsync(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
 
                 if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                 {
-                    var holiday = context.Calendars.FirstOrDefault(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
+                    var holiday = await context.Calendars.FirstOrDefaultAsync(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
                     if (holiday == null)
                     {
                         if (haveAttend == null)
@@ -654,7 +446,7 @@ namespace API.Services
                             attendance.Description = "";
                             attendance.Status = "Absen";
                             attendance.DateIn = DateTime.Now.AddHours(7);
-                            attendance.UserIn = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true).UserID.ToString();
+                            attendance.UserIn = (await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true)).UserID.ToString();
                             attendance.IsDeleted = false;
 
                             context.Attendances.Add(attendance);
@@ -675,11 +467,10 @@ namespace API.Services
                 currentDate = currentDate.AddDays(1);
             }
 
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
 
-
-        public double GetDistance(Double long1, Double lat1, Double long2, Double lat2)
+        public double GetDistance(double long1, double lat1, double long2, double lat2)
         {
             var dLat = ToRadians(lat2 - lat1);
             var dLon = ToRadians(long2 - long1);
@@ -694,7 +485,7 @@ namespace API.Services
             return 6371.0 * c;
         }
 
-        private static double ToRadians(Double angle)
+        private static double ToRadians(double angle)
         {
             return Math.PI / 180 * angle;
         }
