@@ -54,7 +54,7 @@ namespace API.Services
                 try
                 {
                     int count = await context.Attendances
-                        .Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.UtcNow.Date && x.Status != "Cuti")
+                        .Where(x => x.IsDeleted != true && x.ClockIn.Value.Date == DateTime.Now.AddHours(7).Date && x.Status != "Cuti")
                         .CountAsync();
                     return count;
                 }
@@ -117,12 +117,12 @@ namespace API.Services
                 {
                     var userInCompany = await context.Users.Where(x => x.CompanyID == user.CompanyID && x.IsDeleted != true && x.IsAdmin != true).ToListAsync();
                     if (userInCompany == null || userInCompany.Count == 0)
-                        throw new Exception("Please set user's company!");
+                        throw new Exception("Tidak ada user yang ditemukan!");
 
                     int totalUser = userInCompany.Count();
 
                     var attendanceList = await context.Attendances
-                        .Where(x => x.IsDeleted != true && x.Date.Value.Date == DateTime.UtcNow.Date)
+                        .Where(x => x.IsDeleted != true && x.Date.Value.Date == DateTime.Now.AddHours(7).Date)
                         .ToListAsync();
 
                     int ontime = attendanceList.Count(x => x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID));
