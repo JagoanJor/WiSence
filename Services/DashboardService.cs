@@ -121,17 +121,13 @@ namespace API.Services
 
                     int totalUser = userInCompany.Count();
 
-                    int ontime = await context.Attendances
-                        .Where(x => x.IsDeleted != true && x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
-                        .CountAsync();
+                    var attendanceList = await context.Attendances
+                        .Where(x => x.IsDeleted != true && x.Date.Value.Date == DateTime.UtcNow.Date)
+                        .ToListAsync();
 
-                    int terlambat = await context.Attendances
-                        .Where(x => x.IsDeleted != true && x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
-                        .CountAsync();
-
-                    int cuti = await context.Attendances
-                        .Where(x => x.IsDeleted != true && x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID) && x.Date.Value.Date == DateTime.UtcNow.Date)
-                        .CountAsync();
+                    int ontime = attendanceList.Count(x => x.Status == "Ontime" && userInCompany.Any(u => u.UserID == x.UserID));
+                    int terlambat = attendanceList.Count(x => x.Status == "Terlambat" && userInCompany.Any(u => u.UserID == x.UserID));
+                    int cuti = attendanceList.Count(x => x.Status == "Cuti" && userInCompany.Any(u => u.UserID == x.UserID));
 
                     int absen = totalUser - ontime - terlambat - cuti;
 
