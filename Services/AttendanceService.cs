@@ -113,7 +113,7 @@ namespace API.Services
 
                 // Check user's attendance
                 foreach (var users in query)
-                    CheckAttendanceAsync(users.UserID);
+                    await CheckAttendanceAsync(users.UserID);
 
                 // Date
                 if (!string.IsNullOrEmpty(date))
@@ -261,7 +261,7 @@ namespace API.Services
             {
                 // Check user's attendance
                 var attendance = await context.Attendances.FirstOrDefaultAsync(x => x.AttendanceID == id && x.IsDeleted != true);
-                CheckAttendanceAsync((long)attendance.UserID);
+                await CheckAttendanceAsync((long)attendance.UserID);
 
                 return attendance;
             }
@@ -342,7 +342,7 @@ namespace API.Services
                     data.Status = "Absen";
 
                 // Check user's attendance
-                CheckAttendanceAsync(user.UserID);
+                await CheckAttendanceAsync(user.UserID);
 
                 context.Attendances.Add(data);
                 await context.SaveChangesAsync();
