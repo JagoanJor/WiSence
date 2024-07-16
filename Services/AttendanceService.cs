@@ -111,9 +111,10 @@ namespace API.Services
                 if (user.IsAdmin != true)
                     query = query.Where(x => x.UserID == user.UserID);
 
-                // Check user's attendance
-                foreach (var users in query)
-                    await CheckAttendanceAsync(users.UserID);
+                // Process check attendance asynchronously for all users in the query
+                var userIds = await query.Select(x => x.UserID).Distinct().ToListAsync();
+                var checkAttendanceTasks = userIds.Select(userId => CheckAttendanceAsync(userId)).ToList();
+                await Task.WhenAll(checkAttendanceTasks);
 
                 // Date
                 if (!string.IsNullOrEmpty(date))
@@ -144,19 +145,23 @@ namespace API.Services
                 if (!string.IsNullOrEmpty(search))
                 {
                     if (DateTime.TryParse(search, out DateTime searchDate))
+                    {
                         query = query.Where(x => x.Date == searchDate.Date
-                        || (x.Date.Value.Month == searchDate.Month && x.Date.Value.Day == searchDate.Day));
+                            || (x.Date.Value.Month == searchDate.Month && x.Date.Value.Day == searchDate.Day));
+                    }
                     else
+                    {
                         query = query.Where(x => x.Description.Contains(search)
-                        || x.Status.Contains(search)
-                        || x.User.Name.Contains(search)
-                        || x.User.NIK.Contains(search)
-                        || x.ClockIn.ToString().Contains(search)
-                        || x.ClockOut.ToString().Contains(search)
-                        || x.Date.ToString().Contains(search));
+                            || x.Status.Contains(search)
+                            || x.User.Name.Contains(search)
+                            || x.User.NIK.Contains(search)
+                            || x.ClockIn.ToString().Contains(search)
+                            || x.ClockOut.ToString().Contains(search)
+                            || x.Date.ToString().Contains(search));
+                    }
                 }
 
-                // Filtering
+                // Filter
                 if (!string.IsNullOrEmpty(filter))
                 {
                     var filterList = filter.Split("|", StringSplitOptions.RemoveEmptyEntries);
@@ -169,11 +174,21 @@ namespace API.Services
                             var value = searchList[1].Trim();
                             switch (fieldName)
                             {
-                                case "status": query = query.Where(x => x.Status.Contains(value)); break;
-                                case "description": query = query.Where(x => x.Description.Contains(value)); break;
-                                case "userid": query = query.Where(x => x.User.UserID.ToString().Contains(value)); break;
-                                case "name": query = query.Where(x => x.User.Name.Contains(value)); break;
-                                case "nik": query = query.Where(x => x.User.NIK.Contains(value)); break;
+                                case "status":
+                                    query = query.Where(x => x.Status.Contains(value));
+                                    break;
+                                case "description":
+                                    query = query.Where(x => x.Description.Contains(value));
+                                    break;
+                                case "userid":
+                                    query = query.Where(x => x.User.UserID.ToString().Contains(value));
+                                    break;
+                                case "name":
+                                    query = query.Where(x => x.User.Name.Contains(value));
+                                    break;
+                                case "nik":
+                                    query = query.Where(x => x.User.NIK.Contains(value));
+                                    break;
                                 case "clockin":
                                     DateTime.TryParse(value, out DateTime searchClockIn);
                                     query = query.Where(x => x.ClockIn.Value.Date == searchClockIn.Date || x.ClockIn.Value.Hour == searchClockIn.Hour || x.ClockIn.Value.Minute == searchClockIn.Minute);
@@ -193,33 +208,29 @@ namespace API.Services
                     }
                 }
 
-                // Sorting
+                // Apply sorting
                 if (!string.IsNullOrEmpty(sort))
                 {
                     var temp = sort.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    var orderBy = sort;
-                    if (temp.Length > 1)
-                        orderBy = temp[0];
+                    var orderBy = temp.Length > 1 ? temp[0] : sort;
 
-                    if (temp.Length > 1)
+                    switch (orderBy.ToLower())
                     {
-                        switch (orderBy.ToLower())
-                        {
-                            case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
-                            case "name": query = query.OrderByDescending(x => x.User.Name); break;
-                            case "status": query = query.OrderByDescending(x => x.Status); break;
-                            case "description": query = query.OrderByDescending(x => x.Description); break;
-                        }
-                    }
-                    else
-                    {
-                        switch (orderBy.ToLower())
-                        {
-                            case "userid": query = query.OrderBy(x => x.User.UserID); break;
-                            case "name": query = query.OrderBy(x => x.User.Name); break;
-                            case "status": query = query.OrderBy(x => x.Status); break;
-                            case "description": query = query.OrderBy(x => x.Description); break;
-                        }
+                        case "userid":
+                            query = temp.Length > 1 ? query.OrderByDescending(x => x.User.UserID) : query.OrderBy(x => x.User.UserID);
+                            break;
+                        case "name":
+                            query = temp.Length > 1 ? query.OrderByDescending(x => x.User.Name) : query.OrderBy(x => x.User.Name);
+                            break;
+                        case "status":
+                            query = temp.Length > 1 ? query.OrderByDescending(x => x.Status) : query.OrderBy(x => x.Status);
+                            break;
+                        case "description":
+                            query = temp.Length > 1 ? query.OrderByDescending(x => x.Description) : query.OrderBy(x => x.Description);
+                            break;
+                        default:
+                            query = query.OrderByDescending(x => x.Date);
+                            break;
                     }
                 }
                 else
@@ -227,14 +238,14 @@ namespace API.Services
                     query = query.OrderByDescending(x => x.Date);
                 }
 
-                // Get Total Before Limit and Page
+                // Count total records before pagination
                 total = await query.CountAsync();
 
-                // Set Limit and Page
-                if (limit != 0)
+                // Apply pagination
+                if (limit > 0)
                     query = query.Skip(page * limit).Take(limit);
 
-                // Get Data
+                // Execute query and return result
                 var data = await query.ToListAsync();
                 if (data.Count <= 0 && page > 0)
                 {
@@ -242,17 +253,16 @@ namespace API.Services
                     return await GetAllAsync(limit, page, total, search, sort, filter, date, user);
                 }
 
-                return new ListResponse<Attendance>(data, total, page); ;
+                return new ListResponse<Attendance>(data, total, page);
             }
             catch (Exception ex)
             {
                 Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
+                Trace.WriteLine(ex.StackTrace);
                 throw;
             }
         }
+
 
         public async Task<Attendance> GetByIdAsync(long id)
         {
@@ -420,57 +430,47 @@ namespace API.Services
         public async Task CheckAttendanceAsync(long? userID)
         {
             using var context = new EFContext();
-
-            var user = await context.Users
-                .FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
             if (user == null)
                 return;
 
-            var startDate = user.StartWork;
-            if (startDate == null)
+            var currentDate = user.StartWork.Value.Date;
+            if (currentDate == null)
                 throw new Exception("Tanggal mulai kerja user belum diatur!");
 
-            var today = DateTime.Today;
-
-            var attendances = await context.Attendances
-                .Where(x => x.UserID == userID && x.Date <= today && x.IsDeleted != true)
-                .ToListAsync();
-
-            var holidays = await context.Calendars
-                .Where(x => x.Holiday.Date <= today && x.IsDeleted != true)
-                .ToDictionaryAsync(x => x.Holiday.Date);
-
-            var currentDate = startDate.Value.Date;
-            while (currentDate.Date <= today)
+            while (currentDate.Date < DateTime.Now.AddHours(7).Date)
             {
-                if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
+                var haveAttend = await context.Attendances.FirstOrDefaultAsync(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
+
+                if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
                 {
-                    if (!holidays.ContainsKey(currentDate.Date))
+                    var holiday = await context.Calendars.FirstOrDefaultAsync(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
+                    if (holiday == null)
                     {
-                        var existingAttendance = attendances.FirstOrDefault(x => x.Date == currentDate.Date);
-                        if (existingAttendance == null)
+                        if (haveAttend == null)
                         {
-                            var newAttendance = new Attendance
-                            {
-                                UserID = userID,
-                                Date = currentDate,
-                                ClockIn = currentDate,
-                                ClockOut = currentDate,
-                                Description = "",
-                                Status = "Absen",
-                                DateIn = DateTime.Now.AddHours(7),
-                                UserIn = user.UserID.ToString(),
-                                IsDeleted = false
-                            };
+                            var attendance = new Attendance();
+                            attendance.UserID = userID;
+                            attendance.Date = currentDate;
+                            attendance.ClockIn = currentDate;
+                            attendance.ClockOut = currentDate;
+                            attendance.Description = "";
+                            attendance.Status = "Absen";
+                            attendance.DateIn = DateTime.Now.AddHours(7);
+                            attendance.UserIn = (await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true)).UserID.ToString();
+                            attendance.IsDeleted = false;
 
-                            context.Attendances.Add(newAttendance);
+                            context.Attendances.Add(attendance);
                         }
-                        else if (existingAttendance.ClockOut == null)
+                        else
                         {
-                            existingAttendance.Status = "Absen";
-                            existingAttendance.ClockOut = currentDate;
+                            if (haveAttend.ClockOut == null)
+                            {
+                                haveAttend.Status = "Absen";
+                                haveAttend.ClockOut = currentDate;
 
-                            context.Attendances.Update(existingAttendance);
+                                context.Attendances.Update(haveAttend);
+                            }
                         }
                     }
                 }
