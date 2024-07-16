@@ -41,8 +41,7 @@ namespace API.Controllers
 
                 var total = 0;
                 var result = await _service.GetAllAsync(limit, page, total, search, sort, filter, date, user);
-                var response = new ListResponse<Attendance>(result, total, page);
-                return Ok(response);
+                return Ok(result);
             }
             catch (Exception ex)
             {

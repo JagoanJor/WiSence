@@ -5,13 +5,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using API.Entities;
 using API.Helpers;
+using API.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
     public interface IAttendanceService
     {
-        Task<IEnumerable<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user);
+        Task<ListResponse<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user);
         Task<Attendance> GetByIdAsync(long id);
         Task<Attendance> CreateAsync(Attendance data);
         Task<Attendance> EditAsync(Attendance data);
@@ -99,7 +100,7 @@ namespace API.Services
             }
         }
 
-        public async Task<IEnumerable<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user)
+        public async Task<ListResponse<Attendance>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date, User user)
         {
             using var context = new EFContext();
             try
@@ -241,7 +242,7 @@ namespace API.Services
                     return await GetAllAsync(limit, page, total, search, sort, filter, date, user);
                 }
 
-                return data;
+                return new ListResponse<Attendance>(data, total, page); ;
             }
             catch (Exception ex)
             {
