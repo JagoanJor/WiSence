@@ -106,6 +106,7 @@ namespace API.Services
             try
             {
                 var query = context.Attendances.Where(a => a.IsDeleted != true).Include("User");
+                query = query.Where(x => x.User.IsAdmin != true);
 
                 // If not Admin, just return the user data
                 if (user.IsAdmin != true)
