@@ -430,47 +430,57 @@ namespace API.Services
         public async Task CheckAttendanceAsync(long? userID)
         {
             using var context = new EFContext();
-            var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
             if (user == null)
                 return;
 
-            var currentDate = user.StartWork.Value.Date;
-            if (currentDate == null)
+            var startDate = user.StartWork;
+            if (startDate == null)
                 throw new Exception("Tanggal mulai kerja user belum diatur!");
 
-            while (currentDate.Date < DateTime.Now.AddHours(7).Date)
+            var today = DateTime.Today;
+
+            var attendances = await context.Attendances
+                .Where(x => x.UserID == userID && x.Date <= today && x.IsDeleted != true)
+                .ToListAsync();
+
+            var holidays = await context.Calendars
+                .Where(x => x.Holiday.Date <= today && x.IsDeleted != true)
+                .ToDictionaryAsync(x => x.Holiday.Date);
+
+            var currentDate = startDate.Value.Date;
+            while (currentDate.Date <= today)
             {
-                var haveAttend = await context.Attendances.FirstOrDefaultAsync(x => x.Date.Value.Date == currentDate.Date && x.IsDeleted != true && x.UserID == userID);
-
-                if (currentDate.DayOfWeek.ToString() != "Saturday" && currentDate.DayOfWeek.ToString() != "Sunday")
+                if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
                 {
-                    var holiday = await context.Calendars.FirstOrDefaultAsync(x => x.Holiday.Date == currentDate.Date && x.IsDeleted != true);
-                    if (holiday == null)
+                    if (!holidays.ContainsKey(currentDate.Date))
                     {
-                        if (haveAttend == null)
+                        var existingAttendance = attendances.FirstOrDefault(x => x.Date == currentDate.Date);
+                        if (existingAttendance == null)
                         {
-                            var attendance = new Attendance();
-                            attendance.UserID = userID;
-                            attendance.Date = currentDate;
-                            attendance.ClockIn = currentDate;
-                            attendance.ClockOut = currentDate;
-                            attendance.Description = "";
-                            attendance.Status = "Absen";
-                            attendance.DateIn = DateTime.Now.AddHours(7);
-                            attendance.UserIn = (await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true)).UserID.ToString();
-                            attendance.IsDeleted = false;
-
-                            context.Attendances.Add(attendance);
-                        }
-                        else
-                        {
-                            if (haveAttend.ClockOut == null)
+                            var newAttendance = new Attendance
                             {
-                                haveAttend.Status = "Absen";
-                                haveAttend.ClockOut = currentDate;
+                                UserID = userID,
+                                Date = currentDate,
+                                ClockIn = currentDate,
+                                ClockOut = currentDate,
+                                Description = "",
+                                Status = "Absen",
+                                DateIn = DateTime.Now.AddHours(7),
+                                UserIn = user.UserID.ToString(),
+                                IsDeleted = false
+                            };
 
-                                context.Attendances.Update(haveAttend);
-                            }
+                            context.Attendances.Add(newAttendance);
+                        }
+                        else if (existingAttendance.ClockOut == null)
+                        {
+                            existingAttendance.Status = "Absen";
+                            existingAttendance.ClockOut = currentDate;
+
+                            context.Attendances.Update(existingAttendance);
                         }
                     }
                 }
