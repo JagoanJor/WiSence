@@ -14,131 +14,54 @@ namespace API.Services
 {
     public interface IReportService
     {
-        vReportAbsensi getReportAbsensi(Int64 userID, int bulan, int tahun);
-        ReportAbsensiPerTahunResponse getReportAbsensiPerTahun(int tahun);
-        ReportCutiResponse getReportCuti(Int64 userID, int bulan, int tahun);
-        ReportCutiPerTahunResponse getReportCutiPerTahun(int tahun);
+        Task<vReportAbsensi> getReportAbsensiAsync(Int64 userID, int bulan, int tahun);
+        Task<ReportAbsensiPerTahunResponse> getReportAbsensiPerTahunAsync(int tahun);
+        Task<ReportCutiResponse> getReportCutiAsync(Int64 userID, int bulan, int tahun);
+        Task<ReportCutiPerTahunResponse> getReportCutiPerTahunAsync(int tahun);
     }
+
     public class ReportService : IReportService
     {
-        public vReportAbsensi getReportAbsensi(Int64 userID, int bulan, int tahun)
+        public async Task<vReportAbsensi> getReportAbsensiAsync(Int64 userID, int bulan, int tahun)
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                // Check user's attendance
-                CheckAttendanceAsync(userID);
+                try
+                {
+                    // Check user's attendance
+                    await CheckAttendanceAsync(userID);
 
-                // Get report function
-                var result = new vReportAbsensi();
-                string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
-                var query = String.Format($@"
+                    // Get report function
+                    var result = new vReportAbsensi();
+                    string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
+                    var query = $@"
                     SELECT *
                     FROM
                         vReportAbsensi
                     WHERE
-                        UserID = {userID}");
+                        UserID = {userID}";
 
-                var header = context.vReportAbsensis.FromSqlRaw(query).FirstOrDefault();
-                if (header == null)
-                    return null;
+                    var header = await context.vReportAbsensis.FromSqlRaw(query).FirstOrDefaultAsync();
+                    if (header == null)
+                        return null;
 
-                header.Kerja = context.Attendances.Where(x => x.UserID == header.UserID && x.IsDeleted != true && x.Date.Value.Month == bulan && x.Date.Value.Year == tahun && x.Status != "Cuti" && x.Status != "Absen").Count();
-                header.Libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Month == bulan && x.Holiday.Year == tahun)
-                                .ToList()
-                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
-                                .Count();
-                header.Periode = $"{bulan} {tahun}";
+                    header.Kerja = await context.Attendances.Where(x => x.UserID == header.UserID && x.IsDeleted != true && x.Date.Value.Month == bulan && x.Date.Value.Year == tahun && x.Status != "Cuti" && x.Status != "Absen").CountAsync();
+                    header.Libur = await context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Month == bulan && x.Holiday.Year == tahun)
+                                    .CountAsync(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday);
 
-                var queryList = String.Format($@"
+                    header.Periode = $"{bulan} {tahun}";
+
+                    var queryList = $@"
                     SELECT *
                     FROM
                         vReportAbsensiList
                     WHERE
-                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
+                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'";
 
-                var detail = context.vReportAbsensiLists.FromSqlRaw(queryList);
+                    var detail = await context.vReportAbsensiLists.FromSqlRaw(queryList).ToListAsync();
 
-                int daysInMonth = DateTime.DaysInMonth(tahun, bulan);
-                int hariKerja = 0;
-
-                for (int day = 1; day <= daysInMonth; day++)
-                {
-                    DateTime currentDate = new DateTime(tahun, bulan, day);
-
-                    if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
-                        hariKerja++;
-                }
-
-                int hariKerjaTanpaLibur = hariKerja - header.Libur;
-
-                result.Nama = header.Nama;
-                result.UserID = userID;
-                result.Posisi = header.Posisi;
-                result.NIK = header.NIK;
-                result.Periode = header.Periode;
-                result.Kerja = header.Kerja;
-                result.Libur = header.Libur;
-                result.TotalKerja = $"{header.Kerja} dari {hariKerjaTanpaLibur} hari kerja";
-                result.vReportAbsensiLists = detail != null ? detail.ToList() : null;
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-        }
-
-        public ReportAbsensiPerTahunResponse getReportAbsensiPerTahun(int tahun)
-        {
-            var context = new EFContext();
-            try
-            {
-                // Check Attendance per User                
-                var users = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
-                foreach (var user in users)
-                    CheckAttendanceAsync(user.UserID);
-
-                // Get report function
-                var libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun && x.Holiday.Year == tahun)
-                                .ToList()
-                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
-                                .Count();
-
-                var queryList = String.Format($@"
-                    SELECT *
-                    FROM
-                        vReportAbsensiListPerTahun");
-
-                var detail = context.vReportAbsensiListPerTahuns.FromSqlRaw(queryList).ToList();
-
-                foreach (var data in detail)
-                {
-                    var checkAttendance = context.Attendances.Where(x => x.UserID == data.UserID && x.IsDeleted != true && x.Date.Value.Year == tahun);
-                    if (checkAttendance != null)
-                    {
-                        data.Ontime = checkAttendance.Where(x => x.Status == "Ontime").Count();
-                        data.WFH = checkAttendance.Where(x => x.Status == "WFH").Count();
-                        data.Terlambat = checkAttendance.Where(x => x.Status == "Terlambat").Count();
-                        data.Absen = checkAttendance.Where(x => x.Status == "Absen").Count();
-                        data.Cuti = checkAttendance.Where(x => x.Status == "Cuti").Count();
-                    }
-                }
-
-                int hariKerja = 0;
-
-                for (int bulan = 1; bulan <= 12; bulan++)
-                {
                     int daysInMonth = DateTime.DaysInMonth(tahun, bulan);
+                    int hariKerja = 0;
 
                     for (int day = 1; day <= daysInMonth; day++)
                     {
@@ -147,113 +70,180 @@ namespace API.Services
                         if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
                             hariKerja++;
                     }
+
+                    int hariKerjaTanpaLibur = hariKerja - header.Libur;
+
+                    result.Nama = header.Nama;
+                    result.UserID = userID;
+                    result.Posisi = header.Posisi;
+                    result.NIK = header.NIK;
+                    result.Periode = header.Periode;
+                    result.Kerja = header.Kerja;
+                    result.Libur = header.Libur;
+                    result.TotalKerja = $"{header.Kerja} dari {hariKerjaTanpaLibur} hari kerja";
+                    result.vReportAbsensiLists = detail;
+
+                    return result;
                 }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                int hariKerjaTanpaLibur = hariKerja - libur;
-
-                return new ReportAbsensiPerTahunResponse(tahun.ToString(), libur, $"{hariKerjaTanpaLibur} hari kerja", detail != null ? detail : null);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public ReportCutiResponse getReportCuti(Int64 userID, int bulan, int tahun)
+        public async Task<ReportAbsensiPerTahunResponse> getReportAbsensiPerTahunAsync(int tahun)
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
-                var query = String.Format($@"
+                try
+                {
+                    // Check Attendance per User                
+                    var users = await context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true).ToListAsync();
+                    foreach (var user in users)
+                        await CheckAttendanceAsync(user.UserID);
+
+                    // Get report function
+                    var libur = await context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun && x.Holiday.Year == tahun)
+                                    .CountAsync(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday);
+
+                    var queryList = @"
+                    SELECT *
+                    FROM
+                        vReportAbsensiListPerTahun";
+
+                    var detail = await context.vReportAbsensiListPerTahuns.FromSqlRaw(queryList).ToListAsync();
+
+                    foreach (var data in detail)
+                    {
+                        var checkAttendance = await context.Attendances.Where(x => x.UserID == data.UserID && x.IsDeleted != true && x.Date.Value.Year == tahun).ToListAsync();
+                        if (checkAttendance != null)
+                        {
+                            data.Ontime = checkAttendance.Count(x => x.Status == "Ontime");
+                            data.WFH = checkAttendance.Count(x => x.Status == "WFH");
+                            data.Terlambat = checkAttendance.Count(x => x.Status == "Terlambat");
+                            data.Absen = checkAttendance.Count(x => x.Status == "Absen");
+                            data.Cuti = checkAttendance.Count(x => x.Status == "Cuti");
+                        }
+                    }
+
+                    int hariKerja = 0;
+
+                    for (int bulan = 1; bulan <= 12; bulan++)
+                    {
+                        int daysInMonth = DateTime.DaysInMonth(tahun, bulan);
+
+                        for (int day = 1; day <= daysInMonth; day++)
+                        {
+                            DateTime currentDate = new DateTime(tahun, bulan, day);
+
+                            if (currentDate.DayOfWeek != DayOfWeek.Saturday && currentDate.DayOfWeek != DayOfWeek.Sunday)
+                                hariKerja++;
+                        }
+                    }
+
+                    int hariKerjaTanpaLibur = hariKerja - libur;
+
+                    return new ReportAbsensiPerTahunResponse(tahun.ToString(), libur, $"{hariKerjaTanpaLibur} hari kerja", detail);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
+
+                    throw;
+                }
+            }
+        }
+
+        public async Task<ReportCutiResponse> getReportCutiAsync(Int64 userID, int bulan, int tahun)
+        {
+            using (var context = new EFContext())
+            {
+                try
+                {
+                    string namaBulan = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(bulan);
+                    var query = $@"
                     SELECT *
                     FROM
                         vReportCuti
                     WHERE
-                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
+                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'";
 
-                var header = context.vReportCutis.FromSqlRaw(query).FirstOrDefault();
-                if (header == null)
-                    return null;
+                    var header = await context.vReportCutis.FromSqlRaw(query).FirstOrDefaultAsync();
+                    if (header == null)
+                        return null;
 
-                var queryList = String.Format($@"
+                    var queryList = $@"
                     SELECT *
                     FROM
                         vReportCutiList
                     WHERE
-                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'");
+                        UserID = {userID} AND Periode = '{namaBulan} {tahun}'";
 
-                var detail = context.vReportCutiLists.FromSqlRaw(queryList).ToList();
+                    var detail = await context.vReportCutiLists.FromSqlRaw(queryList).ToListAsync();
 
-                var querySisaCuti = String.Format($@"
+                    var querySisaCuti = @"
                     SELECT *
                     FROM
-                        vReportCutiPerTahun");
+                        vReportCutiPerTahun";
 
-                var sisaCuti = context.vReportCutiPerTahuns.FromSqlRaw(querySisaCuti).FirstOrDefault();
-                var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
-                var checkCuti = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Status == "Cuti" && x.Date.Value.Year == tahun).Count();
+                    var sisaCuti = await context.vReportCutiPerTahuns.FromSqlRaw(querySisaCuti).FirstOrDefaultAsync();
+                    var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == userID && x.IsDeleted != true);
+                    var checkCuti = await context.Attendances.CountAsync(x => x.UserID == userID && x.IsDeleted != true && x.Status == "Cuti" && x.Date.Value.Year == tahun);
 
-                if (sisaCuti != null)
-                    sisaCuti.SisaCuti = header.JatahCuti - checkCuti;
+                    if (sisaCuti != null)
+                        sisaCuti.SisaCuti = header.JatahCuti - checkCuti;
 
-                return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail != null ? detail : null);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
+                    return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail);
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 
-        public ReportCutiPerTahunResponse getReportCutiPerTahun(int tahun)
+        public async Task<ReportCutiPerTahunResponse> getReportCutiPerTahunAsync(int tahun)
         {
-            var context = new EFContext();
-            try
+            using (var context = new EFContext())
             {
-                var query = String.Format($@"
-                    SELECT *
-                    FROM vReportCutiPerTahun");
-
-                var detail = context.vReportCutiPerTahuns.FromSqlRaw(query).ToList();
-                
-                foreach (var data in detail)
+                try
                 {
-                    var user = context.Users.FirstOrDefault(x => x.UserID == data.UserID && x.IsDeleted != true);
-                    var checkCuti = context.Attendances.Where(x => x.Status == "Cuti" && x.IsDeleted != true && x.UserID == user.UserID && x.Date.Value.Year == tahun).Count();
+                    var query = @"
+                    SELECT *
+                    FROM vReportCutiPerTahun";
 
-                    data.Cuti = checkCuti;
-                    data.SisaCuti = data.JatahCuti - data.Cuti;
+                    var detail = await context.vReportCutiPerTahuns.FromSqlRaw(query).ToListAsync();
+
+                    foreach (var data in detail)
+                    {
+                        var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == data.UserID && x.IsDeleted != true);
+                        var checkCuti = await context.Attendances.CountAsync(x => x.Status == "Cuti" && x.IsDeleted != true && x.UserID == user.UserID && x.Date.Value.Year == tahun);
+
+                        data.Cuti = checkCuti;
+                        data.SisaCuti = data.JatahCuti - data.Cuti;
+                    }
+
+                    return new ReportCutiPerTahunResponse(tahun.ToString(), detail);
                 }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(ex.Message);
+                    if (ex.StackTrace != null)
+                        Trace.WriteLine(ex.StackTrace);
 
-                return new ReportCutiPerTahunResponse(tahun.ToString(), detail != null ? detail : null);
-            }
-            catch (Exception ex)
-            {
-                Trace.WriteLine(ex.Message);
-                if (ex.StackTrace != null)
-                    Trace.WriteLine(ex.StackTrace);
-
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                    throw;
+                }
             }
         }
 

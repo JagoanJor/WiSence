@@ -3,6 +3,7 @@ using API.Responses;
 using API.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -18,36 +19,36 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("ReportAbsensi")]
-        public IActionResult getReportAbsensi(Int64 userID, int bulan, int tahun)
+        public async Task<IActionResult> getReportAbsensi(Int64 userID, int bulan, int tahun)
         {
-            var result = _service.getReportAbsensi(userID, bulan, tahun);
+            var result = await _service.getReportAbsensiAsync(userID, bulan, tahun);
             var response = new Response<vReportAbsensi>(result);
             return Ok(response);
         }
 
         [Authorize]
         [HttpGet("ReportAbsensiPerTahun")]
-        public IActionResult getReportAbsensiPerTahun(int tahun)
+        public async Task<IActionResult> getReportAbsensiPerTahun(int tahun)
         {
-            var result = _service.getReportAbsensiPerTahun(tahun);
+            var result = await _service.getReportAbsensiPerTahunAsync(tahun);
             var response = new Response<ReportAbsensiPerTahunResponse>(result);
             return Ok(response);
         }
 
         [Authorize]
         [HttpGet("ReportCuti")]
-        public IActionResult getReportCuti(Int64 userID, int bulan, int tahun)
+        public async Task<IActionResult> getReportCuti(Int64 userID, int bulan, int tahun)
         {
-            var result = _service.getReportCuti(userID, bulan, tahun);
+            var result = await _service.getReportCutiAsync(userID, bulan, tahun);
             var response = new Response<ReportCutiResponse>(result);
             return Ok(response);
         }
 
         [Authorize]
         [HttpGet("ReportCutiPerTahun")]
-        public IActionResult getReportCutiPerTahun(int tahun)
+        public async Task<IActionResult> getReportCutiPerTahun(int tahun)
         {
-            var result = _service.getReportCutiPerTahun(tahun);
+            var result = await _service.getReportCutiPerTahunAsync(tahun);
             var response = new Response<ReportCutiPerTahunResponse>(result);
             return Ok(response);
         }
