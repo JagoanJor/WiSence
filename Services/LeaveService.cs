@@ -511,11 +511,32 @@ namespace API.Services
             var context = new EFContext();
             try
             {
-                var obj = context.Attendances.Where(x => x.UserID == userID && x.IsDeleted != true && x.Date.Value.Year == DateTime.Now.AddHours(7).Year && x.Status == "Cuti");
                 int count = 0;
-                if (obj != null)
+
+                var user = context.Users.FirstOrDefault(x => x.UserID == userID && x.IsDeleted != true);
+                if (user == null)
+                    throw new Exception("User not found!");
+
+                var objBefore = context.Attendances
+                    .Where(x => x.UserID == userID &&
+                        x.IsDeleted != true &&
+                        x.Status == "Cuti" &&
+                        x.Date.Value.Month >= user.StartWork.Value.Month &&
+                        x.Date.Value.Year == DateTime.Now.AddHours(7).Year);
+
+                var objAfter = context.Attendances
+                    .Where(x => x.UserID == userID &&
+                        x.IsDeleted != true &&
+                        x.Status == "Cuti" &&
+                        x.Date.Value.Month < user.StartWork.Value.Month &&
+                        x.Date.Value.Year == DateTime.Now.AddHours(7).AddYears(1).Year);
+
+                if (objBefore != null)
                 {
-                    foreach (var o in obj)
+                    foreach (var ob in objBefore)
+                        count++;
+
+                    foreach (var oa in objAfter)
                         count++;
                 }
 
@@ -525,6 +546,9 @@ namespace API.Services
 
 
                 count = (int)(com.Leave - count);
+                if (count < 0)
+                    count = 0;
+
                 return (count);
             }
             catch (Exception ex)
