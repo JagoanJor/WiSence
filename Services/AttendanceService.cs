@@ -242,7 +242,7 @@ namespace API.Services
                     return await GetAllAsync(limit, page, total, search, sort, filter, date, user);
                 }
 
-                return new ListResponse<Attendance>(data, total, page); ;
+                return new ListResponse<Attendance>(data, total, page);
             }
             catch (Exception ex)
             {

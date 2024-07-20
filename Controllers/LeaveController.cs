@@ -40,9 +40,8 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var total = 0;
-                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
-                var response = new ListResponse<LeaveResponse>(result, total, page);
-                return Ok(response);
+                var result = _service.GetAllAsync(limit, page, total, search, sort, filter, date, user);
+                return Ok(result);
             }
             catch (Exception ex)
             {
