@@ -10,7 +10,6 @@ using API.Helpers;
 using API.Responses;
 using API.Services;
 using API.Requests;
-using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -27,7 +26,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
+        public IActionResult Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
         {
             try
             {
@@ -41,8 +40,9 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var total = 0;
-                var result = _service.GetAllAsync(limit, page, total, search, sort, filter, date, user);
-                return Ok(result);
+                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date, user);
+                var response = new ListResponse<LeaveResponse>(result, total, page);
+                return Ok(response);
             }
             catch (Exception ex)
             {

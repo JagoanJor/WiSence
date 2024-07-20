@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
+
 using API.Entities;
 using API.Helpers;
 using API.Responses;
@@ -15,7 +15,7 @@ namespace API.Services
 {
     public interface ILeaveService
     {
-        Task<ListResponse<LeaveResponse>> GetAllAsync(Int32 limit, Int32 page, Int32 total, String search, String sort, String filter, String date, User user);
+        IEnumerable<LeaveResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user);
         Leave GetById(Int64 id);
         Leave Create(Leave data);
         Leave Edit(Leave data);
@@ -231,7 +231,7 @@ namespace API.Services
             }
         }
 
-        public async Task<ListResponse<LeaveResponse>> GetAllAsync(Int32 limit, Int32 page, Int32 total, String search, String sort, String filter, String date, User user)
+        public IEnumerable<LeaveResponse> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date, User user)
         {
             var context = new EFContext();
             try
@@ -363,33 +363,33 @@ namespace API.Services
                 }
 
                 // Get Total Before Limit and Page
-                total = await query.CountAsync();
+                total = query.Count();
 
                 // Set Limit and Page
                 if (limit != 0)
                     query = query.Skip(page * limit).Take(limit);
 
                 // Get Data
-                var data = await query.ToListAsync();
+                var data = query.ToList();
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return await GetAllAsync(limit, page, total, search, sort, filter, date, user);
+                    return GetAll(limit, ref page, ref total, search, sort, filter, date, user);
                 }
 
                 var leaveResponses = new List<LeaveResponse>();
                 foreach (var cuti in data)
                 {
-                    var users = await context.Users.FirstOrDefaultAsync(x => x.UserID == cuti.UserID && x.IsDeleted != true);
+                    var users = context.Users.FirstOrDefault(x => x.UserID == cuti.UserID && x.IsDeleted != true);
                     if (users == null)
                         throw new Exception($"User with ID {cuti.User.UserID} not found");
 
-                    var company = await context.Companies.FirstOrDefaultAsync(x => x.CompanyID == users.CompanyID && x.IsDeleted != true);
+                    var company = context.Companies.FirstOrDefault(x => x.CompanyID == users.CompanyID && x.IsDeleted != true);
                     if (company == null)
                         throw new Exception($"Company with ID {cuti.User.CompanyID} not found");
 
                     var leaveAllowance = SisaCuti(users.UserID, company.CompanyID);
-
+                    
                     if (getFilterLeaveAllowance != null)
                     {
                         if (leaveAllowance == getFilterLeaveAllowance)
@@ -437,7 +437,7 @@ namespace API.Services
                     }
                 }
 
-                return new ListResponse<LeaveResponse>(leaveResponses, total, page);
+                return leaveResponses;
             }
             catch (Exception ex)
             {
@@ -449,11 +449,11 @@ namespace API.Services
             }
             finally
             {
-                await context.DisposeAsync();
+                context.Dispose();
             }
         }
 
-            public Leave GetById(Int64 id)
+        public Leave GetById(Int64 id)
         {
             var context = new EFContext();
             try
