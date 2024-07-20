@@ -10,6 +10,7 @@ using API.Helpers;
 using API.Responses;
 using API.Services;
 using API.Requests;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -26,7 +27,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet]
-        public IActionResult Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
+        public async Task<IActionResult> Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
         {
             try
             {
