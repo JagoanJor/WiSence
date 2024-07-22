@@ -51,6 +51,9 @@ namespace API.Services
                 var obj = await context.Attendances.FirstOrDefaultAsync(x => x.AttendanceID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
+                if (obj.Status == "Cuti")
+                    throw new Exception("Absensi tidak dapat dihapus karena berstatus Cuti!");
+
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
                 obj.DateUp = DateTime.Now.AddHours(7);
