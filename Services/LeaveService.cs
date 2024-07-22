@@ -338,8 +338,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "userid": query = query.OrderByDescending(x => x.User.UserID); break;
-                            case "name": query = query.OrderByDescending(x => x.User.Name); break;
+                            case "user": query = query.OrderByDescending(x => x.User.Name); break;
                             case "duration": query = query.OrderByDescending(x => x.Duration); break;
                             case "description": query = query.OrderByDescending(x => x.Description); break;
                             case "status": query = query.OrderByDescending(x => x.Status); break;
@@ -349,8 +348,7 @@ namespace API.Services
                     {
                         switch (orderBy.ToLower())
                         {
-                            case "userid": query = query.OrderBy(x => x.User.UserID); break;
-                            case "name": query = query.OrderBy(x => x.User.Name); break;
+                            case "user": query = query.OrderBy(x => x.User.Name); break;
                             case "duration": query = query.OrderBy(x => x.Duration); break;
                             case "description": query = query.OrderBy(x => x.Description); break;
                             case "status": query = query.OrderBy(x => x.Status); break;
