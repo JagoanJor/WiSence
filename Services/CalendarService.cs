@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Threading.Tasks;
 using API.Entities;
 using API.Helpers;
-
+using API.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public class CalendarService : IService<Calendar>
+    public class CalendarService : IServiceAsync<Calendar>
     {
-        public Calendar Create(Calendar data)
+        public async Task<Calendar> CreateAsync(Calendar data)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                context.Calendars.Add(data);
-                context.SaveChanges();
+                await context.Calendars.AddAsync(data);
+                await context.SaveChangesAsync();
 
                 return data;
             }
@@ -28,27 +28,23 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public bool Delete(Int64 id, String userID)
+        public async Task<bool> DeleteAsync(long id, string userID)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                var obj = context.Calendars.FirstOrDefault(x => x.CalendarID == id && x.IsDeleted != true);
+                var obj = await context.Calendars.FirstOrDefaultAsync(x => x.CalendarID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -58,20 +54,16 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Calendar Edit(Calendar data)
+        public async Task<Calendar> EditAsync(Calendar data)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                var obj = context.Calendars.FirstOrDefault(x => x.CalendarID == data.CalendarID && x.IsDeleted != true);
+                var obj = await context.Calendars.FirstOrDefaultAsync(x => x.CalendarID == data.CalendarID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Description = data.Description;
@@ -79,7 +71,7 @@ namespace API.Services
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return obj;
             }
@@ -89,17 +81,13 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public IEnumerable<Calendar> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public async Task<ListResponse<Calendar>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
                 var query = from a in context.Calendars where a.IsDeleted != true select a;
@@ -112,7 +100,6 @@ namespace API.Services
                     else
                         query = query.Where(x => x.Description.Contains(search));
                 }
-
 
                 // Filtering
                 if (!string.IsNullOrEmpty(filter))
@@ -168,21 +155,21 @@ namespace API.Services
                 }
 
                 // Get Total Before Limit and Page
-                total = query.Count();
+                total = await query.CountAsync();
 
                 // Set Limit and Page
                 if (limit != 0)
                     query = query.Skip(page * limit).Take(limit);
 
                 // Get Data
-                var data = query.ToList();
+                var data = await query.ToListAsync();
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date);
+                    return await GetAllAsync(limit, page, total, search, sort, filter, date);
                 }
 
-                return data;
+                return new ListResponse<Calendar>(data, total, page);
             }
             catch (Exception ex)
             {
@@ -190,20 +177,16 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Calendar GetById(Int64 id)
+        public async Task<Calendar> GetByIdAsync(long id)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                return context.Calendars.FirstOrDefault(x => x.CalendarID == id && x.IsDeleted != true);
+                return await context.Calendars.FirstOrDefaultAsync(x => x.CalendarID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -211,13 +194,8 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
     }
 }
-

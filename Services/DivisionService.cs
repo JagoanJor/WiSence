@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
+using System.Threading.Tasks;
 using API.Entities;
 using API.Helpers;
-
+using API.Responses;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Services
 {
-    public class DivisionService : IService<Division>
+    public class DivisionService : IServiceAsync<Division>
     {
-        public Division Create(Division data)
+        public async Task<Division> CreateAsync(Division data)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                context.Divisions.Add(data);
-                context.SaveChanges();
+                await context.Divisions.AddAsync(data);
+                await context.SaveChangesAsync();
 
                 return data;
             }
@@ -28,27 +28,23 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public bool Delete(Int64 id, String userID)
+        public async Task<bool> DeleteAsync(long id, string userID)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                var obj = context.Divisions.FirstOrDefault(x => x.DivisionID == id && x.IsDeleted != true);
+                var obj = await context.Divisions.FirstOrDefaultAsync(x => x.DivisionID == id && x.IsDeleted != true);
                 if (obj == null) return false;
 
                 obj.IsDeleted = true;
                 obj.UserUp = userID;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return true;
             }
@@ -58,20 +54,16 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Division Edit(Division data)
+        public async Task<Division> EditAsync(Division data)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                var obj = context.Divisions.FirstOrDefault(x => x.DivisionID == data.DivisionID && x.IsDeleted != true);
+                var obj = await context.Divisions.FirstOrDefaultAsync(x => x.DivisionID == data.DivisionID && x.IsDeleted != true);
                 if (obj == null) return null;
 
                 obj.Name = data.Name;
@@ -80,7 +72,7 @@ namespace API.Services
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
-                context.SaveChanges();
+                await context.SaveChangesAsync();
 
                 return obj;
             }
@@ -90,21 +82,17 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public IEnumerable<Division> GetAll(Int32 limit, ref Int32 page, ref Int32 total, String search, String sort, String filter, String date)
+        public async Task<ListResponse<Division>> GetAllAsync(int limit, int page, int total, string search, string sort, string filter, string date)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
                 var query = from a in context.Divisions where a.IsDeleted != true select a;
-                query = query.Include("Company");
+                query = query.Include(d => d.Company);
 
                 // Searching
                 if (!string.IsNullOrEmpty(search))
@@ -162,21 +150,21 @@ namespace API.Services
                 }
 
                 // Get Total Before Limit and Page
-                total = query.Count();
+                total = await query.CountAsync();
 
                 // Set Limit and Page
                 if (limit != 0)
                     query = query.Skip(page * limit).Take(limit);
 
                 // Get Data
-                var data = query.ToList();
+                var data = await query.ToListAsync();
                 if (data.Count <= 0 && page > 0)
                 {
                     page = 0;
-                    return GetAll(limit, ref page, ref total, search, sort, filter, date);
+                    return await GetAllAsync(limit, page, total, search, sort, filter, date);
                 }
 
-                return data;
+                return new ListResponse<Division>(data, total, page);
             }
             catch (Exception ex)
             {
@@ -184,22 +172,18 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
 
-        public Division GetById(Int64 id)
+        public async Task<Division> GetByIdAsync(long id)
         {
-            var context = new EFContext();
+            await using var context = new EFContext();
             try
             {
-                return context.Divisions
+                return await context.Divisions
                     .Include(x => x.Company)
-                    .FirstOrDefault(x => x.DivisionID == id && x.IsDeleted != true);
+                    .FirstOrDefaultAsync(x => x.DivisionID == id && x.IsDeleted != true);
             }
             catch (Exception ex)
             {
@@ -207,13 +191,8 @@ namespace API.Services
                 if (ex.StackTrace != null)
                     Trace.WriteLine(ex.StackTrace);
 
-                throw ex;
-            }
-            finally
-            {
-                context.Dispose();
+                throw;
             }
         }
     }
 }
-

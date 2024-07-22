@@ -9,6 +9,7 @@ using API.Entities;
 using API.Helpers;
 using API.Responses;
 using API.Services;
+using System.Threading.Tasks;
 
 namespace API.Controllers
 {
@@ -16,23 +17,22 @@ namespace API.Controllers
     [Route("[controller]")]
     public class LocationController : ControllerBase
     {
-        private IService<Location> _service;
+        private IServiceAsync<Location> _service;
 
-        public LocationController(IService<Location> service)
+        public LocationController(IServiceAsync<Location> service)
         {
             _service = service;
         }
 
         [Authorize]
         [HttpGet]
-        public IActionResult Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
+        public async Task<IActionResult> Get(int limit = 0, int page = 0, string search = "", string sort = "", string filter = "", string date = "")
         {
             try
             {
                 var total = 0;
-                var result = _service.GetAll(limit, ref page, ref total, search, sort, filter, date);
-                var response = new ListResponse<Location>(result, total, page);
-                return Ok(response);
+                var result = await _service.GetAllAsync(limit, page, total, search, sort, filter, date);
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -50,11 +50,11 @@ namespace API.Controllers
 
         [Authorize]
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
-                var result = _service.GetById(id);
+                var result = await _service.GetByIdAsync(id);
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
 
@@ -77,7 +77,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult Create([FromBody] Location obj)
+        public async Task<IActionResult> Create([FromBody] Location obj)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace API.Controllers
                 obj.DateIn = DateTime.Now.AddHours(7);
                 obj.IsDeleted = false;
 
-                var result = _service.Create(obj);
+                var result = await _service.CreateAsync(obj);
                 var response = new Response<Location>(result);
                 return Ok(response);
             }
@@ -115,7 +115,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpPut]
-        public IActionResult Edit([FromBody] Location obj)
+        public async Task<IActionResult> Edit([FromBody] Location obj)
         {
             try
             {
@@ -130,7 +130,7 @@ namespace API.Controllers
 
                 obj.UserUp = user.UserID.ToString();
 
-                var result = _service.Edit(obj);
+                var result = await _service.EditAsync(obj);
                 var response = new Response<Location>(result);
                 return Ok(response);
             }
@@ -150,7 +150,7 @@ namespace API.Controllers
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                var result = _service.Delete(id, user.UserID.ToString());
+                var result = await _service.DeleteAsync(id, user.UserID.ToString());
 
                 var response = new Response<object>(result);
                 return Ok(response);
