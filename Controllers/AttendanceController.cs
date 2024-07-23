@@ -136,6 +136,9 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
+                if (user.UserID == obj.UserID)
+                    throw new Exception("Tidak dapat memperbarui data milik pribadi!");
+
                 obj.UserUp = user.UserID.ToString();
 
                 var result = await _service.EditAsync(obj);

@@ -82,11 +82,11 @@ namespace API
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IService<Role>, RoleService>();
             services.AddScoped<IService<Module>, ModuleService>();
+            services.AddScoped<IService<Shift>, ShiftService>();
             services.AddScoped<IServiceAsync<Division>, DivisionService>();
             services.AddScoped<IServiceAsync<Position>, PositionService>();
             services.AddScoped<IServiceAsync<Location>, LocationService>();
             services.AddScoped<IServiceAsync<Calendar>, CalendarService>();
-            services.AddScoped<IService<Shift>, ShiftService>();
 
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IDailyTaskService, DailyTaskService>();
