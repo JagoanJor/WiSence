@@ -18,10 +18,12 @@ namespace API.Controllers
     public class DivisionController : ControllerBase
     {
         private IServiceAsync<Division> _service;
+        private IAuthService _authService;
 
-        public DivisionController(IServiceAsync<Division> service)
+        public DivisionController(IServiceAsync<Division> service, IAuthService authService)
         {
             _service = service;
+            _authService = authService;
         }
 
         [Authorize]
@@ -30,6 +32,19 @@ namespace API.Controllers
         {
             try
             {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                var access = _authService.CheckRoleAccesibility(user.RoleID, "Perusahaan - Divisi");
+                if (!access.IsRead)
+                    throw new Exception("Tidak diberikan akses!");
+
                 var total = 0;
                 var result = await _service.GetAllAsync(limit, page, total, search, sort, filter, date);
                 return Ok(result);
@@ -54,6 +69,19 @@ namespace API.Controllers
         {
             try
             {
+                var token = HttpContext.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = (User)null;
+                if (token != null)
+                    user = Utils.UserFromToken(token);
+
+                if (user == null)
+                    return BadRequest(new { message = "Invalid Token" });
+
+                var access = _authService.CheckRoleAccesibility(user.RoleID, "Perusahaan - Divisi");
+                if (!access.IsRead)
+                    throw new Exception("Tidak diberikan akses!");
+
                 var result = await _service.GetByIdAsync(id);
                 if (result == null)
                     return BadRequest(new { message = "Invalid ID" });
@@ -89,6 +117,10 @@ namespace API.Controllers
 
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
+
+                var access = _authService.CheckRoleAccesibility(user.RoleID, "Perusahaan - Divisi");
+                if (!access.IsCreate)
+                    throw new Exception("Tidak diberikan akses!");
 
                 obj.UserIn = user.UserID.ToString();
                 obj.DateIn = DateTime.Now.AddHours(7);
@@ -128,6 +160,10 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
+                var access = _authService.CheckRoleAccesibility(user.RoleID, "Perusahaan - Divisi");
+                if (!access.IsUpdate)
+                    throw new Exception("Tidak diberikan akses!");
+
                 obj.UserUp = user.UserID.ToString();
 
                 var result = await _service.EditAsync(obj);
@@ -162,6 +198,10 @@ namespace API.Controllers
 
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
+
+                var access = _authService.CheckRoleAccesibility(user.RoleID, "Perusahaan - Divisi");
+                if (!access.IsDelete)
+                    throw new Exception("Tidak diberikan akses!");
 
                 var result = await _service.DeleteAsync(id, user.UserID.ToString());
 

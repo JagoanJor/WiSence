@@ -14,6 +14,9 @@ using System.Text;
 
 using API.Entities;
 using API.Helpers;
+using System.Threading.Tasks;
+using System.Data.Entity;
+using API.Responses;
 
 namespace API.Services
 {
@@ -22,6 +25,7 @@ namespace API.Services
         User Authenticate(String email, String password, String ipAddress);
         User ChangeProfile(String fullName, String password, Int64 id);
         IEnumerable<dynamic> GetRoles(Int64 roleID);
+        AccessResponse CheckRoleAccesibility(Int64 roleID, String module);
         string GenerateToken(User user);
     }
 
@@ -101,6 +105,33 @@ namespace API.Services
                             where a.RoleID == roleID && a.IsDeleted != true
                             select new { a.ModuleID, a.IsCreate, a.IsRead, a.IsUpdate, a.IsDelete, b.Description };
                 return query.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex.Message);
+                if (ex.StackTrace != null)
+                    Trace.WriteLine(ex.StackTrace);
+
+                throw ex;
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
+        
+        public AccessResponse CheckRoleAccesibility(Int64 roleID, String module)
+        {
+            var context = new EFContext();
+            try
+            {
+                var query = from a in context.RoleDetails
+                            join b in context.Modules on a.ModuleID equals b.ModuleID
+                            where a.RoleID == roleID && a.IsDeleted != true && b.Description == module
+                            select new { a.IsCreate, a.IsRead, a.IsUpdate, a.IsDelete, b.Description };
+
+                var result = query.FirstOrDefault();
+                return new AccessResponse(result.IsCreate, result.IsRead, result.IsUpdate, result.IsDelete, result.Description);
             }
             catch (Exception ex)
             {
