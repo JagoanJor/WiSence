@@ -17,7 +17,6 @@ namespace API.Entities
         public int? Leave { get; set; }
         public Double? MaxRange { get; set; }
         public ICollection<Division> Divisions { get; set; }
-        //public ICollection<Wifi> Wifis { get; set; }
         public ICollection<Location> Locations { get; set; }
     }
 }

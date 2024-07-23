@@ -136,8 +136,8 @@ namespace API.Controllers
                 if (user == null)
                     return BadRequest(new { message = "Invalid Token" });
 
-                if (user.UserID == obj.UserID)
-                    throw new Exception("Tidak dapat memperbarui data milik pribadi!");
+                if (user.UserID == obj.UserID && user.IsAdmin != true)
+                    throw new Exception("Tidak dapat memperbarui data absensi milik pribadi!");
 
                 obj.UserUp = user.UserID.ToString();
 
