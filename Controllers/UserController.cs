@@ -44,7 +44,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Admin Menu - User");
-                if (!access.IsRead)
+                if (!access.IsRead && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var total = 0;
@@ -82,7 +82,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Admin Menu - User");
-                if (!access.IsRead)
+                if (!access.IsRead && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var result = _service.GetById(id);
@@ -122,7 +122,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Admin Menu - User");
-                if (!access.IsCreate)
+                if (!access.IsCreate && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 obj.UserIn = user.UserID.ToString();
@@ -164,7 +164,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Admin Menu - User");
-                if (!access.IsUpdate)
+                if (!access.IsUpdate && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 obj.UserUp = user.UserID.ToString();
@@ -203,7 +203,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Admin Menu - User");
-                if (!access.IsDelete)
+                if (!access.IsDelete && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var result = _service.Delete(id, user.UserID.ToString());

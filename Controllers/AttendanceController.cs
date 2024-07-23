@@ -42,7 +42,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Riwayat Absensi");
-                if (!access.IsRead)
+                if (!access.IsRead && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var total = 0;
@@ -79,7 +79,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Riwayat Absensi");
-                if (!access.IsRead)
+                if (!access.IsRead && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var result = await _service.GetByIdAsync(id);
@@ -119,7 +119,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Riwayat Absensi");
-                if (!access.IsCreate)
+                if (!access.IsCreate && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 obj.UserIn = user.UserID.ToString();
@@ -163,7 +163,7 @@ namespace API.Controllers
                     throw new Exception("Tidak dapat memperbarui data absensi milik pribadi!");
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Riwayat Absensi");
-                if (!access.IsUpdate)
+                if (!access.IsUpdate && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 obj.UserUp = user.UserID.ToString();
@@ -202,7 +202,7 @@ namespace API.Controllers
                     return BadRequest(new { message = "Invalid Token" });
 
                 var access = _authService.CheckRoleAccesibility(user.RoleID, "Riwayat Absensi");
-                if (!access.IsDelete)
+                if (!access.IsDelete && user.IsAdmin != true)
                     throw new Exception("Tidak diberikan akses!");
 
                 var result = await _service.DeleteAsync(id, user.UserID.ToString());

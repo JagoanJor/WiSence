@@ -35,7 +35,7 @@ namespace API.Controllers
                 return BadRequest(new { message = "Invalid Token" });
 
             var access = _authService.CheckRoleAccesibility(user.RoleID, "Reports");
-            if (!access.IsRead)
+            if (!access.IsRead && user.IsAdmin != true)
                 throw new Exception("Tidak diberikan akses!");
 
             var result = await _service.getReportAbsensiAsync(userID, bulan, tahun);
@@ -57,7 +57,7 @@ namespace API.Controllers
                 return BadRequest(new { message = "Invalid Token" });
 
             var access = _authService.CheckRoleAccesibility(user.RoleID, "Reports");
-            if (!access.IsRead)
+            if (!access.IsRead && user.IsAdmin != true)
                 throw new Exception("Tidak diberikan akses!");
 
             var result = await _service.getReportAbsensiPerTahunAsync(tahun);
@@ -79,7 +79,7 @@ namespace API.Controllers
                 return BadRequest(new { message = "Invalid Token" });
 
             var access = _authService.CheckRoleAccesibility(user.RoleID, "Reports");
-            if (!access.IsRead)
+            if (!access.IsRead && user.IsAdmin != true)
                 throw new Exception("Tidak diberikan akses!");
 
             var result = await _service.getReportCutiAsync(userID, bulan, tahun);
@@ -101,7 +101,7 @@ namespace API.Controllers
                 return BadRequest(new { message = "Invalid Token" });
 
             var access = _authService.CheckRoleAccesibility(user.RoleID, "Reports");
-            if (!access.IsRead)
+            if (!access.IsRead && user.IsAdmin != true)
                 throw new Exception("Tidak diberikan akses!");
 
             var result = await _service.getReportCutiPerTahunAsync(tahun);
