@@ -107,7 +107,7 @@ namespace API.Services
 
                 obj.Name = data.Name;
                 obj.Email = data.Email;
-                if (data.Password != null)
+                if (data.Password != null && data.Password.Length > 0)
                     obj.Password = data.Password;
                 obj.NIK = data.NIK;
                 obj.Gender = data.Gender;
@@ -306,8 +306,8 @@ namespace API.Services
             try
             {
                 var obj = context.Users
-                    .Include(x => x.Position)
                     .Include(x => x.Role)
+                    .Include(x => x.Position)
                     .Include(x => x.Company)
                     .Include(x => x.Shift)
                     .FirstOrDefault(x => x.UserID == id && x.IsDeleted != true);
