@@ -46,8 +46,10 @@ namespace API.Services
                         return null;
 
                     header.Kerja = await context.Attendances.Where(x => x.UserID == header.UserID && x.IsDeleted != true && x.Date.Value.Month == bulan && x.Date.Value.Year == tahun && x.Status != "Cuti" && x.Status != "Absen").CountAsync();
-                    header.Libur = await context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Month == bulan && x.Holiday.Year == tahun)
-                                    .CountAsync(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday);
+                    header.Libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Month == bulan && x.Holiday.Year == tahun)
+                                .ToList()
+                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
+                                .Count();
 
                     header.Periode = $"{bulan} {tahun}";
 
@@ -198,7 +200,11 @@ namespace API.Services
                     var checkCuti = await context.Attendances.CountAsync(x => x.UserID == userID && x.IsDeleted != true && x.Status == "Cuti" && x.Date.Value.Year == tahun);
 
                     if (sisaCuti != null)
+                    {
                         sisaCuti.SisaCuti = header.JatahCuti - checkCuti;
+                        if (sisaCuti.SisaCuti < 0)
+                            sisaCuti.SisaCuti = 0;
+                    }
 
                     return new ReportCutiResponse(header.Periode, header.UserID, header.Nama, header.Posisi, header.NIK, header.Cuti, header.JatahCuti, sisaCuti != null ? sisaCuti.SisaCuti : 0, detail);
                 }
