@@ -2,6 +2,7 @@
 using API.Helpers;
 using API.Responses;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
 using NativeWifi;
 using System;
 using System.Collections.Generic;
@@ -110,8 +111,10 @@ namespace API.Services
                         CheckAttendanceAsync(user.UserID);
 
                     // Get report function
-                    var libur = await context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun && x.Holiday.Year == tahun)
-                                    .CountAsync(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday);
+                    var libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun)
+                                .ToList()
+                                .Where(x => x.Holiday.DayOfWeek != DayOfWeek.Saturday && x.Holiday.DayOfWeek != DayOfWeek.Sunday)
+                                .Count();
 
                     var queryList = @"
                     SELECT *
@@ -234,10 +237,24 @@ namespace API.Services
                     foreach (var data in detail)
                     {
                         var user = await context.Users.FirstOrDefaultAsync(x => x.UserID == data.UserID && x.IsDeleted != true);
-                        var checkCuti = await context.Attendances.CountAsync(x => x.Status == "Cuti" && x.IsDeleted != true && x.UserID == user.UserID && x.Date.Value.Year == tahun);
+                        var checkCutiBefore = await context.Attendances
+                            .CountAsync(x => x.UserID == user.UserID &&
+                                x.IsDeleted != true &&
+                                x.Status == "Cuti" &&
+                                x.Date.Value.Month >= user.StartWork.Value.Month &&
+                                x.Date.Value.Year == DateTime.Now.AddHours(7).Year);
 
-                        data.Cuti = checkCuti;
+                        var checkCutiAfter = await context.Attendances
+                            .CountAsync(x => x.UserID == user.UserID &&
+                                x.IsDeleted != true &&
+                                x.Status == "Cuti" &&
+                                x.Date.Value.Month < user.StartWork.Value.Month &&
+                                x.Date.Value.Year == DateTime.Now.AddHours(7).AddYears(1).Year);
+
+                        data.Cuti = checkCutiAfter + checkCutiBefore;
                         data.SisaCuti = data.JatahCuti - data.Cuti;
+                        if (data.SisaCuti < 0)
+                            data.SisaCuti = 0;
                     }
 
                     return new ReportCutiPerTahunResponse(tahun.ToString(), detail);

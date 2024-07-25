@@ -7,6 +7,7 @@ using System.Linq;
 using API.Entities;
 using API.Helpers;
 using API.Responses;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.EntityFrameworkCore;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using String = System.String;
@@ -516,14 +517,14 @@ namespace API.Services
                     throw new Exception("User not found!");
 
                 var objBefore = context.Attendances
-                    .Where(x => x.UserID == userID &&
+                    .Count(x => x.UserID == userID &&
                         x.IsDeleted != true &&
                         x.Status == "Cuti" &&
                         x.Date.Value.Month >= user.StartWork.Value.Month &&
                         x.Date.Value.Year == DateTime.Now.AddHours(7).Year);
 
                 var objAfter = context.Attendances
-                    .Where(x => x.UserID == userID &&
+                    .Count(x => x.UserID == userID &&
                         x.IsDeleted != true &&
                         x.Status == "Cuti" &&
                         x.Date.Value.Month < user.StartWork.Value.Month &&
@@ -531,11 +532,11 @@ namespace API.Services
 
                 if (objBefore != null)
                 {
-                    foreach (var ob in objBefore)
-                        count++;
-
-                    foreach (var oa in objAfter)
-                        count++;
+                    count += objBefore;
+                }
+                if (objAfter != null)
+                {
+                    count += objAfter;
                 }
 
                 var com = context.Companies.FirstOrDefault(x => x.CompanyID == companyID && x.IsDeleted != true);
