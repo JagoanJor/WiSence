@@ -111,13 +111,17 @@ namespace API.Services
             try
             {
                 var query = context.Attendances.Where(a => a.IsDeleted != true).Include("User");
+                var userList = context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true);
+
+                if (userList == null)
+                    throw new Exception("Tidak ada data karyawan!");
 
                 // If not Admin, just return the user data
                 if (user.IsAdmin != true)
                     query = query.Where(x => x.UserID == user.UserID);
 
                 // Check user's attendance
-                foreach (var users in query)
+                foreach (var users in userList)
                     CheckAttendanceAsync(users.UserID);
 
                 // Date
@@ -333,7 +337,7 @@ namespace API.Services
                 data.Description = "";
                 data.UserID = user.UserID;
                 data.ClockIn = DateTime.Now.AddHours(7);
-                data.Shift = $"{shift.Description} ({shift.ClockIn} - {shift.ClockOut})";
+                data.Shift = $"{shift.Description} ({shift.ClockIn?.ToString("HH:mm")} - {shift.ClockOut?.ToString("HH:mm")})";
                 data.UserIn = user.UserID.ToString();
                 data.DateIn = DateTime.Now.AddHours(7);
                 data.Date = DateTime.Now.AddHours(7);
@@ -455,7 +459,7 @@ namespace API.Services
                             attendance.Date = currentDate;
                             attendance.ClockIn = currentDate;
                             attendance.ClockOut = currentDate;
-                            attendance.Shift = $"{shift.Description} ({shift.ClockIn} - {shift.ClockOut})";
+                            attendance.Shift = $"{shift.Description} ({shift.ClockIn?.ToString("HH:mm")} - {shift.ClockOut?.ToString("HH:mm")})";
                             attendance.Description = "";
                             attendance.Status = "Absen";
                             attendance.DateIn = DateTime.Now.AddHours(7);
