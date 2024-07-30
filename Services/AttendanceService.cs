@@ -7,6 +7,7 @@ using API.Entities;
 using API.Helpers;
 using API.Responses;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API.Services
 {
@@ -86,6 +87,7 @@ namespace API.Services
                 obj.Date = data.Date;
                 obj.ClockIn = data.ClockIn;
                 obj.ClockOut = data.ClockOut;
+                obj.Shift = data.Shift;
                 obj.UserUp = data.UserUp;
                 obj.DateUp = DateTime.Now.AddHours(7);
 
@@ -331,6 +333,7 @@ namespace API.Services
                 data.Description = "";
                 data.UserID = user.UserID;
                 data.ClockIn = DateTime.Now.AddHours(7);
+                data.Shift = $"{shift.Description} ({shift.ClockIn} - {shift.ClockOut})";
                 data.UserIn = user.UserID.ToString();
                 data.DateIn = DateTime.Now.AddHours(7);
                 data.Date = DateTime.Now.AddHours(7);
@@ -428,6 +431,10 @@ namespace API.Services
             if (user == null)
                 return;
 
+            var shift = await context.Shifts.FirstOrDefaultAsync(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+            if (shift == null)
+                throw new Exception($"Silahkan mengatur shift kerja anda {user.Name}!");
+
             var currentDate = user.StartWork.Value.Date;
             if (currentDate == null)
                 throw new Exception("Tanggal mulai kerja user belum diatur!");
@@ -448,6 +455,7 @@ namespace API.Services
                             attendance.Date = currentDate;
                             attendance.ClockIn = currentDate;
                             attendance.ClockOut = currentDate;
+                            attendance.Shift = $"{shift.Description} ({shift.ClockIn} - {shift.ClockOut})";
                             attendance.Description = "";
                             attendance.Status = "Absen";
                             attendance.DateIn = DateTime.Now.AddHours(7);
@@ -461,7 +469,6 @@ namespace API.Services
                             if (haveAttend.ClockOut == null)
                             {
                                 haveAttend.Status = "Absen";
-                                haveAttend.ClockOut = currentDate;
 
                                 context.Attendances.Update(haveAttend);
                             }

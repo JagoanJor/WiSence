@@ -15,6 +15,7 @@ namespace API.Entities
         public DateTime? Date { get; set; }
         public DateTime? ClockIn { get; set; }
         public DateTime? ClockOut { get; set; }
+        public String Shift { get; set; }
         public User User { get; set; }
     }
 }

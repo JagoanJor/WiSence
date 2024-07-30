@@ -30,6 +30,7 @@ namespace API.Entities
         public String In { get; set; }
         public String Out { get; set; }
         public String Status { get; set; }
+        public String Shift { get; set; }
     }
 
     [Keyless]

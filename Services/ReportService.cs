@@ -278,6 +278,10 @@ namespace API.Services
                 if (user == null)
                     return;
 
+                var shift = await context.Shifts.FirstOrDefaultAsync(x => x.ShiftID == user.ShiftID && x.IsDeleted != true);
+                if (shift == null)
+                    throw new Exception($"Silahkan mengatur shift kerja {user.Name}!");
+
                 var startDate = user.StartWork?.Date ?? throw new Exception("Tanggal mulai kerja belum diatur!");
                 var endDate = DateTime.Now.AddHours(7).Date;
 
@@ -305,6 +309,7 @@ namespace API.Services
                             Date = currentDate,
                             ClockIn = currentDate,
                             ClockOut = currentDate,
+                            Shift = $"{shift.Description} ({shift.ClockIn} - {shift.ClockOut})",
                             Description = "",
                             Status = "Absen",
                             DateIn = DateTime.Now.AddHours(7),
@@ -315,7 +320,6 @@ namespace API.Services
                     else if (existingAttendance.ClockOut == null)
                     {
                         existingAttendance.Status = "Absen";
-                        existingAttendance.ClockOut = currentDate;
                     }
                 }
 
