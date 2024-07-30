@@ -30,7 +30,7 @@ namespace API.Services
                 try
                 {
                     // Check user's attendance
-                    CheckAttendanceAsync(userID);
+                    await CheckAttendanceAsync(userID);
 
                     // Get report function
                     var result = new vReportAbsensi();
@@ -108,7 +108,7 @@ namespace API.Services
                     // Check Attendance per User                
                     var users = await context.Users.Where(x => x.IsDeleted != true && x.IsAdmin != true).ToListAsync();
                     foreach (var user in users)
-                        CheckAttendanceAsync(user.UserID);
+                        await CheckAttendanceAsync(user.UserID);
 
                     // Get report function
                     var libur = context.Calendars.Where(x => x.IsDeleted != true && x.Holiday.Year == tahun)
